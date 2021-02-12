@@ -14,8 +14,8 @@ private:
 	DirectX::XMFLOAT3 startPos;
 	DirectX::XMFLOAT3 pos;
 	DirectX::XMFLOAT4 rotation;
-	float xRotation;
-	float yRotation;
+	float xRotation = 0.0f;
+	float yRotation = 0.0f;
 
 public:
 	Camera(float x, float y, float z);

@@ -5,7 +5,6 @@ Camera::Camera(float x, float y, float z)
 {
 	pos = dx::XMFLOAT3(x, y, z);
 	startPos = dx::XMFLOAT3(x, y, z);
-	rotation;
 	dx::XMStoreFloat4(&rotation, dx::XMQuaternionIdentity());
 
 	dx::XMStoreFloat4x4(&viewMatrix, dx::XMMatrixIdentity());
@@ -18,11 +17,8 @@ Camera::~Camera()
 
 void Camera::MoveRelative(float x, float y, float z)
 {
-	/*dx::XMVECTOR direction = dx::XMVector3Rotate(dx::XMVectorSet(x, y, z, 0), XMLoadFloat4(&rotation));
-	dx::XMStoreFloat3(&pos, dx::XMLoadFloat3(&pos) + direction);*/
-
 	dx::XMVECTOR direction = dx::XMVector3Rotate(dx::XMVectorSet(x, y, z, 0), XMLoadFloat4(&rotation));
-	dx::XMStoreFloat3(&pos, dx::XMLoadFloat3(&pos) + direction);
+	dx::XMStoreFloat3(&pos, direction);
 }
 
 void Camera::MoveAbsolute(float x, float y, float z)

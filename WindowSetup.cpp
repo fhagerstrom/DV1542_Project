@@ -32,7 +32,7 @@ bool SetWindow(HINSTANCE instance, UINT width, UINT height, int nCmdShow, HWND& 
     freopen_s(&fp, "CONOUT$", "w", stderr);
 
     // Register window class
-    const wchar_t CLASS_NAME[] = L"HelloTriangle Win Class";
+    const wchar_t CLASS_NAME[] = L"3DProject Win Class";
 
     WNDCLASS winClass = {};
 
@@ -42,7 +42,7 @@ bool SetWindow(HINSTANCE instance, UINT width, UINT height, int nCmdShow, HWND& 
 
     RegisterClass(&winClass);
 
-    window = CreateWindowEx(0, CLASS_NAME, L"HelloTriangle Window", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, width, height, nullptr, nullptr, instance, nullptr);
+    window = CreateWindowEx(0, CLASS_NAME, L"3D Project", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, width, height, nullptr, nullptr, instance, nullptr);
 
     if (window == nullptr)
     {
