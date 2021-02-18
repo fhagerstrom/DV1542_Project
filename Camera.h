@@ -7,13 +7,13 @@ class Camera
 {
 private:
 	// Camera matrices
-	DirectX::XMFLOAT4X4 viewMatrix;
-	DirectX::XMFLOAT4X4 projMatrix;
+	dx::XMFLOAT4X4 viewMatrix;
+	dx::XMFLOAT4X4 projMatrix;
 
 	// Transformations
-	DirectX::XMFLOAT3 startPos;
-	DirectX::XMFLOAT3 pos;
-	DirectX::XMFLOAT4 rotation;
+	dx::XMFLOAT3 startPos;
+	dx::XMFLOAT3 pos;
+	dx::XMFLOAT4 rotation;
 	float xRotation = 0.0f;
 	float yRotation = 0.0f;
 

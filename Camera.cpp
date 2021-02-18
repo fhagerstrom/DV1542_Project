@@ -68,46 +68,22 @@ void Camera::Update(float dt)
 	float camSpeed = dt * 3;
 
 	// Change speed with key presses
-	if (GetAsyncKeyState(VK_SHIFT))
-	{
-		camSpeed *= 2.5;
-	}
+	if (GetAsyncKeyState(VK_SHIFT)){ camSpeed *= 2.5; }
 
-	if (GetAsyncKeyState(VK_CONTROL))
-	{
-		camSpeed *= 0.1f;
-	}
+	if (GetAsyncKeyState(VK_CONTROL)) { camSpeed *= 0.1f; }
 
 	// Movement keys
-	if (GetAsyncKeyState('W') & 0x8000)
-	{
-		MoveRelative(0, 0, camSpeed);
-	}
+	if (GetAsyncKeyState('W') & 0x8000) { MoveRelative(0, 0, camSpeed); }
 
-	if (GetAsyncKeyState('S') & 0x8000)
-	{
-		MoveRelative(0, 0, -camSpeed);
-	}
+	if (GetAsyncKeyState('S') & 0x8000) { MoveRelative(0, 0, -camSpeed); }
 
-	if (GetAsyncKeyState('A') & 0x8000)
-	{
-		MoveRelative(-camSpeed, 0, 0);
-	}
+	if (GetAsyncKeyState('A') & 0x8000) { MoveRelative(-camSpeed, 0, 0); }
 
-	if (GetAsyncKeyState('D') & 0x8000)
-	{
-		MoveRelative(camSpeed, 0, 0);
-	}
+	if (GetAsyncKeyState('D') & 0x8000) { MoveRelative(camSpeed, 0, 0); }
 
-	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
-	{
-		MoveRelative(0, camSpeed, 0);
-	}
+	if (GetAsyncKeyState(VK_SPACE) & 0x8000) { MoveAbsolute(0, camSpeed, 0); }
 
-	if (GetAsyncKeyState('C') & 0x8000)
-	{
-		MoveRelative(0, -camSpeed, 0);
-	}
+	if (GetAsyncKeyState('C') & 0x8000) { MoveAbsolute(0, -camSpeed, 0); }
 
 	// Reset camera position to start
 	if (GetAsyncKeyState('R') & 0x8000)

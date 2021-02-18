@@ -15,7 +15,7 @@ cbuffer LightBuffer
 struct PixelInput
 {
 	float4 position : POSITION;
-	float2 tex : TEXCOORD0;
+	float2 tex : TEXCOORD;
 };
 
 // Pixel Shader

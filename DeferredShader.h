@@ -1,6 +1,4 @@
 #pragma once
-#ifndef _DEFERREDSHADERCLASS_H_
-#define _DEFERREDSHADERCLASS_H_
 
 #include <d3d11.h>
 #include <directxmath.h>
@@ -46,7 +44,3 @@ public:
 	
 };
 
-
-
-
-#endif

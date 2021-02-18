@@ -10,14 +10,14 @@ cbuffer BufferMatrix
 struct VertexInput
 {
 	float4 position : POSITION;
-	float2 tex : TEXCOORD0;
+	float2 tex : TEXCOORD;
 	float3 normal : NORMAL;
 };
 
 struct PixelInput
 {
 	float4 position : SV_POSITION;
-	float2 tex : TEXCOORD0;
+	float2 tex : TEXCOORD;
 	float3 normal : NORMAL;
 };
 
