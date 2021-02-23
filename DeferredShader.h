@@ -1,7 +1,8 @@
 #pragma once
 
 #include <d3d11.h>
-#include <directxmath.h>
+#include <d3dcompiler.h>
+#include <DirectXMath.h>
 #include <fstream>
 #include <string>
 #include <iostream>
@@ -13,17 +14,17 @@ class DeferredShader
 private:
 	struct MatrixBuffer
 	{
-		dx::XMFLOAT4X4 world;
-		dx::XMFLOAT4X4 view;
-		dx::XMFLOAT4X4 proj;
+		dx::XMMATRIX view;
+		dx::XMMATRIX world;
+		dx::XMMATRIX projection;
 	};
-	bool CreateInputLayout(ID3D11Device* device, ID3D11InputLayout*& inputLayout, const std::string& vShaderByteCode);
-	bool InitializeShader(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, std::string& vShaderByteCode);
-	void ShutdownShader();
-	
 
-	bool SetShaderParameters(ID3D11DeviceContext* immediateContext, dx::XMFLOAT4X4 world, dx::XMFLOAT4X4 view, dx::XMFLOAT4X4 proj, ID3D11ShaderResourceView* textureSRV);
+	bool InitializeShader(ID3D11Device*, HWND, const WCHAR*, const WCHAR*);
+	bool SetShaderParameters(ID3D11DeviceContext*, dx::XMMATRIX, dx::XMMATRIX, dx::XMMATRIX, ID3D11ShaderResourceView*);
+
 	void RenderShader(ID3D11DeviceContext* immediateContext, int indexCount);
+	
+	void LogDeferredShaderErrors(ID3DBlob*, HWND, const WCHAR*);
 
 	ID3D11VertexShader* vertexShader;
 	ID3D11PixelShader* pixelShader;
@@ -37,10 +38,10 @@ public:
 	DeferredShader(const DeferredShader&);
 	~DeferredShader();
 
-
-
-	bool Render(ID3D11DeviceContext*, int indexCount, dx::XMFLOAT4X4 world, dx::XMFLOAT4X4 view, dx::XMFLOAT4X4 proj, ID3D11ShaderResourceView* textureSRV);
-
+	void ReleaseShader();
+	bool Initialize(ID3D11Device*, HWND);
+	bool Render(ID3D11DeviceContext*, int, dx::XMMATRIX, dx::XMMATRIX, dx::XMMATRIX, ID3D11ShaderResourceView*);
+	// void ReleaseObjects();
 	
 };
 

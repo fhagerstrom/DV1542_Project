@@ -22,12 +22,12 @@ public:
 
 	bool Initialize(ID3D11Device*, int, int);
 	void Render(ID3D11DeviceContext*);
-
+	void ShutdownBuffers();
 	int GetIndexCount();
 
 private:
 	bool InitializeBuffers(ID3D11Device*, int, int);
-	void ShutdownBuffers();
+	
 	void RenderBuffers(ID3D11DeviceContext*);
 
 private:

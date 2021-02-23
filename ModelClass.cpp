@@ -6,6 +6,8 @@ ModelClass::ModelClass()
 	indexBuffer = nullptr;
 	texture = nullptr;
 	model = nullptr;
+	indexCount = 0;
+	vertexCount = 0;
 }
 
 ModelClass::ModelClass(const ModelClass& other)
@@ -19,7 +21,7 @@ ModelClass::~ModelClass()
 
 }
 
-bool ModelClass::Initialize(ID3D11Device* device, char* modelFilename, WCHAR* textureFilename)
+bool ModelClass::Initialize(ID3D11Device* device, const char* modelFilename, const WCHAR* textureFilename)
 {
 	bool result;
 
@@ -128,7 +130,7 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	indexBufferDesc.MiscFlags = 0;
 	indexBufferDesc.StructureByteStride = 0;
 
-	// Sub reosurces, same as vertex
+	// Subresources, same as vertex
 	indexData.pSysMem = indices;
 	indexData.SysMemPitch = 0;
 	indexData.SysMemSlicePitch = 0;
@@ -162,7 +164,7 @@ void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 	return;
 }
 
-bool ModelClass::LoadTexture(ID3D11Device* device, WCHAR* filename)
+bool ModelClass::LoadTexture(ID3D11Device* device, const WCHAR* filename)
 {
 	bool result;
 
@@ -185,7 +187,7 @@ bool ModelClass::LoadTexture(ID3D11Device* device, WCHAR* filename)
 	return true;
 }
 
-bool ModelClass::LoadModel(char* filename)
+bool ModelClass::LoadModel(const char* filename)
 {
 	// Find a better way to read the file than this. Quite cumbersome / complicated
 	std::ifstream fin;
@@ -238,5 +240,56 @@ bool ModelClass::LoadModel(char* filename)
 	return true;
 }
 
-// RELEASE OBJECTS AFTERWARDS
+void ModelClass::ReleaseTexture()
+{
+	// Release the texture object.
+	if (texture)
+	{
+		texture->ReleaseTexture();
+		delete texture;
+	}
+
+	return;
+}
+
+void ModelClass::ReleaseModel()
+{
+	if (model)
+	{
+		delete[] model;
+	}
+
+	return;
+}
+
+void ModelClass::ShutdownBuffers()
+{
+	// Release the index buffer
+	if (indexBuffer)
+	{
+		indexBuffer->Release();
+	}
+
+	// Release the vertex buffer
+	if (vertexBuffer)
+	{
+		vertexBuffer->Release();
+	}
+
+	return;
+}
+
+void ModelClass::Shutdown()
+{
+	// Release the model texture
+	ReleaseTexture();
+
+	// Shutdown the vertex and index buffers
+	ShutdownBuffers();
+
+	// Release the model data
+	ReleaseModel();
+
+	return;
+}
 

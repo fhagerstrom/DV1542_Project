@@ -12,9 +12,7 @@ D3DHelperClass::D3DHelperClass()
 	rasterState = 0;
 	depthDisabledStencilState = 0;
 
-	videoCardMemory = 0;
-	for(int i = 0; i < 128; i++)
-		videoCardDescription[i] =  0 ;
+	
 
 	projectionMatrix = dx::XMMatrixIdentity();
 	worldMatrix = dx::XMMatrixIdentity();
@@ -371,7 +369,6 @@ void D3DHelperClass::BeginScene(float red, float green, float blue, float alpha)
     
 	// Clear the depth buffer.
 	deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
-
 	return;
 }
 
@@ -382,8 +379,6 @@ void D3DHelperClass::EndScene()
 	
 		// Present as fast as possible.
 	swapChain->Present(0, 0);
-	
-
 	return;
 }
 
@@ -421,12 +416,7 @@ void D3DHelperClass::GetOrthoMatrix(dx::XMMATRIX& temporthoMatrix)
 }
 
 
-void D3DHelperClass::GetVideoCardInfo(char* cardName, int& memory)
-{
-	strcpy_s(cardName, 128, videoCardDescription);
-	memory = videoCardMemory;
-	return;
-}
+
 
 void D3DHelperClass::TurnZBufferOn()
 {
@@ -451,6 +441,14 @@ void D3DHelperClass::SetBackBufferRenderTarget()
 {
 	// Bind the render target view and depth stencil buffer to the output render pipeline.
 	deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+
+	return;
+}
+
+void D3DHelperClass::ResetViewport()
+{
+	// Set the viewport.
+	deviceContext->RSSetViewports(1, &viewport);
 
 	return;
 }

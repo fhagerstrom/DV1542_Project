@@ -18,7 +18,7 @@ public:
 	~Texture();
 
 // The first two functions will load a texture from a given file name and unload that texture when it is no longer needed.
-	bool Initialize(ID3D11Device*, WCHAR*);
+	bool Initialize(ID3D11Device*, const WCHAR*);
 	void ReleaseTexture();
 
 // The GetTexture function returns a pointer to the texture resource so that it can be used for rendering by shaders.

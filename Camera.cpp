@@ -1,103 +1,150 @@
 #include "Camera.h"
-#include <Windows.h>
 
-Camera::Camera(float x, float y, float z)
+Camera::Camera()
 {
-	pos = dx::XMFLOAT3(x, y, z);
-	startPos = dx::XMFLOAT3(x, y, z);
-	dx::XMStoreFloat4(&rotation, dx::XMQuaternionIdentity());
+	posX = 0.0f;
+	posY = 0.0f;
+	posZ = 0.0f;
 
-	dx::XMStoreFloat4x4(&viewMatrix, dx::XMMatrixIdentity());
-	dx::XMStoreFloat4x4(&projMatrix, dx::XMMatrixIdentity());
+	rotationX = 0;
+	rotationY = 0.0f; 
+	rotationZ = 0.0f;
 }
+
+Camera::Camera(const Camera&)
+{
+
+}
+
 Camera::~Camera()
 {
 
 }
 
-void Camera::MoveRelative(float x, float y, float z)
+void Camera::SetPosition(float x, float y, float z)
 {
-	dx::XMVECTOR direction = dx::XMVector3Rotate(dx::XMVectorSet(x, y, z, 0), XMLoadFloat4(&rotation));
-	dx::XMStoreFloat3(&pos, direction);
+	posX = x;
+	posY = y;
+	posZ = z;
+	return;
 }
 
-void Camera::MoveAbsolute(float x, float y, float z)
+void Camera::SetRotation(float x, float y, float z)
 {
-	pos.x += x;
-	pos.y += y;
-	pos.z += z;
+	rotationX = x;
+	rotationY = y;
+	rotationZ = z;
+	return;
 }
 
-void Camera::Rotate(float x, float y)
+dx::XMFLOAT3 Camera::GetPosition()
 {
-	xRotation += x;
-	yRotation += y;
+	return dx::XMFLOAT3(posX, posY, posY);
+}
 
-	xRotation = max(min(xRotation, dx::XM_PIDIV2), -dx::XM_PIDIV2);
-
-	// Recreate quaternion
-	dx::XMStoreFloat4(&rotation, dx::XMQuaternionRotationRollPitchYaw(xRotation, yRotation, 0));
+dx::XMFLOAT3 Camera::GetRotation()
+{
+	return dx::XMFLOAT3(rotationX, rotationY, rotationZ);
 }
 
 
-void Camera::UpdateViewMatrix()
+void Camera::Render()
 {
-	// Rotate the standard "forward" matrix by our rotation
-	// This is the "look direction"
-	dx::XMVECTOR direction = dx::XMVector3Rotate(dx::XMVectorSet(0, 0, 1, 0), XMLoadFloat4(&rotation));
+	float yaw, pitch, roll = 0.0f;
+	dx::XMMATRIX rotationMatrix;
 
-	dx::XMMATRIX view = dx::XMMatrixLookToLH(XMLoadFloat3(&pos), direction, dx::XMVectorSet(0, 1, 0, 0));
-	dx::XMStoreFloat4x4(&viewMatrix, XMMatrixTranspose(view));
+	dx::XMVECTOR up = dx::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	dx::XMVECTOR position = dx::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	dx::XMVECTOR lookAt = dx::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+
+	// Set upward vector
+	dx::XMVectorSetX(up, 0.0f);
+	dx::XMVectorSetY(up, 1.0f);
+	dx::XMVectorSetZ(up, 0.0f);
+
+	// Setup camera position
+	dx::XMVectorSetX(position, posX);
+	dx::XMVectorSetY(position, posY); 
+	dx::XMVectorSetZ(position, posZ);
+
+	// Set default camera view
+	dx::XMVectorSetX(lookAt, 0.0f);
+	dx::XMVectorSetY(lookAt, 0.0f);
+	dx::XMVectorSetZ(lookAt, 1.0f);
+
+	// Set yaw (x-axis), pitch (y-axis) and roll (z-axis) rotations in radians
+	yaw = rotationX * (dx::XM_PI / 180);
+	pitch = rotationY * (dx::XM_PI / 180);
+	roll = rotationZ * (dx::XM_PI / 180);
+
+	// Set rotation matrix to the pitch, yaw and roll values
+	rotationMatrix = dx::XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
+
+	// Transform lookAt and up vectors by rotation matrix so rotation is correct at origin
+	dx::XMVector3TransformCoord(lookAt, rotationMatrix);
+	dx::XMVector3TransformCoord(up, rotationMatrix);
+
+	// Translate rotated camera position to viewers location
+	lookAt = dx::XMVectorAdd(position, lookAt);
+
+	// Create view matrix from vectors
+	viewMatrix = dx::XMMatrixLookAtLH(position, lookAt, up);
 }
 
-void Camera::UpdateProjMatrix(float aspectRatio)
+void Camera::GetViewMatrix(dx::XMMATRIX& viewMatrix)
 {
-	dx::XMMATRIX perspective = dx::XMMatrixPerspectiveFovLH(
-		0.25f * dx::XM_PI,		// FOV angle
-		aspectRatio,			// Aspect ratio
-		0.1f,					// Near clip plane distance
-		100.0f);				// Far clip plance distance
-
-	dx::XMStoreFloat4x4(&projMatrix, dx::XMMatrixTranspose(perspective)); // Transpose for HLSL
+	viewMatrix = this->viewMatrix;
+	return;
 }
 
-// Update function, checking for key presses
-void Camera::Update(float dt)
+void Camera::RenderBaseViewMatrix()
 {
-	// Camera speed
-	float camSpeed = dt * 3;
+	float yaw, pitch, roll = 0.0f;
+	dx::XMMATRIX rotationMatrix;
 
-	// Change speed with key presses
-	if (GetAsyncKeyState(VK_SHIFT)){ camSpeed *= 2.5; }
+	dx::XMVECTOR up = dx::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	dx::XMVECTOR position = dx::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	dx::XMVECTOR lookAt = dx::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 
-	if (GetAsyncKeyState(VK_CONTROL)) { camSpeed *= 0.1f; }
+	// Set upward vector
+	dx::XMVectorSetX(up, 0.0f);
+	dx::XMVectorSetY(up, 1.0f);
+	dx::XMVectorSetZ(up, 0.0f);
 
-	// Movement keys
-	if (GetAsyncKeyState('W') & 0x8000) { MoveRelative(0, 0, camSpeed); }
+	// Setup camera position
+	dx::XMVectorSetX(position, posX);
+	dx::XMVectorSetY(position, posY);
+	dx::XMVectorSetZ(position, posZ);
 
-	if (GetAsyncKeyState('S') & 0x8000) { MoveRelative(0, 0, -camSpeed); }
+	// Set default camera view
+	dx::XMVectorSetX(lookAt, 0.0f);
+	dx::XMVectorSetY(lookAt, 0.0f);
+	dx::XMVectorSetZ(lookAt, 1.0f);
 
-	if (GetAsyncKeyState('A') & 0x8000) { MoveRelative(-camSpeed, 0, 0); }
+	// Set yaw (x-axis), pitch (y-axis) and roll (z-axis) rotations in radians
+	yaw = rotationX * (dx::XM_PI / 180);
+	pitch = rotationY * (dx::XM_PI / 180);
+	roll = rotationZ * (dx::XM_PI / 180);
 
-	if (GetAsyncKeyState('D') & 0x8000) { MoveRelative(camSpeed, 0, 0); }
+	// Set rotation matrix to the pitch, yaw and roll values
+	rotationMatrix = dx::XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
 
-	if (GetAsyncKeyState(VK_SPACE) & 0x8000) { MoveAbsolute(0, camSpeed, 0); }
+	// Transform lookAt and up vectors by rotation matrix so rotation is correct at origin
+	dx::XMVector3TransformCoord(lookAt, rotationMatrix);
+	dx::XMVector3TransformCoord(up, rotationMatrix);
 
-	if (GetAsyncKeyState('C') & 0x8000) { MoveAbsolute(0, -camSpeed, 0); }
+	// Translate rotated camera position to viewers location
+	lookAt = dx::XMVectorAdd(position, lookAt);
 
-	// Reset camera position to start
-	if (GetAsyncKeyState('R') & 0x8000)
-	{
-		pos = startPos;
-		xRotation = 0;
-		yRotation = 0;
-		XMStoreFloat4(&rotation, dx::XMQuaternionIdentity());
-	}
-
-	// Update every frame - Check after optimizations on this
-	UpdateViewMatrix();
+	// Create view matrix from vectors
+	baseViewMatrix = dx::XMMatrixLookAtLH(position, lookAt, up);
 }
 
+void Camera::GetBaseViewMatrix(dx::XMMATRIX& viewMatrix)
+{
+	viewMatrix = this->baseViewMatrix;
+	return;
+}
 
 
 

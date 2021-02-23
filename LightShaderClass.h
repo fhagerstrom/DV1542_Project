@@ -18,22 +18,21 @@ private:
 
 	struct LightBufferType
 	{
-		dx::XMVECTOR lightDirection;
+		dx::XMFLOAT3 lightDirection;
 		float padding;
 	};
 
-	ID3D11VertexShader* m_vertexShader;
-	ID3D11PixelShader* m_pixelShader;
-	ID3D11InputLayout* m_layout;
-	ID3D11SamplerState* m_sampleState;
-	ID3D11Buffer* m_matrixBuffer;
-	ID3D11Buffer* m_lightBuffer;
+	ID3D11VertexShader* vertexShader;
+	ID3D11PixelShader* pixelShader;
+	ID3D11InputLayout* layout;
+	ID3D11SamplerState* sampleStateWrap;
+	ID3D11Buffer* matrixBuffer;
+	ID3D11Buffer* lightBuffer;
 
-	bool InitializeShader(ID3D11Device*, HWND, WCHAR*, WCHAR*);
-	bool SetShaderParameters(ID3D11DeviceContext*, dx::XMMATRIX, dx::XMMATRIX, dx::XMMATRIX, ID3D11ShaderResourceView*, ID3D11ShaderResourceView*, dx::XMVECTOR);
+	bool InitializeShader(ID3D11Device*, HWND, const WCHAR*, const WCHAR*);
+	bool SetShaderParameters(ID3D11DeviceContext*, dx::XMMATRIX, dx::XMMATRIX, dx::XMMATRIX, ID3D11ShaderResourceView*, ID3D11ShaderResourceView*, dx::XMFLOAT3);
 
-	void ReleaseShader();
-	void LogShaderErrors(ID3DBlob*, HWND, WCHAR*);
+	void LogLightShaderErrors(ID3DBlob*, HWND, const WCHAR*);
 	void RenderShader(ID3D11DeviceContext*, int);
 
 public:
@@ -42,7 +41,7 @@ public:
 	~LightShader();
 
 	bool Initialize(ID3D11Device*, HWND);
-	bool Render(ID3D11DeviceContext*, int, dx::XMFLOAT4X4, dx::XMFLOAT4X4, dx::XMFLOAT4X4, ID3D11ShaderResourceView*, ID3D11ShaderResourceView*, dx::XMVECTOR);
-
-	void ReleaseObjects();
+	bool Render(ID3D11DeviceContext*, int, dx::XMMATRIX, dx::XMMATRIX, dx::XMMATRIX, ID3D11ShaderResourceView*, ID3D11ShaderResourceView*, dx::XMFLOAT3);
+	void ReleaseShader();
+	// void ReleaseObjects();
 };

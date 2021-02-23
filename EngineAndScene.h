@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <directxmath.h>
 
 #include "DeferredBuffer.h"
 #include "LightShaderClass.h"
@@ -14,6 +15,7 @@
 #include "ModelClass.h"
 #include "OrthoWindowClass.h"
  
+namespace dx = DirectX;
 
 class EngineAndScene
 {
@@ -23,7 +25,6 @@ public:
 	~EngineAndScene();
 
 	bool Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeight);
-	bool Frame();
 
 	const bool fullScreen = true;
 	const float screenDepth = 1000.0f;
@@ -32,7 +33,7 @@ public:
 private:
 	bool Render();
 	bool RenderSceneToTexture();
-
+	void Shutdown();
 
 	D3DHelperClass* d3dHelperClass;
 	Camera* camera;

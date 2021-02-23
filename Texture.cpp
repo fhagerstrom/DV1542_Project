@@ -18,11 +18,11 @@ Texture::~Texture()
 
 }
 
-bool Texture::Initialize(ID3D11Device* device, WCHAR* filename)
+bool Texture::Initialize(ID3D11Device* device, const WCHAR* filename)
 {
     HRESULT hr;
 
-	filename = L"souljaboy.jpg";
+	// filename = L"souljaboy.jpg";
 
 	hr = dx::CreateWICTextureFromFile(device, filename, &resource, &textureSRV);
 
@@ -41,6 +41,23 @@ bool Texture::Initialize(ID3D11Device* device, WCHAR* filename)
 		std::cerr << "Cannot create WIC Texture" << std::endl;
 		return false;
 	}
-
+	
 	return true;
 }
+
+ID3D11ShaderResourceView* Texture::GetTexture()
+{
+	return textureSRV;
+}
+
+void Texture::ReleaseTexture()
+{
+	// Release the texture resource
+	if (textureSRV)
+	{
+		textureSRV->Release();
+	}
+
+	return;
+}
+

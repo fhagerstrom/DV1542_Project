@@ -33,10 +33,9 @@ public:
 	void TurnOnAlphaBlending();
 	void TurnOffAlphaBlending();
 
-	void GetVideoCardInfo(char* cardName, int& memory);
-
 	ID3D11DepthStencilView* GetDepthStencilView();
 	void SetBackBufferRenderTarget();
+	void ResetViewport();
 
 private:
 
@@ -49,8 +48,7 @@ private:
 	ID3D11DepthStencilState* depthStencilState;
 	ID3D11DepthStencilView* depthStencilView;
 	ID3D11RasterizerState* rasterState;
-	int videoCardMemory;
-	char videoCardDescription[128];
+	D3D11_VIEWPORT viewport;
 
 	dx::XMMATRIX projectionMatrix;
 	dx::XMMATRIX worldMatrix;

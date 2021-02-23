@@ -1,5 +1,6 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include <fstream>
 
 #include "Texture.h"
 
@@ -24,17 +25,18 @@ private:
 	};
 
 	ID3D11Buffer* vertexBuffer, *indexBuffer;
-	int vertexCount, idxCount;
+	int vertexCount, indexCount;
 	Texture* texture;
 	ModelType* model;
 
 	bool InitializeBuffers(ID3D11Device*);
-	void ShutdownBuffers();
 	void RenderBuffers(ID3D11DeviceContext*);
 
-	bool LoadTexture(ID3D11Device*, WCHAR*);
-	bool LoadModel(char*);
+	bool LoadTexture(ID3D11Device*, const WCHAR*);
+	bool LoadModel(const char*);
 
+	void ShutdownBuffers();
+	void ReleaseModel();
 	void ReleaseTexture();
 
 public:
@@ -42,7 +44,7 @@ public:
 	ModelClass(const ModelClass&);
 	~ModelClass();
 
-	bool Initialize(ID3D11Device*, char*, WCHAR*);
+	bool Initialize(ID3D11Device*, const char*, const WCHAR*);
 	void Shutdown();
 	void Render(ID3D11DeviceContext*);
 
