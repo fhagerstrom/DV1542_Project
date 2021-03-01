@@ -4,52 +4,157 @@
 
 #include "WindowSetup.h"
 
-// Handles everything that happens within the window if and when an instance is created
-LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+
+
+WindowSetup::WindowSetup()
 {
-    // Switch case that checks if the window instance is closed or not
-    switch (message)
-    {
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        return 0;
 
-    default:
-        break;
-    }
-
-    return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-bool SetWindow(HINSTANCE instance, UINT width, UINT height, int nCmdShow, HWND& window)
+
+WindowSetup::WindowSetup(const WindowSetup& other)
 {
-    // Create a console to write couts such as if a file exists 
-    AllocConsole();
-    HANDLE stdHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-    int hConsole = _open_osfhandle((intptr_t)stdHandle, _O_TEXT);
-    FILE* fp = _fdopen(hConsole, "w");
-    freopen_s(&fp, "CONOUT$", "w", stdout);
-    freopen_s(&fp, "CONOUT$", "w", stderr);
 
-    // Register window class
-    const wchar_t CLASS_NAME[] = L"3DProject Win Class";
+}
 
-    WNDCLASS winClass = {};
+WindowSetup::~WindowSetup()
+{
 
-    winClass.lpfnWndProc = WindowProc; // Window procedure pointer
-    winClass.hInstance = instance; // Set instance. Value is taken from wWinMain
-    winClass.lpszClassName = CLASS_NAME; // String identifier
+}
 
-    RegisterClass(&winClass);
+bool WindowSetup::Initialize()
+{
+	int width = 0;
+	int height = 0;
+	bool result;
 
-    window = CreateWindowEx(0, CLASS_NAME, L"3D Project", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, width, height, nullptr, nullptr, instance, nullptr);
+	// Initialize windows
+	InitWindow(width, height);
 
-    if (window == nullptr)
-    {
-        std::cerr << "HWND was nullptr, last error: " << GetLastError() << std::endl;
-        return false;
-    }
+	application = new EngineAndScene;
+	if (!application)
+	{
+		std::cerr << "Application not initialized!" << std::endl;
+		return false;
+	}
 
-    ShowWindow(window, nCmdShow);
-    return true;
+	result = application->Initialize(hInstance, hwnd, width, height);
+	if (!result)
+	{
+		std::cerr << "Window not initialized!" << std::endl;
+		return false;
+	}
+
+	return true;
+}
+
+
+void WindowSetup::Run()
+{
+	MSG msg;
+	bool done = false;
+	bool result;
+
+	// Initialize message structure
+	ZeroMemory(&msg, sizeof(MSG));
+
+	while (!done)
+	{
+		// Handle window messages
+		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
+		// Quit window if called
+		if (msg.message == WM_QUIT)
+		{
+			done = true;
+		}
+		else
+		{
+			// Otherwise do the frame processing
+			result = Frame();
+			if (!result)
+			{
+				std::cout << "Frame not processed" << std::endl;
+				done = true;
+			}
+		}
+	}
+
+	return;
+}
+
+bool WindowSetup::Frame()
+{
+	bool result = application->Frame();
+	if (!result)
+	{
+		std::cerr << "Frame processing is not not working!" << std::endl;
+		return false;
+	}
+
+	return true;
+}
+
+LRESULT CALLBACK WindowSetup::MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam)
+{
+	return DefWindowProc(hwnd, umsg, wparam, lparam);
+}
+
+void WindowSetup::InitWindow(int& width, int& height)
+{
+	width = 800;
+	height = 600;
+
+	WNDCLASS winClass = {};
+
+	// External pointer to object
+	windowHandler = this;
+
+	// Get instance
+	hInstance = GetModuleHandle(NULL);
+
+	windowName = L"Project Engine";
+
+	winClass.lpfnWndProc = WndProc; // Window procedure pointer
+	winClass.hInstance = hInstance; // Set instance
+    winClass.lpszClassName = windowName; // String identifier
+
+	// Register window class
+	RegisterClass(&winClass);
+
+	hwnd = CreateWindowEx(0, windowName, L"3D Project", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, width, height, nullptr, nullptr, hInstance, nullptr);
+
+	return;
+
+}
+
+void WindowSetup::ReleaseObjects()
+{
+	DestroyWindow(hwnd);
+	hwnd = NULL;
+	hInstance = NULL;
+	windowHandler = NULL;
+	return;
+}
+
+static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+		// Check if window is being shutdown
+		case WM_DESTROY:
+		{
+			PostQuitMessage(0);
+			return 0;
+		}
+
+		default:
+		{
+			return windowHandler->MessageHandler(hwnd, message, wParam, lParam);
+		}
+	}
 }

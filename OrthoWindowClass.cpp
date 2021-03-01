@@ -57,7 +57,7 @@ bool OrthoWindowClass::InitializeBuffers(ID3D11Device* device, int windowWidth, 
 
 
 	// Calculate coordinates of left side of window.
-	left = (float)((windowWidth / 2) * -1);
+	left = (float)((windowWidth / 2) * - 1);
 	
 	// Calculate coordinates of right side of  window.
 	right = left + (float)windowWidth;
@@ -157,10 +157,7 @@ bool OrthoWindowClass::InitializeBuffers(ID3D11Device* device, int windowWidth, 
 
 	// Release stuff
 	delete [] vertices;
-	vertices = 0;
-
 	delete [] indices;
-	indices = 0;
 
 	return true;
 }
@@ -172,14 +169,12 @@ void OrthoWindowClass::ShutdownBuffers()
 	if (indexBuffer)
 	{
 		indexBuffer->Release();
-		indexBuffer = 0;
 	}
 
 	// Release
 	if (vertexBuffer)
 	{
 		vertexBuffer->Release();
-		vertexBuffer = 0;
 	}
 
 	return;

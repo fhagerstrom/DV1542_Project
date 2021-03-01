@@ -22,8 +22,6 @@ bool Texture::Initialize(ID3D11Device* device, const WCHAR* filename)
 {
     HRESULT hr;
 
-	// filename = L"souljaboy.jpg";
-
 	hr = dx::CreateWICTextureFromFile(device, filename, &resource, &textureSRV);
 
 	if (resource != nullptr)

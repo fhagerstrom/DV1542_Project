@@ -53,16 +53,19 @@ void Camera::Render()
 	float yaw, pitch, roll = 0.0f;
 	dx::XMMATRIX rotationMatrix;
 
-	dx::XMVECTOR up = dx::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	dx::XMVECTOR position = dx::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	dx::XMVECTOR lookAt = dx::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	dx::XMVECTOR up = dx::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	dx::XMVECTOR position = dx::XMVectorSet(posX, posY, posZ, 0.0f);
+	dx::XMVECTOR lookAt = dx::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 
-	// Set upward vector
+	// Set upward vector 
+	/*
 	dx::XMVectorSetX(up, 0.0f);
 	dx::XMVectorSetY(up, 1.0f);
 	dx::XMVectorSetZ(up, 0.0f);
+	*/
 
 	// Setup camera position
+	/*
 	dx::XMVectorSetX(position, posX);
 	dx::XMVectorSetY(position, posY); 
 	dx::XMVectorSetZ(position, posZ);
@@ -71,6 +74,7 @@ void Camera::Render()
 	dx::XMVectorSetX(lookAt, 0.0f);
 	dx::XMVectorSetY(lookAt, 0.0f);
 	dx::XMVectorSetZ(lookAt, 1.0f);
+	*/
 
 	// Set yaw (x-axis), pitch (y-axis) and roll (z-axis) rotations in radians
 	yaw = rotationX * (dx::XM_PI / 180);
@@ -102,16 +106,17 @@ void Camera::RenderBaseViewMatrix()
 	float yaw, pitch, roll = 0.0f;
 	dx::XMMATRIX rotationMatrix;
 
-	dx::XMVECTOR up = dx::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	dx::XMVECTOR position = dx::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	dx::XMVECTOR lookAt = dx::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	dx::XMVECTOR up = dx::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	dx::XMVECTOR position = dx::XMVectorSet(posX, posY, posZ, 0.0f);
+	dx::XMVECTOR lookAt = dx::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 
+	/*
 	// Set upward vector
 	dx::XMVectorSetX(up, 0.0f);
 	dx::XMVectorSetY(up, 1.0f);
 	dx::XMVectorSetZ(up, 0.0f);
 
-	// Setup camera position
+	// Set camera position
 	dx::XMVectorSetX(position, posX);
 	dx::XMVectorSetY(position, posY);
 	dx::XMVectorSetZ(position, posZ);
@@ -120,6 +125,7 @@ void Camera::RenderBaseViewMatrix()
 	dx::XMVectorSetX(lookAt, 0.0f);
 	dx::XMVectorSetY(lookAt, 0.0f);
 	dx::XMVectorSetZ(lookAt, 1.0f);
+	*/
 
 	// Set yaw (x-axis), pitch (y-axis) and roll (z-axis) rotations in radians
 	yaw = rotationX * (dx::XM_PI / 180);

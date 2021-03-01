@@ -1,5 +1,7 @@
 #include "EngineAndScene.h"
 
+namespace dx = DirectX;
+
 EngineAndScene::EngineAndScene()
 {
 	
@@ -25,7 +27,7 @@ EngineAndScene::~EngineAndScene()
 
 bool EngineAndScene::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeight)
 {
-	bool hr = false; //default value
+	bool hr = false; // Default value
 
 	
 	
@@ -210,6 +212,34 @@ void EngineAndScene::Shutdown()
 	return;
 }
 
+bool EngineAndScene::Frame()
+{
+	bool hr = false;
+
+	
+	// Read the user input.
+	//hr = input->Frame();
+	//if(!hr)
+	//{
+	//	return false;
+	//}
+	//
+	//// Check if the user pressed escape and wants to exit the application.
+	//if(input->IsEscapePressed() == true)
+	//{
+	//	return false;
+	//}
+
+	// Render the graphics.
+	hr = Render();
+	if(!hr)
+	{
+		return false;
+	}
+	
+	return true;
+}
+
 bool EngineAndScene::Render()
 {
 	bool hr = false;
@@ -282,3 +312,4 @@ bool EngineAndScene::RenderSceneToTexture()
 
 	return true;
 }
+
