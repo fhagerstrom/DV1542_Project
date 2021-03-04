@@ -1,30 +1,35 @@
-#include "WindowSetup.h"
+#include <Windows.h>
+#include <iostream>
+#include "ProjectEngine.h"
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
+int WINAPI wWinMain(_In_opt_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdshow)
 {
-	WindowSetup* window;
-	bool result;
+#if defined(DEBUG) | defined(_DEBUG)
 
-	// Create window object
-	window = new WindowSetup;
-	if (!window)
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
+
+	ProjectEngine engine(hInstance);
+
+	HRESULT hr = S_OK;
+
+	hr = engine.InitWindow();
+	if (FAILED(hr))
 	{
-		std::cerr << "Window object not created!" << std::endl;
-		return -1;
+		std::cerr << "Couldn't initialize window!" << std::endl;
+		return hr;
 	}
 
-	// Initalize and run
-	result = window->Initialize();
-	if (result)
+	hr = engine.InitDirectX();
+	if (FAILED(hr))
 	{
-		window->Run();
+		std::cerr << "Couldn't initalize DirectX!" << std::endl;
+		return hr;
 	}
 
-	// Release objects
-	window->ReleaseObjects();
-	delete window;
 
-	return 0;
+	return engine.Run();
+	
 }
 
 
