@@ -27,7 +27,6 @@ int WINAPI wWinMain(_In_opt_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstan
 		return hr;
 	}
 
-
 	return engine.Run();
 	
 }

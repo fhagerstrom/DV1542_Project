@@ -53,70 +53,15 @@ public:
 	// Internal message handling method
 	LRESULT ProcessMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-	// Init and loop-related methods
+	// Init and window loop-related methods
 	HRESULT InitWindow();
 	HRESULT InitDirectX();
 	HRESULT Run();
 
 	void Quit();
 
-	// Pure virtual methods for setup and game functionality
+	// Pure virtual methods for setup and functionality
 	/*virtual void Init() = 0;
 	virtual void Update(float deltaTime, float totalTime) = 0;
 	virtual void Draw(float deltaTime, float totalTime) = 0;*/
 };
-
-
-
-//class D3DHelperClass
-//{
-//public:
-//	D3DHelperClass();
-//	D3DHelperClass(const D3DHelperClass&);
-//	~D3DHelperClass();
-//
-//	bool Initialize(int screenWidth, int screenHeight, HWND hwnd, bool fullscreen, float screenDepth, float screenNear);
-//	void CleanUp();
-//	
-//	void BeginScene(float, float, float, float);
-//	void EndScene();
-//
-//	ID3D11Device* GetDevice();
-//	ID3D11DeviceContext* GetDeviceContext();
-//
-//	void GetProjectionMatrix(dx::XMMATRIX&);
-//	void GetWorldMatrix(dx::XMMATRIX&);
-//	void GetOrthoMatrix(dx::XMMATRIX&);
-//
-//	void TurnZBufferOn();
-//	void TurnZBufferOff();
-//
-//	void TurnOnAlphaBlending();
-//	void TurnOffAlphaBlending();
-//
-//	ID3D11DepthStencilView* GetDepthStencilView();
-//	void SetBackBufferRenderTarget();
-//	void ResetViewport();
-//
-//private:
-//
-//	
-//	IDXGISwapChain* swapChain;
-//	ID3D11Device* device;
-//	ID3D11DeviceContext* deviceContext;
-//	ID3D11RenderTargetView* renderTargetView;
-//	ID3D11Texture2D* depthStencilBuffer;
-//	ID3D11DepthStencilState* depthStencilState;
-//	ID3D11DepthStencilView* depthStencilView;
-//	ID3D11RasterizerState* rasterState;
-//	D3D11_VIEWPORT viewport;
-//
-//	dx::XMMATRIX projectionMatrix;
-//	dx::XMMATRIX worldMatrix;
-//	dx::XMMATRIX orthoMatrix;
-//
-//	ID3D11DepthStencilState* depthDisabledStencilState;
-//	ID3D11BlendState* alphaEnableBlendingState;
-//	ID3D11BlendState* alphaDisableBlendingState;
-//};
-

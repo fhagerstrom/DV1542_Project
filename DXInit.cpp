@@ -79,7 +79,7 @@ HRESULT DXInit::InitDirectX()
 	swapchainDesc.BufferCount = 1;
 	swapchainDesc.BufferDesc.Width = width;
 	swapchainDesc.BufferDesc.Height = height;
-	swapchainDesc.BufferDesc.RefreshRate.Numerator = 0;
+	swapchainDesc.BufferDesc.RefreshRate.Numerator = 120;
 	swapchainDesc.BufferDesc.RefreshRate.Denominator = 1;
 	swapchainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // Align 8 bits per channel - Unsigned normalized
 	swapchainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED; // Default
@@ -94,6 +94,8 @@ HRESULT DXInit::InitDirectX()
 	swapchainDesc.Windowed = true;
 
 	HRESULT hr = S_OK;
+
+	dxFeatureLevel = D3D_FEATURE_LEVEL_11_0;
 
 	hr = D3D11CreateDeviceAndSwapChain(
 		0,							// Video adapter (physical GPU) to use, or null for default
