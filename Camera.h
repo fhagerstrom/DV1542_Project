@@ -38,12 +38,12 @@ public:
 		return pos;
 	}
 
-	DirectX::XMMATRIX GetView()
+	DirectX::XMFLOAT4X4 GetView()
 	{
 		return viewMatrix;
 	}
 
-	DirectX::XMMATRIX GetProjection()
+	DirectX::XMFLOAT4X4 GetProjection()
 
 	{
 		return projMatrix;
