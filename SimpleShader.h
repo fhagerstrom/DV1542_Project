@@ -44,7 +44,7 @@ struct SimpleSampler
 };
 
 // Abstract class for shader handling
-class SimpleShaderHandling
+class SimpleShaderHandler
 {
 protected:
 	bool isShaderValid;
@@ -76,8 +76,8 @@ protected:
 	SimpleConstantBuffer* FindConstantBuffer(std::string name);
 
 public:
-	SimpleShaderHandling(ID3D11Device* device, ID3D11DeviceContext* deviceContext);
-	virtual ~SimpleShaderHandling();
+	SimpleShaderHandler(ID3D11Device* device, ID3D11DeviceContext* deviceContext);
+	virtual ~SimpleShaderHandler();
 
 	bool LoadShader(LPCWSTR shaderFile);
 	bool ShaderValid()
@@ -129,7 +129,7 @@ public:
 };
 
 // Derived Vertex Shader class
-class SimpleVertexShader : public SimpleShaderHandling
+class SimpleVertexShader : public SimpleShaderHandler
 {
 protected:
 	bool perInstanceCompatible;
@@ -162,7 +162,8 @@ public:
 	bool SetSamplerState(std::string name, ID3D11SamplerState* samplerState);
 };
 
-class SimplePixelShader : public SimpleShaderHandling
+// Derived pixle shader class
+class SimplePixelShader : public SimpleShaderHandler
 {
 protected:
 	bool perInstanceCompatible;
