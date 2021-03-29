@@ -24,7 +24,7 @@ struct SimpleConstantBuffer
 	unsigned int BindIndex;
 	unsigned char* LocalDataBuffer;
 
-	std::string name;
+	std::string Name;
 	std::vector<SimpleShaderVar> variables;
 	ID3D11Buffer* constantBuffer;
 };

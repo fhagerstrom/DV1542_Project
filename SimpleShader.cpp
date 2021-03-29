@@ -103,6 +103,29 @@ bool SimpleShaderHandler::LoadShader(LPCWSTR shaderFile)
 		}
 	}
 
+	for (unsigned int b = 0; b < constantBufferCount; ++b)
+	{
+		// Get buffer
+		ID3D11ShaderReflectionConstantBuffer* cb = reflection->GetConstantBufferByIndex(b);
+
+		// Get buffer description
+		D3D11_SHADER_BUFFER_DESC bufferDesc;
+		cb->GetDesc(&bufferDesc);
+
+		// Get resource description, how is it binded to the shader?
+		D3D11_SHADER_INPUT_BIND_DESC bindDesc;
+		reflection->GetResourceBindingDescByName(bindDesc.Name, &bindDesc);
+
+		// Set buffer and add pointer to table
+		constantBuffers[b].BindIndex = bindDesc.BindPoint;
+		constantBuffers[b].Name = bufferDesc.Name;
+
+		cbTable.insert(std::pair<std::string, SimpleConstantBuffer*>(bufferDesc.Name, &constantBuffers[b]));
+
+
+	}
+
+
 }
 
 
