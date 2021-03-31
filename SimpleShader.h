@@ -11,7 +11,7 @@
 // Store information about specific values in constant buffer.
 struct SimpleShaderVar
 {
-	unsigned int offset;
+	unsigned int byteOffset;
 	unsigned int size;
 	unsigned int constantBufferIndex;
 };
@@ -79,7 +79,7 @@ public:
 	SimpleShaderHandler(ID3D11Device* device, ID3D11DeviceContext* deviceContext);
 	virtual ~SimpleShaderHandler();
 
-	bool LoadShader(LPCWSTR shaderFile);
+	bool LoadShaderFiles(LPCWSTR shaderFile);
 	bool ShaderValid()
 	{
 		return isShaderValid;

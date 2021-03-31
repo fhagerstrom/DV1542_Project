@@ -49,7 +49,7 @@ HRESULT DXInit::InitWindow()
 
 	RegisterClass(&winClass);
 
-	hWnd = CreateWindowEx(0, CLASS_NAME, L"3D Project window", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, width, height, nullptr, nullptr, hInstance, nullptr);
+	hWnd = CreateWindowEx(0, CLASS_NAME, L"3D Project", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, width, height, nullptr, nullptr, hInstance, nullptr);
 
 	if (hWnd == NULL)
 	{
@@ -105,7 +105,7 @@ HRESULT DXInit::InitDirectX()
 		0,							// Optional array of possible verisons we want as fallbacks
 		0,							// The number of fallbacks in the above param
 		D3D11_SDK_VERSION,			// Current version of the SDK
-		&swapchainDesc,					// Address of swap chain options
+		&swapchainDesc,				// Address of swap chain options
 		&swapChain,					// Pointer to our Swap Chain pointer
 		&device,					// Pointer to our Device pointer
 		&dxFeatureLevel,			// This will hold the actual feature level the app will use
@@ -167,7 +167,7 @@ HRESULT DXInit::Run()
 	previousTime = now;
 
 	// Init subclass
-	// Init();
+	Init();
 
 	// Overall message and window loop
 	MSG msg = {};

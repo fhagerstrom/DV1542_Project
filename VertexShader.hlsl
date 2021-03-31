@@ -10,7 +10,6 @@ struct VertexShaderInput
 	float3 position : POSITION;
 	float2 uv		: TEXCOORD;
 	float3 normal	: NORMAL;
-	float3 tangent	: TANGENT;
 };
 
 struct VertexToPixel
@@ -29,8 +28,7 @@ VertexToPixel main(VertexShaderInput input)
 	matrix wvp = mul(mul(world, view), projection); // Calculate world view projection matrix.
 
 	output.position = mul(float4(input.position, 1.0f), wvp); // Set position.
-	output.normal = mul(input.normal, (float3x3)world); // Set normal equation.
-	output.tangent = mul(input.tangent, (float3x3)world); // Set tangent.
+	output.normal = mul(input.normal, (float3x3)world); // Set normal.
 	output.worldPos = mul(float4(input.position, 1.0f), world).xyz; // Set world position.
 	output.uv = input.uv; // Set texelcoords.
 

@@ -44,7 +44,7 @@ void SimpleShaderHandler::CleanUp()
 	textureTable.clear();
 }
 
-bool SimpleShaderHandler::LoadShader(LPCWSTR shaderFile)
+bool SimpleShaderHandler::LoadShaderFiles(LPCWSTR shaderFile)
 {
 	HRESULT hr = D3DReadFileToBlob(shaderFile, &shaderBlob);
 	if (hr != S_OK)
@@ -122,9 +122,50 @@ bool SimpleShaderHandler::LoadShader(LPCWSTR shaderFile)
 
 		cbTable.insert(std::pair<std::string, SimpleConstantBuffer*>(bufferDesc.Name, &constantBuffers[b]));
 
+		// Create this constant buffer.
+		D3D11_BUFFER_DESC newBuffDesc;
+		newBuffDesc.Usage = D3D11_USAGE_DEFAULT;
+		newBuffDesc.ByteWidth = bufferDesc.Size;
+		newBuffDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		newBuffDesc.CPUAccessFlags = 0;
+		newBuffDesc.MiscFlags = 0;
+		newBuffDesc.StructureByteStride = 0;
+		device->CreateBuffer(&newBuffDesc, 0, &constantBuffers[b].constantBuffer);
 
+		// Set up the data buffer for this constant buffer.
+		constantBuffers[b].size = bufferDesc.Size;
+		constantBuffers[b].LocalDataBuffer = new unsigned char[bufferDesc.Size];
+		ZeroMemory(constantBuffers[b].LocalDataBuffer, bufferDesc.Size);
+
+		// Loop through all variables in this buffer.
+		for (unsigned int v = 0; v < bufferDesc.Variables; v++)
+		{
+			// Get this variable.
+			ID3D11ShaderReflectionVariable* var =
+				cb->GetVariableByIndex(v);
+
+			// Get the description of the variable and its type.
+			D3D11_SHADER_VARIABLE_DESC varDesc;
+			var->GetDesc(&varDesc);
+
+			// Create the variable struct.
+			SimpleShaderVar varStruct;
+			varStruct.constantBufferIndex = b;
+			varStruct.byteOffset = varDesc.StartOffset;
+			varStruct.size = varDesc.Size;
+
+			// Get a string version.
+			std::string varName(varDesc.Name);
+
+			// Add this variable to the table and the constant buffer.
+			varTable.insert(std::pair<std::string, SimpleShaderVar>(varName, varStruct));
+			constantBuffers[b].variables.push_back(varStruct);
+		}
 	}
 
+	// Done
+	reflection->Release();
+	return true;
 
 }
 
