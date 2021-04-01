@@ -33,9 +33,9 @@ ProjectEngine::~ProjectEngine()
 	delete pixelShader;
 	delete vertexShader;
 
-	for(auto& m : meshes)
+	for(auto& mesh : meshes)
 	{
-		delete m;
+		delete mesh;
 	}
 
 	delete planeMaterial;
@@ -317,6 +317,9 @@ void ProjectEngine::Update(float deltaTime, float totalTime)
 		entities[i]->UpdateWorldMatrix();
 	}
 
+	if (GetAsyncKeyState(VK_ESCAPE))
+		Quit();
+
 	// **UPDATE WORLD MATRIX FOR LIGHTENTITIES HERE**
 }
 
@@ -361,9 +364,40 @@ void ProjectEngine::Draw(float deltaTime, float totalTime)
 		context->IASetIndexBuffer(iBuffer, DXGI_FORMAT_R32_UINT, 0);
 
 		context->DrawIndexed(entities[i]->GetMesh()->GetIndexCount(), 0, 0);
-
 	}
 
+	context->OMSetRenderTargets(1, &backBufferRTV, depthStencilView);
+	context->ClearRenderTargetView(backBufferRTV, bgColour);
+	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	context->RSSetState(rasterizer);
+	float blend[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	context->OMSetBlendState(blendState, blend, 0xFFFFFFFF);
+	context->OMSetDepthStencilState(depthState, 0);
+
+	dirVertexShader->SetShader();
+
+	dirPixelShader->SetShaderResourceView("Position", shaderResourceViewArray[0]);
+	dirPixelShader->SetShaderResourceView("NormalMap", shaderResourceViewArray[1]);
+	dirPixelShader->SetShaderResourceView("Texture", shaderResourceViewArray[2]);
+	backBufferPixelShader->SetSamplerState("Sampler", sampler);
+
+	dirPixelShader->SetFloat3("lightColor", dx::XMFLOAT3(0.5f, 0.5f, 0.5f));
+	dirPixelShader->SetFloat3("lightDirection", dx::XMFLOAT3(10.0f, -10.0f, 0.0f));
+
+	dirPixelShader->CopyAllBufferData();
+	dirPixelShader->SetShader();
+
+	ID3D11Buffer* nothing = 0;
+	context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
+
+	context->Draw(3, 0);
+	context->RSSetState(nullptr);
+	context->OMSetBlendState(nullptr, blend, 0xFFFFFFFF);
+	context->OMSetDepthStencilState(nullptr, 0);
+
+	swapChain->Present(0, 0);
 }
 
 

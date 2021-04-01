@@ -198,6 +198,11 @@ HRESULT DXInit::Run()
 	return msg.wParam;
 }
 
+void DXInit::Quit()
+{
+	PostQuitMessage(0);
+}
+
 void DXInit::UpdateTimer()
 {
 	// Grab the current time

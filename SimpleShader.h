@@ -22,7 +22,7 @@ struct SimpleConstantBuffer
 {
 	unsigned int size;
 	unsigned int BindIndex;
-	unsigned char* LocalDataBuffer;
+	unsigned char* localDataBuffer;
 
 	std::string Name;
 	std::vector<SimpleShaderVar> variables;
@@ -158,11 +158,12 @@ public:
 	{ 
 		return perInstanceCompatible; 
 	}
+
 	bool SetShaderResourceView(std::string name, ID3D11ShaderResourceView* srv);
 	bool SetSamplerState(std::string name, ID3D11SamplerState* samplerState);
 };
 
-// Derived pixle shader class
+// Derived pixel shader class
 class SimplePixelShader : public SimpleShaderHandler
 {
 protected:
