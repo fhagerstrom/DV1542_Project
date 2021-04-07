@@ -27,7 +27,7 @@ protected:
 	HINSTANCE	hInstance;		// The handle to the application
 	HWND		hWnd;			// The handle to the window itself
 	std::string titleBarText;	// Custom text in window's title bar
-	bool		titleBarStats;	// Show extra stats in title bar?
+	bool		titleStats;	// Show extra stats in title bar?
 
 	// Size of the window's client area
 	unsigned int width;

@@ -1,6 +1,11 @@
+// External texture-related data
+Texture2D Texture : register(t0);
+Texture2D NormalMap : register(t1);
+SamplerState Sampler : register(s0);
+
 struct PointLight
 {
-	float4 Color;
+	float4 Colour;
 	float3 Position;
 	
 };
@@ -16,7 +21,7 @@ cbuffer lightData : register(b0)
 	float4 DirLightColor;
 	float3 DirLightDirection;
 	
-	//point Light sources for spotlight
+	// point Light sources for spotlight
 	PointLight pointLight1;
 	PointLight pointLight2;
 
@@ -30,22 +35,15 @@ cbuffer lightData : register(b0)
 	float3 CameraPosition;
 };
 
-// External texture-related data
-Texture2D Texture		: register(t0);
-Texture2D NormalMap		: register(t1);
-SamplerState Sampler	: register(s0);
-
 
 struct VertexToPixel
 {
-	float4 position		: SV_POSITION;
-	float3 normal		: NORMAL;
-	float3 tangent		: TANGENT;
-	float3 worldPos		: POSITION;
-	float2 uv			: TEXCOORD;
+	float4 position	: SV_POSITION;
+	float3 normal : NORMAL;
+	float3 tangent : TANGENT;
+	float3 worldPos : POSITION;
+	float2 uv : TEXCOORD;
 };
-
-
 
 float4 main(VertexToPixel input) : SV_TARGET
 {
@@ -56,21 +54,21 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float3 normalFromMap = NormalMap.Sample(Sampler, input.uv).xyz * 2 - 1;
 
 	// Transform from tangent to world space
-	float3 N = input.normal;
-	float3 T = normalize(input.tangent - N * dot(input.tangent, N));
-	float3 B = cross(T, N);
+	float3 n = input.normal;
+	float3 t = normalize(input.tangent - n * dot(input.tangent, n));
+	float3 b = cross(t, n);
 
-	float3x3 TBN = float3x3(T, B, N);
-	input.normal = normalize(mul(normalFromMap, TBN));
+	float3x3 tbn = float3x3(t, b, n);
+	input.normal = normalize(mul(normalFromMap, tbn));
 
 	// Sample the texture
-	float4 textureColor = Texture.Sample(Sampler, input.uv);
+	float4 textureColour = Texture.Sample(Sampler, input.uv);
 
-	// Directional light calculation ---------------
+	// Directional light calculation
 
 	float dirLightAmount = saturate(dot(input.normal, -normalize(DirLightDirection)));
 
-	// Point light calculation ---------------------
+	// Point light calculation
 	float3 dirToPointLight1 = normalize(pointLight1.Position - input.worldPos);
 	float pointLightAmount1 = saturate(dot(input.normal, dirToPointLight1));
 
@@ -84,7 +82,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float pointLightAmount4 = saturate(dot(input.normal, dirToPointLight4));
 
 
-	//SpotLight calculation------------------------
+	// SpotLight calculation
 	float angleFromCenter1 = max(dot(dirToPointLight1, spotLight1.Direction), 0.0f);
 	float spotAmount1 = pow(angleFromCenter1, spotLight1.SpotPower);
 
@@ -93,29 +91,27 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	
 
-	// Specular (for point light) ------------------
+	// Specular (for point light)
 	float3 toCamera = normalize(CameraPosition - input.worldPos);
-	float3 refl = reflect(-dirToPointLight3, input.normal);
-	float spec = pow(max(dot(refl, toCamera), 0), 32);
+	float3 reflection = reflect(-dirToPointLight3, input.normal);
+	float spec = pow(max(dot(reflection, toCamera), 0), 32);
 
 	float3 toCamera1 = normalize(CameraPosition - input.worldPos);
-	float3 refl1 = reflect(-dirToPointLight4, input.normal);
-	float spec1 = pow(max(dot(refl1, toCamera1), 0), 32);
+	float3 reflection1 = reflect(-dirToPointLight4, input.normal);
+	float spec1 = pow(max(dot(reflection1, toCamera1), 0), 32);
 
 
-	//Total Directional Light
-	float3 totalDirLight = DirLightColor * dirLightAmount * textureColor;
+	// Total Directional Light
+	float3 totalDirLight = DirLightColor * dirLightAmount * textureColour;
 
-	//Total point Light
-	float3 totalPointLight = (pointLight3.Color*pointLightAmount3*textureColor) + (pointLight4.Color*pointLightAmount4*textureColor);
+	// Total point Light
+	float3 totalPointLight = (pointLight3.Colour*pointLightAmount3*textureColour) + (pointLight4.Colour*pointLightAmount4*textureColour);
 
-	//Total Spotlight
-	float3 totalSpotLight = (spotAmount1 * pointLight1.Color * textureColor) + (spotAmount2 * pointLight2.Color * textureColor);
-
-	
+	// Total Spotlight
+	float3 totalSpotLight = (spotAmount1 * pointLight1.Colour * textureColour) + (spotAmount2 * pointLight2.Colour * textureColour);
 
 	float3 totalLight = totalPointLight + totalSpotLight + spec + spec1;
 
 	
-	return float4(totalLight,1.0f);
+	return float4(totalLight, 1.0f);
 }

@@ -9,10 +9,10 @@ LRESULT DXInit::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 
 DXInit::DXInit(
-	HINSTANCE hInstance,		// The application's handle.
-	const char* titleText,			// Text for the window's title bar.
-	unsigned int windowWidth,	// Width of the window's client area.
-	unsigned int windowHeight,	// Height of the window's client area.
+	HINSTANCE hInstance, // The application's handle.
+	const char* titleText,	// Text for the window's title bar.
+	unsigned int windowWidth, // Width of the window's client area.
+	unsigned int windowHeight, // Height of the window's client area.
 	bool debugTitleStats)	// Show extra stats (fps).
 {
 	DXCoreInstance = this;
@@ -22,7 +22,7 @@ DXInit::DXInit(
 	this->titleBarText = titleText;
 	this->width = windowWidth;
 	this->height = windowHeight;
-	this->titleBarStats = debugTitleStats;
+	this->titleStats = debugTitleStats;
 
 	// Initialize fields.
 	fpsFrameCount = 0;
@@ -207,7 +207,7 @@ HRESULT DXInit::Run()
 		{
 			// Update timer and title bar if necessary.
 			UpdateTimer();
-			if(titleBarStats)
+			if(titleStats)
 				UpdateTitleStats();
 
 			// The render loop.

@@ -27,7 +27,7 @@ private:
 	SpotLight spotLight2;
 
 public:
-	//Renderer();
+	Renderer();
 	~Renderer();
 
 	void SetLights();

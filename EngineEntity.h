@@ -9,7 +9,7 @@ class EngineEntity
 {
 public:
 	EngineEntity(Mesh* mesh, Material* material);
-	EngineEntity(Mesh* mesh, DirectX::XMFLOAT3 lightColor);
+	EngineEntity(Mesh* mesh, DirectX::XMFLOAT3 lightColour);
 	~EngineEntity(void);
 
 	void UpdateWorldMatrix();

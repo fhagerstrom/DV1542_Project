@@ -14,6 +14,7 @@ Material::Material(SimpleVertexShader* vertexShader, SimplePixelShader* pixelSha
 
 Material::~Material()
 {
+
 }
 
 ID3D11ShaderResourceView * Material::GetTextureSRV()

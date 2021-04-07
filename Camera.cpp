@@ -52,22 +52,22 @@ void Camera::Rotate(float x, float y)
 }
 
 // Camera's update, which looks for key presses
-void Camera::Update(float dt)
+void Camera::Update(float deltaTime)
 {
 	// Current speed
-	float speed = dt * 3;
+	float speed = deltaTime * 5;
 
 	// Speed up or down
 	if (GetAsyncKeyState(VK_SHIFT)) { speed *= 5; }
-	if (GetAsyncKeyState(VK_CONTROL)) { speed *= 0.1f; }
+	if (GetAsyncKeyState(VK_CONTROL)) { speed *= 0.25f; }
 
 	// Movement
 	if (GetAsyncKeyState('W') & 0x8000) { MoveRelative(0, 0, speed); }
 	if (GetAsyncKeyState('S') & 0x8000) { MoveRelative(0, 0, -speed); }
 	if (GetAsyncKeyState('A') & 0x8000) { MoveRelative(-speed, 0, 0); }
 	if (GetAsyncKeyState('D') & 0x8000) { MoveRelative(speed, 0, 0); }
-	if (GetAsyncKeyState('X') & 0x8000) { MoveAbsolute(0, -speed, 0); }
-	if (GetAsyncKeyState(' ') & 0x8000) { MoveAbsolute(0, speed, 0); }
+	if (GetAsyncKeyState('C') & 0x8000) { MoveAbsolute(0, -speed, 0); }
+	if (GetAsyncKeyState(VK_SPACE) & 0x8000) { MoveAbsolute(0, speed, 0); }
 
 	// Check for reset
 	if (GetAsyncKeyState('R') & 0x8000)

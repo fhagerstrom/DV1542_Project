@@ -95,10 +95,8 @@ Mesh::Mesh(ID3D11Device* device, const char* objFile)
 				&i[6], &i[7], &i[8],
 				&i[9], &i[10], &i[11]);
 
-			// - Create the verts by looking up
-			//    corresponding data from vectors
-			// - OBJ File indices are 1-based, so
-			//    they need to be adusted
+			// - Create the verts by looking up corresponding data from vectors
+			// - OBJ File indices are 1-based, adjust them
 			Vertex v1;
 			v1.Position = positions[i[0] - 1];
 			v1.UV = uvs[i[1] - 1];
@@ -116,7 +114,7 @@ Mesh::Mesh(ID3D11Device* device, const char* objFile)
 
 			// The model is most likely in a right-handed space,
 			// especially if it came from Maya.  We want to convert
-			// to a left-handed space for DirectX.  This means we 
+			// to a left-handed space for DirectX. This means we 
 			// need to:
 			//  - Invert the Z position
 			//  - Invert the normal's Z
@@ -184,10 +182,13 @@ Mesh::Mesh(ID3D11Device* device, const char* objFile)
 
 
 
-Mesh::~Mesh(void)
+Mesh::~Mesh()
 {
-	vb->Release(); vb = 0;
-	ib->Release(); ib = 0;
+	vBuffer->Release(); 
+	vBuffer = 0;
+
+	iBuffer->Release();
+	iBuffer = 0;
 }
 
 
@@ -206,7 +207,7 @@ void Mesh::CreateBuffers(Vertex* vertArray, int numVerts, unsigned int* indexArr
 	vbd.StructureByteStride = 0;
 	D3D11_SUBRESOURCE_DATA initialVertexData;
 	initialVertexData.pSysMem = vertArray;
-	device->CreateBuffer(&vbd, &initialVertexData, &vb);
+	device->CreateBuffer(&vbd, &initialVertexData, &vBuffer);
 
 	// Create the index buffer
 	D3D11_BUFFER_DESC ibd;
@@ -218,7 +219,7 @@ void Mesh::CreateBuffers(Vertex* vertArray, int numVerts, unsigned int* indexArr
 	ibd.StructureByteStride = 0;
 	D3D11_SUBRESOURCE_DATA initialIndexData;
 	initialIndexData.pSysMem = indexArray;
-	device->CreateBuffer(&ibd, &initialIndexData, &ib);
+	device->CreateBuffer(&ibd, &initialIndexData, &iBuffer);
 
 	// Save the indices
 	this->numIndices = numIndices;

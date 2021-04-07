@@ -1,22 +1,19 @@
-Texture2D Texture							: register(t0);
-Texture2D NormalMap							: register(t1);
-Texture2D PositionTexture					: register(t2);
+Texture2D Texture : register(t0);
+Texture2D NormalMap	: register(t1);
+Texture2D PositionTexture : register(t2);
 
 SamplerState basicSampler : register(s0);
 
-cbuffer LightData		: register(b0)
+cbuffer LightData : register(b0)
 {
 	float3 cameraPosition;
-	float3 lightColor;
+	float3 lightColour;
 	float3 lightPosition;
-	
-	
 }
 
 struct VertexToPixel
 {
-	float4 position		: SV_POSITION;
-
+	float4 position	: SV_POSITION;
 };
 
 float4 main(in VertexToPixel input) : SV_TARGET0
@@ -28,31 +25,31 @@ float4 main(in VertexToPixel input) : SV_TARGET0
 	float3 position = PositionTexture.Load(sampleIndices).xyz;
 	float3 diffuse = Texture.Load(sampleIndices).xyz;
 
-	float3 L = lightPosition - position;
-	float dist = length(L);
+	float3 l = lightPosition - position;
+	float distance = length(l);
 
-	if (dist > 2.0f)
+	if (distance > 2.0f)
 	{
 		return float4(0.0f, 0.0f, 0.0f, 0.0f);
 	}
 
-	L /= dist;
+	l /= distance;
 
-	float att = max(0.0f, 1.0f - (dist / 2.0f));
+	float attenuation = max(0.0f, 1.0f - (distance / 2.0f));
 
-	float lightAmount = saturate(dot(normal, L));
-	float3 color = lightAmount * lightColor * att;
+	float lightAmount = saturate(dot(normal, l));
+	float3 color = lightAmount * lightColour * attenuation;
 
 	//Specular calc
-	float3 V = cameraPosition - position;
-	float3 H = normalize(L + V);
-	float specular = pow(saturate(dot(normal, H)), 10) * att;
+	float3 v = cameraPosition - position;
+	float3 h = normalize(l + v);
+	float specular = pow(saturate(dot(normal, h)), 10) * attenuation;
 
 	float3 finalDiffuse = color * diffuse;
-	float3 finalSpecular = specular * diffuse * att;
+	float3 finalSpecular = specular * diffuse * attenuation;
 
-	float4 totalColor = float4(finalDiffuse + finalSpecular, 1.0f);
-	return totalColor;
+	float4 totalColour = float4(finalDiffuse + finalSpecular, 1.0f);
+	return totalColour;
 
 	
 }

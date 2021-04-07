@@ -8,19 +8,19 @@ cbuffer externalData : register(b0)
 
 struct VertexShaderInput
 { 
-	float3 position		: POSITION;
-	float2 uv			: TEXCOORD;
-	float3 normal		: NORMAL;
-	float3 tangent		: TANGENT;
+	float3 position	: POSITION;
+	float2 uv : TEXCOORD;
+	float3 normal : NORMAL;
+	float3 tangent : TANGENT;
 };
 
 struct VertexToPixel
 {
-	float4 position		: SV_POSITION;
-	float3 normal		: NORMAL;
-	float3 tangent		: TANGENT;
-	float3 worldPos		: POSITION;
-	float2 uv			: TEXCOORD;
+	float4 position	: SV_POSITION;
+	float3 normal : NORMAL;
+	float3 tangent : TANGENT;
+	float3 worldPos : POSITION;
+	float2 uv : TEXCOORD;
 };
 
 

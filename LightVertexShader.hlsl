@@ -7,13 +7,13 @@ cbuffer externalData : register(b0)
 
 struct VertexShaderInput
 {
-	float3 position		: POSITION;
+	float3 position	: POSITION;
 	
 };
 
 struct VertexToPixel
 {
-	float4 position		: SV_POSITION;
+	float4 position	: SV_POSITION;
 	
 };
 
@@ -24,7 +24,6 @@ VertexToPixel main(VertexShaderInput input)
 
 	matrix worldViewProj = mul(mul(world, view), projection);
 	output.position = mul(float4(input.position, 1.0f), worldViewProj);
-
 
 	return output;
 }

@@ -194,7 +194,7 @@ void Engine::SetDefferedSetup(int textureWidth, int textureHeight)
 	//Rasterizer setup
 	D3D11_RASTERIZER_DESC rasterizerDesc;
 	ZeroMemory(&rasterizerDesc, sizeof(rasterizerDesc));
-	rasterizerDesc.CullMode = D3D11_CULL_BACK;
+	rasterizerDesc.CullMode = D3D11_CULL_NONE;
 	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 	rasterizerDesc.DepthClipEnable = false;
 
@@ -229,7 +229,6 @@ void Engine::CreateMatrices()
 	camera = new Camera(0, 0, -5);
 	camera->UpdateProjectionMatrix((float)width / height);
 }
-
 
 void Engine::LoadShaders()
 {
@@ -284,11 +283,11 @@ void Engine::LoadMesh()
 void Engine::LoadTextures()
 {
 	// Load texture stuff
-	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/mixedrust.jpg", 0, &objectTextureSRV);
-	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/rustyspec.png", 0, &objectNormalMapSRV);
+	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/plastic.jpg", 0, &objectTextureSRV);
+	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/plasticNormal.jpg", 0, &objectNormalMapSRV);
 
-	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/woodplanks.jpg", 0, &planeTextureSRV);
-	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/crate.png", 0, &planeNormalMapSRV);
+	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/grass.jpg", 0, &planeTextureSRV);
+	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/grassNormal.png", 0, &planeNormalMapSRV);
 }
 
 
@@ -319,57 +318,55 @@ void Engine::CreateBasicGeometry()
 	EngineEntity* cylinder2 = new EngineEntity(objectMesh, objectMaterial);
 	
 	EngineEntity* plane1 = new EngineEntity(planeMesh, planeMaterial);
-	EngineEntity* plane2 = new EngineEntity(planeMesh, planeMaterial);
+	/*EngineEntity* plane2 = new EngineEntity(planeMesh, planeMaterial);
 	EngineEntity* plane3 = new EngineEntity(planeMesh, planeMaterial);
-	EngineEntity* plane4 = new EngineEntity(planeMesh, planeMaterial);
+	EngineEntity* plane4 = new EngineEntity(planeMesh, planeMaterial);*/
 
 	entities.push_back(cylinder);
 	entities.push_back(cylinder1);
 	entities.push_back(cylinder2);
 	entities.push_back(plane1);
-	entities.push_back(plane2);
+	/*entities.push_back(plane2);
 	entities.push_back(plane3);
-	entities.push_back(plane4);	
+	entities.push_back(plane4);	*/
 
 
-	cylinder->SetScale(1.0f, 1.0f, 1.0f);
-	cylinder->SetPosition(2.0f, -2.0f, 0.0f);
+	cylinder->SetScale(0.5f, 0.5f, 0.5f);
+	cylinder->SetPosition(-2.0f, -2.5f, 0.0f);
 
-	cylinder1->SetScale(1.0f, 1.0f, 1.0f);
-	cylinder1->SetPosition(2.0f, -2.0f, 2.0f);
+	cylinder1->SetScale(0.5f, 0.5f, 0.5f);
+	cylinder1->SetPosition(0.0f, -2.5f, 0.0f);
 
-	cylinder2->SetScale(1.0f, 1.0f, 1.0f);
-	cylinder2->SetPosition(0.0f, -2.0f, 0.0f);
+	cylinder2->SetScale(0.5f, 0.5f, 0.5f);
+	cylinder2->SetPosition(2.0f, -2.5f, 0.0f);
 
 	// Bottom
 	plane1->SetScale(5.0f, 0.01f, 5.5f);
-	plane1->SetPosition(0.0f, -3.5f, 0.0f);
+	plane1->SetPosition(0.0f, -3.0f, 0.0f);
 
-	// Right
-	plane2->SetScale(0.01f, 3.5f, 5.5f);
-	plane2->SetPosition(3.5f, -2.0f, 0.5f);
+	//// Right
+	//plane2->SetScale(0.01f, 3.5f, 5.5f);
+	//plane2->SetPosition(2.5f, -2.0f, 0.5f);
 
-	// Left
-	plane3->SetScale(0.01f, 3.5f, 5.5f);
-	plane3->SetPosition(-3.5f, -2.0f, 0.5f);
+	//// Left
+	//plane3->SetScale(0.01f, 3.5f, 5.5f);
+	//plane3->SetPosition(-2.5f, -2.0f, 0.5f);
 
-	// Back
-	plane4->SetScale(5.0f, 3.5f, 0.01f);
-	plane4->SetPosition(0.0f, -2.0f, 3.0f);	
+	//// Back
+	//plane4->SetScale(5.0f, 3.5f, 0.01f);
+	//plane4->SetPosition(0.0f, -2.0f, 3.0f);	
 
 	currentEntity = 0;
 }
 
-
-
 void Engine::LightEntityInitialize()
 {
-
-	lightEntity1 = new EngineEntity(objectMesh, dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
+	// @TODO: FIX DA COLOURS, THEY DO BE WACKY
+	lightEntity1 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.0f, 0.5f, 0.5f));
 	lightEntity1->SetPosition(-3, 0, 0);
 	lightEntity1->SetScale(5, 5, 5);
 
-	lightEntity2 = new EngineEntity(objectMesh, dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
+	lightEntity2 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.5f, 0.5f, 0.5f));
 	lightEntity2->SetPosition(3, 0, 0);
 	lightEntity2->SetScale(5, 5, 5);
 
@@ -381,7 +378,7 @@ void Engine::LightEntityInitialize()
 	lightEntity4->SetPosition(1, 1, 0);
 	lightEntity4->SetScale(5, 5, 5);
 
-	lightEntity5 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.5, 0.5f, 0.5f));
+	lightEntity5 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.5f, 0.5f, 0.0f));
 	lightEntity5->SetPosition(-1, -1, -0);
 	lightEntity5->SetScale(5, 5, 5);
 
@@ -389,11 +386,11 @@ void Engine::LightEntityInitialize()
 	lightEntity6->SetPosition(1, -1, 0);
 	lightEntity6->SetScale(5, 5, 5);
 
-	lightEntity7 = new EngineEntity(objectMesh, dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
+	lightEntity7 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.0f, 0.6f, 0.4f));
 	lightEntity7->SetPosition(-2, 0, 1);
 	lightEntity7->SetScale(5, 5, 5);
 
-	lightEntity8 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.5f, 0.5f, 0.5f));
+	lightEntity8 = new EngineEntity(objectMesh, dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
 	lightEntity8->SetPosition(2, 0, 1);
 	lightEntity8->SetScale(5, 5, 5);
 
@@ -414,7 +411,6 @@ void Engine::Update(float deltaTime, float totalTime)
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
 
-	
 	camera->Update(deltaTime);
 
 	for (unsigned int i = 0; i < entities.size(); i++)
@@ -435,7 +431,7 @@ void Engine::Update(float deltaTime, float totalTime)
 
 void Engine::Draw(float deltaTime, float totalTime)
 {
-	const float color[4] = {0.1f,0.1f,0.1f,0.0f};
+	const float bgColour[4] = {0.1f, 0.1f, 0.1f, 1.0f};
 	int i;
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
@@ -447,7 +443,7 @@ void Engine::Draw(float deltaTime, float totalTime)
 	//Clear the render target buffers
 	for (i = 0; i < BUFFER_COUNT; i++)
 	{
-		context->ClearRenderTargetView(renderTargetViewArray[i], color);
+		context->ClearRenderTargetView(renderTargetViewArray[i], bgColour);
 	}
 
 	//Clear the depth buffer
@@ -456,8 +452,8 @@ void Engine::Draw(float deltaTime, float totalTime)
 	
 	for (unsigned int i = 0; i < entities.size(); i++)
 	{
-		ID3D11Buffer* vb = entities[i]->GetMesh()->GetVertexBuffer();
-		ID3D11Buffer* ib = entities[i]->GetMesh()->GetIndexBuffer();
+		ID3D11Buffer* vBuffer = entities[i]->GetMesh()->GetVertexBuffer();
+		ID3D11Buffer* iBuffer = entities[i]->GetMesh()->GetIndexBuffer();
 
 
 		deferredVertexShader->SetMatrix4x4("world", entities[i]->GetWorldMatrix());
@@ -475,16 +471,15 @@ void Engine::Draw(float deltaTime, float totalTime)
 		deferredPixelShader->CopyAllBufferData();
 		deferredPixelShader->SetShader();
 
-		context->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
-		context->IASetIndexBuffer(ib, DXGI_FORMAT_R32_UINT, 0);
+		context->IASetVertexBuffers(0, 1, &vBuffer, &stride, &offset);
+		context->IASetIndexBuffer(iBuffer, DXGI_FORMAT_R32_UINT, 0);
 		
-
 		context->DrawIndexed(entities[i]->GetMesh()->GetIndexCount(), 0, 0);
 	}
 	
-	context->OMSetRenderTargets(1,&backBufferRTV, depthStencilView);
-	context->ClearRenderTargetView(backBufferRTV, color);
-	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f,0);
+	context->OMSetRenderTargets(1, &backBufferRTV, depthStencilView);
+	context->ClearRenderTargetView(backBufferRTV, bgColour);
+	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	context->RSSetState(rasterizer);
 	float blend[4] = { 1, 1, 1, 1 };
@@ -498,7 +493,7 @@ void Engine::Draw(float deltaTime, float totalTime)
 	dirPixelShader->SetShaderResourceView("Texture", shaderResourceViewArray[2]);
 	backBufferPixelShader->SetSamplerState("Sampler", sampler);
 
-	dirPixelShader->SetFloat3("lightColor", dx::XMFLOAT3(0.5f, 0.5f, 0.5f));
+	dirPixelShader->SetFloat3("lightColour", dx::XMFLOAT3(0.5f, 0.5f, 0.5f));
 	dirPixelShader->SetFloat3("lightDir", dx::XMFLOAT3(10.0f, -10.0f, 0.0f));
 
 	dirPixelShader->CopyAllBufferData();
@@ -512,12 +507,11 @@ void Engine::Draw(float deltaTime, float totalTime)
 
 	for (int i = 0; i < 8; i++)
 	{
+		ID3D11Buffer* vBufferLight = lightEntities[i]->GetMesh()->GetVertexBuffer();
+		ID3D11Buffer* iBufferLight = lightEntities[i]->GetMesh()->GetIndexBuffer();
 
-		ID3D11Buffer* vb1 = lightEntities[i]->GetMesh()->GetVertexBuffer();
-		ID3D11Buffer* ib1 = lightEntities[i]->GetMesh()->GetIndexBuffer();
-
-		context->IASetVertexBuffers(0, 1, &vb1, &stride, &offset);
-		context->IASetIndexBuffer(ib1, DXGI_FORMAT_R32_UINT, 0);
+		context->IASetVertexBuffers(0, 1, &vBufferLight, &stride, &offset);
+		context->IASetIndexBuffer(iBufferLight, DXGI_FORMAT_R32_UINT, 0);
 
 		lightVertexShader->SetMatrix4x4("world", lightEntities[i]->GetWorldMatrix());
 		lightVertexShader->SetMatrix4x4("view", camera->GetView());
@@ -534,9 +528,8 @@ void Engine::Draw(float deltaTime, float totalTime)
 
 		lightPixelShader->SetFloat3("cameraPosition", camera->GetPosition());
 		
-		lightPixelShader->SetFloat3("lightColor", lightEntities[i]->GetLightColour());
+		lightPixelShader->SetFloat3("lightColour", lightEntities[i]->GetLightColour());
 		lightPixelShader->SetFloat3("lightPosition", lightEntities[i]->GetPosition());
-
 
 		lightPixelShader->CopyAllBufferData();
 		lightPixelShader->SetShader();
