@@ -1,31 +1,32 @@
 #pragma once
-#pragma once
-#include "DXInit.h"
 #include <DirectXMath.h>
+
+#include "DXInit.h"
 
 namespace dx = DirectX;
 
 
 struct PointLight
 {
-	dx::XMFLOAT4 col;
-	dx::XMFLOAT3 pos;
+	dx::XMFLOAT4 Color;
+	dx::XMFLOAT3 Position;
 
-	void SetPLValues(dx::XMFLOAT4 colour, dx::XMFLOAT3 position)
+	void SetpointLightValues(dx::XMFLOAT4 _color, dx::XMFLOAT3 _position)
 	{
-		col = colour;
-		pos = position;
+		Color = _color;
+		Position = _position;
 	}
 };
 
 struct SpotLight
 {
-	float specPower;
-	dx::XMFLOAT3 dir;
+	dx::XMFLOAT3 Direction;
+	float SpotPower;
+	
 
-	void SetSLValues(float power, dx::XMFLOAT3 direction)
+	void SetSpotLightValues(dx::XMFLOAT3 _direction, float _power)
 	{
-		specPower = power;
-		dir = direction;
+		Direction = _direction;
+		SpotPower = _power;
 	}
 };

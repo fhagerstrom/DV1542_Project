@@ -1,14 +1,17 @@
 #pragma once
 
 #include <DirectXMath.h>
-namespace dx = DirectX;
 
-// Vertex structure - Supports shaders and textures.
+// --------------------------------------------------------
+// A custom vertex definition
+//
+// - Updated to support lighting and eventually textures
+// - "Color" was removed, as it is rarely used for basic rendering
+// --------------------------------------------------------
 struct Vertex
 {
-	dx::XMFLOAT3 position;
-	dx::XMFLOAT2 uv;
-	dx::XMFLOAT3 normal;
-
-	// dx::XMFLOAT3 tangent;
+	DirectX::XMFLOAT3 Position;	    // The position of the vertex
+	DirectX::XMFLOAT2 UV;           // UV Coordinate for texturing (soon)
+	DirectX::XMFLOAT3 Normal;       // Normal for lighting
+	DirectX::XMFLOAT3 Tangent;		// For normal mapping
 };

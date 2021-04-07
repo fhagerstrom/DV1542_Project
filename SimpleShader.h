@@ -8,88 +8,89 @@
 #include <vector>
 #include <string>
 
-// Store information about specific values in constant buffer.
-struct SimpleShaderVar
+// Used by simple shaders to store information about
+// specific variables in constant buffers
+struct SimpleShaderVariable
 {
-	unsigned int byteOffset;
-	unsigned int size;
-	unsigned int constantBufferIndex;
+	unsigned int ByteOffset;
+	unsigned int Size;
+	unsigned int ConstantBufferIndex;
 };
 
-// Get information about specific constant buffer in a shader.
-// Also for the local buffer.
+// Contains information about a specific constant buffer in a shader, as well as the local data buffer for it
 struct SimpleConstantBuffer
 {
-	unsigned int size;
-	unsigned int BindIndex;
-	unsigned char* localDataBuffer;
-
 	std::string Name;
-	std::vector<SimpleShaderVar> variables;
-	ID3D11Buffer* constantBuffer;
+	unsigned int Size;
+	unsigned int bindIndex;
+	ID3D11Buffer* ConstantBuffer;
+	unsigned char* LocalDataBuffer;
+	std::vector<SimpleShaderVariable> Variables;
 };
 
-// Information for a single SRV in a shader.
+// Contains info about a single SRV in a shader
 struct SimpleSRV
 {
-	unsigned int index; // Raw index.
-	unsigned int bindIndex; // SRV register.
+	unsigned int index;		// The raw index of the SRV
+	unsigned int bindIndex; // The register of the SRV
 };
 
-// Information for a single sampler in a shader
+// Contains info about a single Sampler in a shader
 struct SimpleSampler
 {
-	unsigned int index; // Raw index.
-	unsigned int bindIndex; // Sampler register.
+	unsigned int index;		// The raw index of the Sampler
+	unsigned int bindIndex; // The register of the Sampler
 };
 
-// Abstract class for shader handling
+// Base abstract class for simplifying shader handling
 class SimpleShaderHandler
 {
 protected:
-	bool isShaderValid;
-
 	ID3D11Device* device;
 	ID3D11DeviceContext* deviceContext;
+	bool isShaderValid;
 	ID3DBlob* shaderBlob;
 
-	// Resource count
+	// Resource counts.
 	unsigned int constantBufferCount;
 
-	// Maps for variables and buffers
+	// Maps for variables and buffers.
 	SimpleConstantBuffer* constantBuffers; // For index-based lookup
 	std::vector<SimpleSRV*>	shaderResourceViews;
 	std::vector<SimpleSampler*>	samplerStates;
 	std::unordered_map<std::string, SimpleConstantBuffer*> cbTable;
-	std::unordered_map<std::string, SimpleShaderVar> varTable;
+	std::unordered_map<std::string, SimpleShaderVariable> varTable;
 	std::unordered_map<std::string, SimpleSRV*> textureTable;
 	std::unordered_map<std::string, SimpleSampler*> samplerTable;
 
-	// Pure virtual functions for dealing with shader types
+	// Pure virtual functions for dealing with shader types.
 	virtual bool CreateShader(ID3DBlob* shaderBlob) = 0;
 	virtual void SetShaderAndCBs() = 0;
 
 	virtual void CleanUp();
 
 	// Helpers for finding data by name
-	SimpleShaderVar* FindVariable(std::string name, int size);
+	SimpleShaderVariable* FindVariable(std::string name, int size);
 	SimpleConstantBuffer* FindConstantBuffer(std::string name);
 
 public:
-	SimpleShaderHandler(ID3D11Device* device, ID3D11DeviceContext* deviceContext);
+	SimpleShaderHandler(ID3D11Device* device, ID3D11DeviceContext* context);
 	virtual ~SimpleShaderHandler();
 
-	bool LoadShaderFiles(LPCWSTR shaderFile);
-	bool ShaderValid()
-	{
-		return isShaderValid;
-	}
+	// Initialization method (since we can't invoke derived class
+	// overrides in the base class constructor)
+	bool LoadShaderFile(LPCWSTR shaderFile);
 
+	// Simple helpers
+	bool IsShaderValid() { return isShaderValid; }
+
+	// Activating the shader and copying data
 	void SetShader();
 	void CopyAllBufferData();
 	void CopyBufferData(unsigned int index);
 	void CopyBufferData(std::string bufferName);
 
+	// Sets arbitrary shader data
 	bool SetData(std::string name, const void* data, unsigned int size);
 
 	bool SetInt(std::string name, int data);
@@ -103,17 +104,17 @@ public:
 	bool SetMatrix4x4(std::string name, const float data[16]);
 	bool SetMatrix4x4(std::string name, const DirectX::XMFLOAT4X4 data);
 
-	// Set shader resources
+	// Setting shader resources
 	virtual bool SetShaderResourceView(std::string name, ID3D11ShaderResourceView* srv) = 0;
 	virtual bool SetSamplerState(std::string name, ID3D11SamplerState* samplerState) = 0;
 
-	// Get data about variables and resources
-	const SimpleShaderVar* GetVariableInfo(std::string name);
-
+	// Getting data about variables and resources
+	const SimpleShaderVariable* GetVariableInfo(std::string name);
+	
 	const SimpleSRV* GetShaderResourceViewInfo(std::string name);
 	const SimpleSRV* GetShaderResourceViewInfo(unsigned int index);
 	unsigned int GetShaderResourceViewCount() { return textureTable.size(); }
-
+	
 	const SimpleSampler* GetSamplerInfo(std::string name);
 	const SimpleSampler* GetSamplerInfo(unsigned int index);
 	unsigned int GetSamplerCount() { return samplerTable.size(); }
@@ -123,12 +124,12 @@ public:
 	unsigned int GetBufferSize(unsigned int index);
 	const SimpleConstantBuffer* GetBufferInfo(std::string name);
 	const SimpleConstantBuffer* GetBufferInfo(unsigned int index);
-
+	
 	// Misc getters
 	ID3DBlob* GetShaderBlob() { return shaderBlob; }
 };
 
-// Derived Vertex Shader class
+// Derived class for VERTEX shaders
 class SimpleVertexShader : public SimpleShaderHandler
 {
 protected:
@@ -143,31 +144,18 @@ public:
 	SimpleVertexShader(ID3D11Device* device, ID3D11DeviceContext* context);
 	SimpleVertexShader(ID3D11Device* device, ID3D11DeviceContext* context, ID3D11InputLayout* inputLayout, bool perInstanceCompatible);
 	~SimpleVertexShader();
-
-	ID3D11VertexShader* GetDirectXShader() 
-	{ 
-		return shader; 
-	}
-
-	ID3D11InputLayout* GetInputLayout() 
-	{ 
-		return inputLayout; 
-	}
-	
-	bool GetPerInstanceCompatible() 
-	{ 
-		return perInstanceCompatible; 
-	}
+	ID3D11VertexShader* GetDirectXShader() { return shader; }
+	ID3D11InputLayout* GetInputLayout() { return inputLayout; }
+	bool GetPerInstanceCompatible() { return perInstanceCompatible; }
 
 	bool SetShaderResourceView(std::string name, ID3D11ShaderResourceView* srv);
 	bool SetSamplerState(std::string name, ID3D11SamplerState* samplerState);
 };
 
-// Derived pixel shader class
+// Derived class for PIXEL shaders
 class SimplePixelShader : public SimpleShaderHandler
 {
 protected:
-	bool perInstanceCompatible;
 	ID3D11PixelShader* shader;
 	bool CreateShader(ID3DBlob* shaderBlob);
 	void SetShaderAndCBs();
@@ -176,10 +164,7 @@ protected:
 public:
 	SimplePixelShader(ID3D11Device* device, ID3D11DeviceContext* context);
 	~SimplePixelShader();
-	ID3D11PixelShader* GetDirectXShader() 
-	{ 
-		return shader; 
-	}
+	ID3D11PixelShader* GetDirectXShader() { return shader; }
 
 	bool SetShaderResourceView(std::string name, ID3D11ShaderResourceView* srv);
 	bool SetSamplerState(std::string name, ID3D11SamplerState* samplerState);

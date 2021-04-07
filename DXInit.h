@@ -1,13 +1,14 @@
 #pragma once
 
-#include <Windows.h>
+#include <WindowsX.h>
 #include <d3d11.h>
+#include <string>
 #include <sstream>
 
 class DXInit
 {
 private:
-	// Timing data
+	// Timing related data
 	double perfCounterSeconds;
 	float totalTime;
 	float deltaTime;
@@ -19,49 +20,66 @@ private:
 	int fpsFrameCount;
 	float fpsTimeElapsed;
 
-	void UpdateTimer();			// Updates the timer for this frame
-	void UpdateTitleBarStats();	// Debug info in the title bar
+	void UpdateTimer();			// Updates the timer for this frame.
+	void UpdateTitleStats();	// Puts debug info in the title bar.
 
 protected:
 	HINSTANCE	hInstance;		// The handle to the application
 	HWND		hWnd;			// The handle to the window itself
-	std::string titleText;	// Custom text in window's title bar
-	bool debugStats;	// Show extra stats in title bar
+	std::string titleBarText;	// Custom text in window's title bar
+	bool		titleBarStats;	// Show extra stats in title bar?
 
-	// Window size
+	// Size of the window's client area
 	unsigned int width;
 	unsigned int height;
 
-	// DirectX related objects and variables
-	D3D_FEATURE_LEVEL dxFeatureLevel;
-	IDXGISwapChain* swapChain;
+	// DirectX related objects.
 	ID3D11Device* device;
 	ID3D11DeviceContext* context;
-	ID3D11RenderTargetView* backBufferRTV;
-	ID3D11DepthStencilView* depthStencilView;
+	IDXGISwapChain* swapChain;
+	D3D_FEATURE_LEVEL dxFeatureLevel;
 
 	// Helper function for allocating a console window
-	void CreateCmdWindow(int bufferLines, int bufferColumns, int windowLines, int windowColumns);
+	void CreateConsoleWindow(int bufferLines, int bufferColumns, int windowLines, int windowColumns);
 
 public:
-	DXInit(HINSTANCE hInstance, const char* titleText, int windowWidth, int windowHeight, bool debugStats);
+	DXInit(
+		HINSTANCE hInstance,		// The application's handle.
+		const char* titleText,		// Text for the window's title bar.
+		unsigned int windowWidth,	// Width of the window's client area.
+		unsigned int windowHeight,	// Height of the window's client area.
+		bool debugTitleStats);		// Show extra stats (fps).
 	~DXInit();
 
-	static DXInit* DXInitInstance;
-	static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam); 
+	// Static requirements for OS-level message processing
+	static DXInit* DXCoreInstance;
+	static LRESULT CALLBACK WindowProc(
+		HWND hWnd,		// Window handle
+		UINT uMsg,		// Message
+		WPARAM wParam,	// Message's first parameter
+		LPARAM lParam	// Message's second parameter
+		);
+	
+	// Internal method for message handling
+	LRESULT ProcessMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-	// Internal message handling method
-	LRESULT ProcessMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-	// Init and window loop-related methods
+	// Initialization and render loop related methods
 	HRESULT InitWindow();
 	HRESULT InitDirectX();
-	HRESULT Run();
-
+	HRESULT Run();				
 	void Quit();
-
+	
 	// Pure virtual methods for setup and functionality
-	virtual void Init() = 0;
+	virtual void Init()	= 0;
 	virtual void Update(float deltaTime, float totalTime) = 0;
 	virtual void Draw(float deltaTime, float totalTime) = 0;
+
+	// Convenience methods for handling mouse input - BYTA TILL DX INPUT WAAAAA
+	virtual void MousePressed(WPARAM buttonState, int x, int y) { }
+	virtual void MouseReleased(WPARAM buttonState, int x, int y) { }
+	virtual void MouseMoving(WPARAM buttonState, int x, int y) { }
+	
+	ID3D11RenderTargetView* backBufferRTV;
+	ID3D11DepthStencilView* depthStencilView;
 };
+

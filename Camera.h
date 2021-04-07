@@ -1,23 +1,9 @@
 #pragma once
 #include <DirectXMath.h>
-#include <Windows.h>
 
-namespace dx = DirectX;
 
 class Camera
 {
-private:
-	// Camera matrices
-	dx::XMFLOAT4X4 viewMatrix;
-	dx::XMFLOAT4X4 projMatrix;
-
-	// Transformations
-	dx::XMFLOAT3 startPos;
-	dx::XMFLOAT3 pos;
-	dx::XMFLOAT4 rotation;
-	float xRotation = 0.0f;
-	float yRotation = 0.0f;
-
 public:
 	Camera(float x, float y, float z);
 	~Camera();
@@ -30,23 +16,23 @@ public:
 	// Updating
 	void Update(float dt);
 	void UpdateViewMatrix();
-	void UpdateProjMatrix(float aspectRatio);
+	void UpdateProjectionMatrix(float aspectRatio);
 
-	// Getter functions
-	DirectX::XMFLOAT3 GetPosition()
-	{
-		return pos;
-	}
+	// Getters
+	DirectX::XMFLOAT3 GetPosition() { return position; }
+	DirectX::XMFLOAT4X4 GetView() { return viewMatrix; }
+	DirectX::XMFLOAT4X4 GetProjection() { return projMatrix; }
 
-	DirectX::XMFLOAT4X4 GetView()
-	{
-		return viewMatrix;
-	}
+private:
+	// Camera matrices
+	DirectX::XMFLOAT4X4 viewMatrix;
+	DirectX::XMFLOAT4X4 projMatrix;
 
-	DirectX::XMFLOAT4X4 GetProjection()
-
-	{
-		return projMatrix;
-	}
+	// Transformations
+	DirectX::XMFLOAT3 startPosition;
+	DirectX::XMFLOAT3 position;
+	DirectX::XMFLOAT4 rotation;
+	float xRotation;
+	float yRotation;
 };
 

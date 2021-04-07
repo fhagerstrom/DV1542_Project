@@ -1,40 +1,51 @@
 #include "EngineEntity.h"
 
+using namespace DirectX;
+
 EngineEntity::EngineEntity(Mesh* mesh, Material* material)
 {
-	meshEntity = mesh;
-	materialEntity = material;
+	this->mesh = mesh;
+	mat = material;
 
-	position = dx::XMFLOAT3(0, 0, 0);
-	rotation = dx::XMFLOAT3(0, 0, 0);
-	scale = dx::XMFLOAT3(1, 1, 1);
-	dx::XMStoreFloat4x4(&worldMatrix, dx::XMMatrixIdentity());
+	XMStoreFloat4x4(&worldMatrix, XMMatrixIdentity());
+	position = XMFLOAT3(0, 0, 0);
+	rotation = XMFLOAT3(0, 0, 0);
+	scale = XMFLOAT3(1, 1, 1);
 }
 
-EngineEntity::EngineEntity(Mesh* mesh, dx::XMFLOAT3 lightColour)
+EngineEntity::EngineEntity(Mesh* mesh, DirectX::XMFLOAT3 lightColour)
 {
-	meshEntity = mesh;
+	this->mesh = mesh;
 	lightCol = lightColour;
 
-	position = dx::XMFLOAT3(0, 0, 0);
-	rotation = dx::XMFLOAT3(0, 0, 0);
-	scale = dx::XMFLOAT3(1, 1, 1);
-	dx::XMStoreFloat4x4(&worldMatrix, dx::XMMatrixIdentity());
+	XMStoreFloat4x4(&worldMatrix, XMMatrixIdentity());
+	position = XMFLOAT3(0, 0, 0);
+	rotation = XMFLOAT3(0, 0, 0);
+	scale = XMFLOAT3(1, 1, 1);
 }
 
-EngineEntity::~EngineEntity()
+EngineEntity::~EngineEntity(void)	
 {
-
 }
 
 void EngineEntity::UpdateWorldMatrix()
 {
-	dx::XMMATRIX translation = dx::XMMatrixTranslation(position.x, position.y, position.z);
-	dx::XMMATRIX rotateX = dx::XMMatrixRotationX(rotation.x);
-	dx::XMMATRIX rotateY = dx::XMMatrixRotationY(rotation.y);
-	dx::XMMATRIX rotateZ = dx::XMMatrixRotationZ(rotation.z);
-	dx::XMMATRIX scaling = dx::XMMatrixScaling(scale.x, scale.y, scale.z);
+	XMMATRIX trans = XMMatrixTranslation(position.x, position.y, position.z);
+	XMMATRIX rotationX = XMMatrixRotationX(rotation.x);
+	XMMATRIX rotationY = XMMatrixRotationY(rotation.y);
+	XMMATRIX rotationZ = XMMatrixRotationZ(rotation.z);
+	XMMATRIX scaling = XMMatrixScaling(scale.x, scale.y, scale.z);
 
-	dx::XMMATRIX total = scaling * rotateZ * rotateY * rotateX * translation;
-	dx::XMStoreFloat4x4(&worldMatrix, dx::XMMatrixTranspose(total));
+	XMMATRIX total = scaling * rotationZ * rotationY * rotationX * trans;
+	XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(total));
+}
+
+DirectX::XMFLOAT3 EngineEntity::GetLightColour()
+{
+	return lightCol;
+}
+
+DirectX::XMFLOAT3 EngineEntity::GetPosition()
+{
+	return position;
 }

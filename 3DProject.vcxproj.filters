@@ -42,6 +42,9 @@
     <ClInclude Include="EngineEntity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -66,6 +69,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EngineEntity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -95,6 +101,12 @@
       <Filter>Resource Files</Filter>
     </FxCompile>
     <FxCompile Include="BackBufferPixelShader.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="DirectionalVertexShader.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="DirectionalPixelShader.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
   </ItemGroup>

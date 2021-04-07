@@ -1,34 +1,33 @@
+
 #include <Windows.h>
-#include <iostream>
 #include "ProjectEngine.h"
 
-int WINAPI wWinMain(_In_opt_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdshow)
+
+
+
+int WINAPI WinMain(
+	HINSTANCE hInstance,		// The handle to this app's instance
+	HINSTANCE hPrevInstance,	// A handle to the previous instance of the app (always NULL)
+	LPSTR lpCmdLine,			// Command line params
+	int nCmdShow)				// How the window should be shown (we ignore this)
 {
 #if defined(DEBUG) | defined(_DEBUG)
 
-	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	
+	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 #endif
 
-	ProjectEngine engine(hInstance);
+	
+	Engine projectEngine(hInstance);
 
 	HRESULT hr = S_OK;
 
-	hr = engine.InitWindow();
-	if (FAILED(hr))
-	{
-		std::cerr << "Couldn't initialize window!" << std::endl;
-		return hr;
-	}
+	hr = projectEngine.InitWindow();
+	if(FAILED(hr)) return hr;
 
-	hr = engine.InitDirectX();
-	if (FAILED(hr))
-	{
-		std::cerr << "Couldn't initalize DirectX!" << std::endl;
-		return hr;
-	}
+	hr = projectEngine.InitDirectX();
+	if(FAILED(hr)) return hr;
 
-	return engine.Run();
 	
+	return projectEngine.Run();
 }
-
-

@@ -1,33 +1,32 @@
 #include "Material.h"
 
-Material::Material(SimpleVertexShader* vertexShader, SimplePixelShader* pixelShader, ID3D11ShaderResourceView* materialSRV, 
-			ID3D11ShaderResourceView* materialNormal, ID3D11SamplerState* materialSampler)
+
+
+Material::Material(SimpleVertexShader* vertexShader, SimplePixelShader* pixelShader, ID3D11ShaderResourceView* materialSRV, ID3D11ShaderResourceView* materialNormal, ID3D11SamplerState* materialSampler)
 {
-	vShader = vertexShader;
-	pShader = pixelShader;
-	matSRV = materialSRV;
-	matNormal = materialNormal;
-	matSampler = materialSampler;
+	_vertexShader = vertexShader;
+	_pixelShader = pixelShader;
+	_materialSRV = materialSRV;
+	_materialNormal = materialNormal;
+	_materialSampler = materialSampler;
 }
+
 
 Material::~Material()
 {
-
 }
 
-ID3D11ShaderResourceView* Material::GetTextureSRV()
+ID3D11ShaderResourceView * Material::GetTextureSRV()
 {
-	return matSRV;;
+	return _materialSRV;;
 }
 
-ID3D11ShaderResourceView* Material::GetNormalMapSRV()
+ID3D11ShaderResourceView * Material::GetNormalMapSRV()
 {
-	return matNormal;
+	return _materialNormal;
 }
 
-ID3D11SamplerState* Material::GetSamplerState()
+ID3D11SamplerState * Material::GetSamplerState()
 {
-	return matSampler;
+	return _materialSampler;
 }
-
-

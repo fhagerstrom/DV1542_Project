@@ -5,67 +5,37 @@
 #include "Mesh.h"
 #include "Material.h"
 
-namespace dx = DirectX;
-
 class EngineEntity
 {
-private:
-	Mesh* meshEntity;
-	Material* materialEntity;
-
-	dx::XMFLOAT3 lightCol;
-	dx::XMFLOAT3 position;
-	dx::XMFLOAT3 rotation;
-	dx::XMFLOAT3 scale;
-	dx::XMFLOAT4X4 worldMatrix;
-
 public:
 	EngineEntity(Mesh* mesh, Material* material);
-	EngineEntity(Mesh* mesh, dx::XMFLOAT3 lightColour);
-	~EngineEntity();
+	EngineEntity(Mesh* mesh, DirectX::XMFLOAT3 lightColor);
+	~EngineEntity(void);
 
 	void UpdateWorldMatrix();
 
-	void Move(float x, float y, float z)
-	{
-		position.x += x; 
-		position.y += y; 
-		position.z += z;
-	}
+	void Move(float x, float y, float z) { position.x += x;	position.y += y; position.z += z; }
+	void Rotate(float x, float y, float z) { rotation.x += x;	rotation.y += y;  rotation.z += z; }
 
-	void Rotate(float x, float y, float z)
-	{
-		rotation.x += x;
-		rotation.y += y;
-		rotation.z += z;
-	}
+	void SetPosition(float x, float y, float z) { position.x = x; position.y = y; position.z = z; }
+	void SetRotation(float x, float y, float z) { rotation.x = x; rotation.y = y; rotation.z = z; }
+	void SetScale(float x, float y, float z)	{ scale.x = x; scale.y = y; scale.z = z; }
 
-	void SetScale(float x, float y, float z)
-	{
-		scale.x = x;
-		scale.y = y;
-		scale.z = z;
-	}
+	Mesh* GetMesh() { return mesh; }
+	DirectX::XMFLOAT4X4 GetWorldMatrix() { return worldMatrix; }
+	Material* GetMaterial() { return mat; }
 
-	void SetPosition(float x, float y, float z)
-	{
-		position.x = x;
-		position.y = y;
-		position.z = z;
-	}
+	DirectX::XMFLOAT3 GetLightColour();
+	DirectX::XMFLOAT3 GetPosition();
+private:
 
-	void SetRotation(float x, float y, float z)
-	{
-		rotation.x = x;
-		rotation.y = y;
-		rotation.z = z;
-	}
-
-	Mesh* GetMesh() { return meshEntity; }
-	Material* GetMaterial() { return materialEntity; }
-
-	dx::XMFLOAT4X4 GetWorldMatrix() { return worldMatrix; }
-	dx::XMFLOAT3 GetPosition() { return position; }
-	dx::XMFLOAT3 GetLightColour() { return lightCol;  }
+	Mesh* mesh;
+	Material* mat;
+	DirectX::XMFLOAT3 lightCol;
+	DirectX::XMFLOAT4X4 worldMatrix;
+	DirectX::XMFLOAT3 position;
+	DirectX::XMFLOAT3 rotation;
+	DirectX::XMFLOAT3 scale;
 
 };
+

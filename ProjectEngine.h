@@ -1,33 +1,31 @@
 #pragma once
-
 #define BUFFER_COUNT 3
+#define MAX_LIGHTS 2
 
 #include <DirectXMath.h>
-
 #include "DXInit.h"
 #include "SimpleShader.h"
 #include "Camera.h"
 #include "Mesh.h"
 #include "EngineEntity.h"
-// #include "renderer.h"
+#include "Renderer.h"
 #include "Material.h"
 #include "Lights.h"
 
-#include "WICTextureLoader.h" // Part of DXTK
-
-class ProjectEngine : public DXInit
+class Engine : public DXInit
 {
 private:
-	// Swapping input and/or Mesh.
-	bool previousTab;
+	// Input and mesh swapping.
+	bool prevTab;
 	unsigned int currentEntity;
 
-	// Stuff to clean up later.
+	// Keep track of objects and entities to clean up.
 	std::vector<Mesh*> meshes;
 	std::vector<EngineEntity*> entities;
-	std::vector<EngineEntity*> lightEntities; 
+	std::vector<EngineEntity*> lightEntities;
 	Camera* camera;
 
+	// Add lights.
 	EngineEntity* lightEntity1;
 	EngineEntity* lightEntity2;
 	EngineEntity* lightEntity3;
@@ -37,43 +35,46 @@ private:
 	EngineEntity* lightEntity7;
 	EngineEntity* lightEntity8;
 
-	Mesh* capsuleMesh; 
+	Mesh* objectMesh;
 	Mesh* planeMesh;
 
-	//Renderer renderer
+	Renderer renderer;
 
-	Material* capsuleMaterial;
+	// Material class objects.
+	Material* objectMaterial;
 	Material* planeMaterial;
 
-	void SetDeferredSetup(int width, int height); // Parameters are for texture
+	// Initialization helper functions.
+	void SetDefferedSetup(int textureWidth, int textureHeight);
 	void CreateMatrices();
 	void LoadShaders();
 	void LoadMesh();
 	void LoadTextures();
 	void CreateMaterials();
-	void CreateGeometry();
-	void LightEntityInit();
+	void CreateBasicGeometry();
+	void LightEntityInitialize();
 
-	// Texture related schtuff
-	ID3D11ShaderResourceView* capsuleTextureSRV;
-	ID3D11ShaderResourceView* capsuleNormalMapSRV;
+	// Texture related schtuff.
+	ID3D11ShaderResourceView* objectTextureSRV;
+	ID3D11ShaderResourceView* objectNormalMapSRV;
 	ID3D11ShaderResourceView* planeTextureSRV;
 	ID3D11ShaderResourceView* planeNormalMapSRV;
 	ID3D11SamplerState* sampler;
 
-	// Init buffers.
-	ID3D11Buffer* vertexBuffer;
-	ID3D11Buffer* indexBuffer;
-
-	// Rendertargets, deferred rendering.
-	ID3D11RenderTargetView* renderTargetViewArray[(int)BUFFER_COUNT];
-	ID3D11ShaderResourceView* shaderResourceViewArray[(int)BUFFER_COUNT];
+	//RenderTargets for deferred rendering.
+	ID3D11RenderTargetView* renderTargetViewArray[BUFFER_COUNT];
+	ID3D11ShaderResourceView* shaderResourceViewArray[BUFFER_COUNT];
 	ID3D11Texture2D* depthStencilBuffer;
 	ID3D11DepthStencilState* depthState;
+
 	ID3D11RasterizerState* rasterizer;
 	ID3D11BlendState* blendState;
 
-	// Wrappers for DX shaders.
+	// Buffers to hold geometry data
+	ID3D11Buffer* vertexBuffer;
+	ID3D11Buffer* indexBuffer;
+
+	// Wrappers for DirectX shaders
 	SimpleVertexShader* vertexShader;
 	SimplePixelShader* pixelShader;
 	SimpleVertexShader* deferredVertexShader;
@@ -85,27 +86,26 @@ private:
 	SimpleVertexShader* dirVertexShader;
 	SimplePixelShader* dirPixelShader;
 
-	// Matrices
+	// The matrices to go from model space to screen space
 	DirectX::XMFLOAT4X4 worldMatrix;
 	DirectX::XMFLOAT4X4 viewMatrix;
-	DirectX::XMFLOAT4X4 projectionMatrix; 
+	DirectX::XMFLOAT4X4 projectionMatrix;
 
-
-	// To keep track of previous mouseposition, this helps determine how far the mouse moves in a single frame.
+	// Keeps track of the old mouse position. For determining how far the mouse moved in a single frame.
 	POINT prevMousePos;
 
 public:
-	ProjectEngine(HINSTANCE hInstance);
-	~ProjectEngine();
+	Engine(HINSTANCE hInstance);
+	~Engine();
 
-
+	// Overridden setup and render loop methods, which will be called automatically.
 	void Init();
 	void Update(float deltaTime, float totalTime);
 	void Draw(float deltaTime, float totalTime);
 
-	void MouseDown(WPARAM buttonState, int x, int y);
-	void MouseUp(WPARAM buttonState, int x, int y);
-	void MouseMove(WPARAM buttonState, int x, int y);
-	void MouseWheel(float wheekDelta, int x, int y);
+	// Overridden mouse input helper methods
+	void MousePressed (WPARAM buttonState, int x, int y);
+	void MouseReleased (WPARAM buttonState, int x, int y);
+	void MouseMoving (WPARAM buttonState, int x, int y);
 };
 

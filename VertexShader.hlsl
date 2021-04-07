@@ -1,36 +1,42 @@
-cbuffer extData : register(b0)
+
+cbuffer externalData : register(b0)
 {
 	matrix world;
 	matrix view;
 	matrix projection;
-}
+};
 
 struct VertexShaderInput
-{
-	float3 position : POSITION;
-	float2 uv		: TEXCOORD;
-	float3 normal	: NORMAL;
+{ 
+	float3 position		: POSITION;
+	float2 uv			: TEXCOORD;
+	float3 normal		: NORMAL;
+	float3 tangent		: TANGENT;
 };
 
 struct VertexToPixel
 {
-	float4 position : SV_POSITION;
-	float3 worldPos	: POSITION;
-	float2 uv		: TEXCOORD;
-	float3 normal	: NORMAL;
-	float3 tangent	: TANGENT;
+	float4 position		: SV_POSITION;
+	float3 normal		: NORMAL;
+	float3 tangent		: TANGENT;
+	float3 worldPos		: POSITION;
+	float2 uv			: TEXCOORD;
 };
 
-VertexToPixel main(VertexShaderInput input)
+
+VertexToPixel main( VertexShaderInput input )
 {
 	VertexToPixel output;
 
-	matrix wvp = mul(mul(world, view), projection); // Calculate world view projection matrix.
+	matrix worldViewProj = mul(mul(world, view), projection);
+	output.position = mul(float4(input.position, 1.0f), worldViewProj);
 
-	output.position = mul(float4(input.position, 1.0f), wvp); // Set position.
-	output.normal = mul(input.normal, (float3x3)world); // Set normal.
-	output.worldPos = mul(float4(input.position, 1.0f), world).xyz; // Set world position.
-	output.uv = input.uv; // Set texelcoords.
+	output.normal = mul(input.normal, (float3x3)world); 
+	output.tangent = mul(input.tangent, (float3x3)world);
+
+	output.worldPos = mul(float4(input.position, 1.0f), world).xyz;
+
+	output.uv = input.uv;
 
 	return output;
 }
