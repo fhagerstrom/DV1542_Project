@@ -48,7 +48,7 @@ public:
 		const char* titleText,		// Text for the window's title bar.
 		unsigned int windowWidth,	// Width of the window's client area.
 		unsigned int windowHeight,	// Height of the window's client area.
-		bool debugTitleStats);		// Show extra stats (fps).
+		bool debugTitleStats);		// Show extra stats.
 	~DXInit();
 
 	// Static requirements for OS-level message processing

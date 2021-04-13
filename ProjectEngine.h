@@ -1,6 +1,6 @@
 #pragma once
 #define BUFFER_COUNT 3
-#define MAX_LIGHTS 2
+// #define MAX_LIGHTS 2
 
 #include <DirectXMath.h>
 #include "DXInit.h"

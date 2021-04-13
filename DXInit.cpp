@@ -246,7 +246,6 @@ void DXInit::UpdateTimer()
 	previousTime = currentTime;
 }
 
-
 // Updates the window's title bar with several stats once
 // per second, including:
 //  - The window's width & height
@@ -267,7 +266,7 @@ void DXInit::UpdateTitleStats()
 	// Dirty title bar text.
 	std::ostringstream output;
 	output.precision(6);
-	output << titleBarText << " Width: " << width << " Height: " << height <<" FPS: " << fpsFrameCount << " Frame Time: " << mspf << " ms " << dxFeatureLevel;
+	output << titleBarText << "    Width: " << width << "    Height: " << height << "    FPS: " << fpsFrameCount << "    Frame Time: " << mspf << "ms    " << "   DX 11.0";
 
 	// Update the title bar and reset fps data.
 	SetWindowTextA(hWnd, output.str().c_str());

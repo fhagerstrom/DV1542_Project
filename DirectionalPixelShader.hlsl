@@ -7,7 +7,7 @@ SamplerState Sampler : register(s0);
 cbuffer ExternalData : register(b0)
 {
 	float3 lightColour;
-	float3 lightDir;
+	float3 lightDirection;
 }
 
 struct VertexToPixel
@@ -25,7 +25,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	float3 diffuse = Texture.Load(sampleIndices).xyz;
 
-	float3 l = -lightDir;
+	float3 l = -lightDirection;
 
 	float lightAmountDL = saturate(dot(normal, l));
 	float3 colour = lightColour * lightAmountDL * diffuse;

@@ -22,17 +22,13 @@ Camera::~Camera()
 
 void Camera::MoveRelative(float x, float y, float z)
 {
-	
 	dx::XMVECTOR direction = dx::XMVector3Rotate(dx::XMVectorSet(x, y, z, 0), XMLoadFloat4(&rotation));
-
-
 	XMStoreFloat3(&position, dx::XMVectorAdd(XMLoadFloat3(&position), direction));
 }
 
 
 void Camera::MoveAbsolute(float x, float y, float z)
 {
-	
 	position.x += x;
 	position.y += y;
 	position.z += z;
@@ -51,23 +47,49 @@ void Camera::Rotate(float x, float y)
 	XMStoreFloat4(&rotation, dx::XMQuaternionRotationRollPitchYaw(xRotation, yRotation, 0));
 }
 
-// Camera's update, which looks for key presses
+// Camera update, works like a "spectator camera" where you can fly freely across the scene.
+// @TODO: Change input do DirectX Input instead of sending OS messages.
+// NOTE FOR MOUSE CHECK - MAKE USE OF ROTATE FUNCTION
 void Camera::Update(float deltaTime)
 {
 	// Current speed
 	float speed = deltaTime * 5;
 
-	// Speed up or down
-	if (GetAsyncKeyState(VK_SHIFT)) { speed *= 5; }
-	if (GetAsyncKeyState(VK_CONTROL)) { speed *= 0.25f; }
+	// Init DXInput stuff
+	//DIMOUSESTATE lastMouseState;
+	//DIMOUSESTATE currentMouseState;
+	//BYTE keyboardState[256];
 
-	// Movement
+	/*DIKeyboard = 0;
+	DIMouse = 0;
+
+	DIKeyboard->Acquire();
+	DIMouse->Acquire();
+
+	DIMouse->GetDeviceState(sizeof(DIMOUSESTATE), &currentMouseState);
+	DIKeyboard->GetDeviceState(sizeof(keyboardState), (LPVOID)&keyboardState);*/
+
+	// Speed up or down.
+	if (GetAsyncKeyState(VK_SHIFT) & 0x8000) { speed *= 5; }
+	if (GetAsyncKeyState(VK_CONTROL) & 0x8000) { speed *= 0.2f; }
+
+	// Keyboard movement
 	if (GetAsyncKeyState('W') & 0x8000) { MoveRelative(0, 0, speed); }
 	if (GetAsyncKeyState('S') & 0x8000) { MoveRelative(0, 0, -speed); }
 	if (GetAsyncKeyState('A') & 0x8000) { MoveRelative(-speed, 0, 0); }
 	if (GetAsyncKeyState('D') & 0x8000) { MoveRelative(speed, 0, 0); }
 	if (GetAsyncKeyState('C') & 0x8000) { MoveAbsolute(0, -speed, 0); }
 	if (GetAsyncKeyState(VK_SPACE) & 0x8000) { MoveAbsolute(0, speed, 0); }
+
+	// Mouse movement - DXInput
+	/*if ((currentMouseState.lX != lastMouseState.lX) || (lastMouseState.lY != lastMouseState.lY))
+	{
+		float xDiff = ;
+
+		camPitch += currentMouseState.lY * 0.001f;
+
+		lastMouseState = currentMouseState;
+	}*/
 
 	// Check for reset
 	if (GetAsyncKeyState('R') & 0x8000)
@@ -97,10 +119,10 @@ void Camera::UpdateViewMatrix()
 // Updates the projection matrix
 void Camera::UpdateProjectionMatrix(float aspectRatio)
 {
-	dx::XMMATRIX p = dx::XMMatrixPerspectiveFovLH(
+	dx::XMMATRIX perspective = dx::XMMatrixPerspectiveFovLH(
 		0.25f * dx::XM_PI,		// Field of View Angle
 		aspectRatio,		// Aspect ratio for window
 		0.1f,				// Near clip plane distance
 		100.0f);			// Far clip plane distance
-		XMStoreFloat4x4(&projMatrix, XMMatrixTranspose(p)); // Transpose for HLSL!
+		XMStoreFloat4x4(&projMatrix, XMMatrixTranspose(perspective)); // Transpose for HLSL!
 }

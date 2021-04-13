@@ -1,6 +1,6 @@
 #pragma once
 #include <DirectXMath.h>
-
+#include <dinput.h>
 
 class Camera
 {
@@ -34,5 +34,9 @@ private:
 	DirectX::XMFLOAT4 rotation;
 	float xRotation;
 	float yRotation;
+
+	// DX Inputs
+	/*IDirectInputDevice8* DIKeyboard;
+	IDirectInputDevice8* DIMouse;*/
 };
 

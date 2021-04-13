@@ -24,8 +24,9 @@ EngineEntity::EngineEntity(Mesh* mesh, DirectX::XMFLOAT3 lightColour)
 	scale = XMFLOAT3(1, 1, 1);
 }
 
-EngineEntity::~EngineEntity(void)	
+EngineEntity::~EngineEntity(void)
 {
+
 }
 
 void EngineEntity::UpdateWorldMatrix()

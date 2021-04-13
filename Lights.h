@@ -1,7 +1,7 @@
 #pragma once
-#include <DirectXMath.h>
-
 #include "DXInit.h"
+
+#include <DirectXMath.h>
 
 namespace dx = DirectX;
 

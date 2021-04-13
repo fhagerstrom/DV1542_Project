@@ -18,7 +18,6 @@ struct VertexToPixel
 
 float4 main(in VertexToPixel input) : SV_TARGET0
 {
-
 	int3 sampleIndices = int3(input.position.xy, 0);
 
 	float3 normal = NormalMap.Load(sampleIndices).xyz;
@@ -28,28 +27,26 @@ float4 main(in VertexToPixel input) : SV_TARGET0
 	float3 l = lightPosition - position;
 	float distance = length(l);
 
-	if (distance > 2.0f)
+	if (distance > 3.0f)
 	{
 		return float4(0.0f, 0.0f, 0.0f, 0.0f);
 	}
 
 	l /= distance;
 
-	float attenuation = max(0.0f, 1.0f - (distance / 2.0f));
+	float attenuation = max(0.0f, 1.0f - (distance / 3.0f));
 
 	float lightAmount = saturate(dot(normal, l));
-	float3 color = lightAmount * lightColour * attenuation;
+	float3 colour = lightAmount * lightColour * attenuation;
 
-	//Specular calc
-	float3 v = cameraPosition - position;
-	float3 h = normalize(l + v);
+	// Specular calculation.
+	float3 viewVector = cameraPosition - position;
+	float3 h = normalize(l + viewVector);
 	float specular = pow(saturate(dot(normal, h)), 10) * attenuation;
 
-	float3 finalDiffuse = color * diffuse;
+	float3 finalDiffuse = colour * diffuse;
 	float3 finalSpecular = specular * diffuse * attenuation;
 
 	float4 totalColour = float4(finalDiffuse + finalSpecular, 1.0f);
 	return totalColour;
-
-	
 }
