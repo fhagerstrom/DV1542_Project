@@ -2,6 +2,7 @@
 
 #include <WindowsX.h>
 #include <d3d11.h>
+#include <dinput.h>
 #include <string>
 #include <sstream>
 
@@ -66,6 +67,7 @@ public:
 	// Initialization and render loop related methods
 	HRESULT InitWindow();
 	HRESULT InitDirectX();
+	// HRESULT InitDirectInput(HINSTANCE hInstance);
 	HRESULT Run();				
 	void Quit();
 	
@@ -81,5 +83,11 @@ public:
 	
 	ID3D11RenderTargetView* backBufferRTV;
 	ID3D11DepthStencilView* depthStencilView;
+
+	// DX Input related objects.
+	IDirectInputDevice8* DIKeyboard;
+	IDirectInputDevice8* DIMouse;
+
+	LPDIRECTINPUT8 directInput;
 };
 

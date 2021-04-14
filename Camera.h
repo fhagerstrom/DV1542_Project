@@ -1,6 +1,9 @@
 #pragma once
+#include <Windows.h>
 #include <DirectXMath.h>
 #include <dinput.h>
+
+#include "DXInit.h"
 
 class Camera
 {
@@ -14,7 +17,7 @@ public:
 	void Rotate(float x, float y);
 
 	// Updating
-	void Update(float dt);
+	void Update(float deltaTime);
 	void UpdateViewMatrix();
 	void UpdateProjectionMatrix(float aspectRatio);
 
@@ -32,11 +35,8 @@ private:
 	DirectX::XMFLOAT3 startPosition;
 	DirectX::XMFLOAT3 position;
 	DirectX::XMFLOAT4 rotation;
+
 	float xRotation;
 	float yRotation;
-
-	// DX Inputs
-	/*IDirectInputDevice8* DIKeyboard;
-	IDirectInputDevice8* DIMouse;*/
 };
 

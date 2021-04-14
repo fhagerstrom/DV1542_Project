@@ -40,7 +40,6 @@ DXInit::DXInit(
 	perfCounterSeconds = 1.0 / (double)perfFreq;
 }
 
-
 DXInit::~DXInit()
 {
 	// Release all DirectX resources.
@@ -51,7 +50,6 @@ DXInit::~DXInit()
 	if (device) { device->Release(); }
 	
 }
-
 
 HRESULT DXInit::InitWindow()
 {
@@ -86,8 +84,6 @@ HRESULT DXInit::InitWindow()
 
 	return S_OK;
 }
-
-
 
 HRESULT DXInit::InitDirectX()
 {
@@ -180,6 +176,29 @@ HRESULT DXInit::InitDirectX()
 	return S_OK;
 }
 
+//HRESULT DXInit::InitDirectInput(HINSTANCE hInstance)
+//{
+//	HRESULT hr = S_OK;
+//
+//	hr = DirectInput8Create(hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, NULL);
+//
+//	hr = directInput->CreateDevice(GUID_SysKeyboard,
+//		&DIKeyboard,
+//		NULL);
+//
+//	hr = directInput->CreateDevice(GUID_SysMouse,
+//		&DIMouse,
+//		NULL);
+//
+//	hr = DIKeyboard->SetDataFormat(&c_dfDIKeyboard);
+//	hr = DIKeyboard->SetCooperativeLevel(hWnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
+//
+//	hr = DIMouse->SetDataFormat(&c_dfDIMouse);
+//	hr = DIMouse->SetCooperativeLevel(hWnd, DISCL_EXCLUSIVE | DISCL_NOWINKEY | DISCL_FOREGROUND);
+//
+//	return S_OK;
+//}
+
 HRESULT DXInit::Run()
 {
 	// Grab the start time now, when the loop is running.
@@ -225,8 +244,6 @@ void DXInit::Quit()
 {
 	PostQuitMessage(0);
 }
-
-
 
 // Uses high resolution time stamps to get timing information, and calculates useful time stats.
 void DXInit::UpdateTimer()
@@ -304,7 +321,7 @@ void DXInit::CreateConsoleWindow(int bufferLines, int bufferColumns, int windowL
 	freopen_s(&stream, "CONOUT$", "w", stdout);
 	freopen_s(&stream, "CONOUT$", "w", stderr);
 
-	// Prevent accidental closing of the console window.
+	// Prevent closing of the console window.
 	HWND consoleHandle = GetConsoleWindow();
 	HMENU hmenu = GetSystemMenu(consoleHandle, FALSE);
 	EnableMenuItem(hmenu, SC_CLOSE, MF_GRAYED);
@@ -320,7 +337,6 @@ LRESULT DXInit::ProcessMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 	case WM_DESTROY:
 		PostQuitMessage(0); // Send a quit message to our own program
 		return 0;
-
 
 	// Mouse button being pressed (while the cursor is currently over our window)
 	case WM_LBUTTONDOWN:

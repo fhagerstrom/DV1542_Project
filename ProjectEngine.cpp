@@ -452,7 +452,6 @@ void Engine::Draw(float deltaTime, float totalTime)
 	// Clear the depth buffer
 	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);	
 	
-	
 	for (unsigned int i = 0; i < entities.size(); i++)
 	{
 		ID3D11Buffer* vBuffer = entities[i]->GetMesh()->GetVertexBuffer();
