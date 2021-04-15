@@ -274,18 +274,18 @@ void Engine::LoadShaders()
 
 void Engine::LoadMesh()
 {
-	objectMesh = new Mesh(device, "Debug/Models/torusRing.obj");
+	objectMesh = new Mesh(device, "Debug/Models/sphere.obj");
 	planeMesh = new Mesh(device, "Debug/Models/cube.obj");
 }
 
 void Engine::LoadTextures()
 {
 	// Load texture stuff
-	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/plastic.jpg", 0, &objectTextureSRV);
-	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/plasticNormal.jpg", 0, &objectNormalMapSRV);
+	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/scrapedMetal.jpg", 0, &objectTextureSRV);
+	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/metalNormals.jpg", 0, &objectNormalMapSRV);
 
-	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/brownWood.jpg", 0, &planeTextureSRV);
-	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/woodNormal.jpg", 0, &planeNormalMapSRV);
+	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/crackedIce.jpg", 0, &planeTextureSRV);
+	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/iceNormals.png", 0, &planeNormalMapSRV);
 }
 
 void Engine::CreateMaterials()
@@ -307,11 +307,11 @@ void Engine::CreateMaterials()
 void Engine::CreateBasicGeometry()
 {
 	// Create objects and planes.
-	EngineEntity* torus = new EngineEntity(objectMesh, objectMaterial);
-	EngineEntity* torus1 = new EngineEntity(objectMesh, objectMaterial);
-	EngineEntity* torus2 = new EngineEntity(objectMesh, objectMaterial);
-	EngineEntity* torus3 = new EngineEntity(objectMesh, objectMaterial);
-	EngineEntity* torus4 = new EngineEntity(objectMesh, objectMaterial);
+	EngineEntity* sphere = new EngineEntity(objectMesh, objectMaterial);
+	EngineEntity* sphere1 = new EngineEntity(objectMesh, objectMaterial);
+	EngineEntity* sphere2 = new EngineEntity(objectMesh, objectMaterial);
+	EngineEntity* sphere3 = new EngineEntity(objectMesh, objectMaterial);
+	EngineEntity* sphere4 = new EngineEntity(objectMesh, objectMaterial);
 	
 	EngineEntity* plane1 = new EngineEntity(planeMesh, planeMaterial);
 	EngineEntity* plane2 = new EngineEntity(planeMesh, planeMaterial);
@@ -319,11 +319,11 @@ void Engine::CreateBasicGeometry()
 	EngineEntity* plane4 = new EngineEntity(planeMesh, planeMaterial);
 
 	// Add objects to vector.
-	entities.push_back(torus);
-	entities.push_back(torus1);
-	entities.push_back(torus2);
-	entities.push_back(torus3);
-	entities.push_back(torus4);
+	entities.push_back(sphere);
+	entities.push_back(sphere1);
+	entities.push_back(sphere2);
+	entities.push_back(sphere3);
+	entities.push_back(sphere4);
 
 	// Add planes to vector.
 	entities.push_back(plane1);
@@ -331,20 +331,20 @@ void Engine::CreateBasicGeometry()
 	entities.push_back(plane3);
 	entities.push_back(plane4);
 
-	torus->SetScale(0.5f, 0.5f, 0.5f);
-	torus->SetPosition(0.0f, -2.0f, 0.0f);
+	sphere->SetScale(0.5f, 0.5f, 0.5f);
+	sphere->SetPosition(0.0f, -2.0f, 0.0f);
 
-	torus1->SetScale(0.5f, 0.5f, 0.5f);
-	torus1->SetPosition(-2.0f, -2.0f, -2.0f);
+	sphere1->SetScale(0.5f, 0.5f, 0.5f);
+	sphere1->SetPosition(-2.0f, -2.0f, -2.0f);
 
-	torus2->SetScale(0.5f, 0.5f, 0.5f);
-	torus2->SetPosition(2.0f, -2.0f, -2.0f);
+	sphere2->SetScale(0.5f, 0.5f, 0.5f);
+	sphere2->SetPosition(2.0f, -2.0f, -2.0f);
 
-	torus3->SetScale(0.5f, 0.5f, 0.5f);
-	torus3->SetPosition(2.0f, -2.0f, 2.0f);
+	sphere3->SetScale(0.5f, 0.5f, 0.5f);
+	sphere3->SetPosition(2.0f, -2.0f, 2.0f);
 
-	torus4->SetScale(0.5f, 0.5f, 0.5f);
-	torus4->SetPosition(-2.0f, -2.0f, 2.0f);
+	sphere4->SetScale(0.5f, 0.5f, 0.5f);
+	sphere4->SetPosition(-2.0f, -2.0f, 2.0f);
 
 	// Bottom
 	plane1->SetScale(5.0f, 0.01f, 5.0f);
@@ -369,19 +369,19 @@ void Engine::LightEntityInitialize()
 {
 	// @TODO: Make the scene brighter hehu
 	// Some weird shit happens
-	lightEntity1 = new EngineEntity(objectMesh, dx::XMFLOAT3(1.0f, 0.8f, 0.2f));
+	lightEntity1 = new EngineEntity(objectMesh, dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
 	lightEntity1->SetPosition(3, 0, 0);
 	lightEntity1->SetScale(5, 5, 5);
 
-	lightEntity2 = new EngineEntity(objectMesh, dx::XMFLOAT3(1.0f, 0.8f, 0.2f));
+	lightEntity2 = new EngineEntity(objectMesh, dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
 	lightEntity2->SetPosition(-3, 0, 0);
 	lightEntity2->SetScale(5, 5, 5);
 
-	lightEntity3 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.5f, 0.5f, 0.5f));
+	lightEntity3 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.3f, 0.5f, 0.1f));
 	lightEntity3->SetPosition(-1, 1, 0);
 	lightEntity3->SetScale(5, 5, 5);
 
-	lightEntity4 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.5f, 0.5f, 0.5f));
+	lightEntity4 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.1f, 0.8f, 0.5f));
 	lightEntity4->SetPosition(1, 1, 0);
 	lightEntity4->SetScale(5, 5, 5);
 
@@ -389,15 +389,15 @@ void Engine::LightEntityInitialize()
 	lightEntity5->SetPosition(-1, -1, 0);
 	lightEntity5->SetScale(5, 5, 5);
 
-	lightEntity6 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.8f, 0.4f, 0.4f));
+	lightEntity6 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.5f, 0.5f, 0.5f));
 	lightEntity6->SetPosition(1, -1, 0);
 	lightEntity6->SetScale(5, 5, 5);
 
-	lightEntity7 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.2f, 0.6f, 0.4f));
+	lightEntity7 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.8f, 0.2f, 0.3f));
 	lightEntity7->SetPosition(-2, 0, 1);
 	lightEntity7->SetScale(5, 5, 5);
 
-	lightEntity8 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.3f, 0.3f, 0.3f));
+	lightEntity8 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.8f, 0.2f, 0.5f));
 	lightEntity8->SetPosition(2, 0, 1);
 	lightEntity8->SetScale(5, 5, 5);
 
@@ -494,8 +494,8 @@ void Engine::Draw(float deltaTime, float totalTime)
 	dirPixelShader->SetShaderResourceView("Texture", shaderResourceViewArray[2]);
 	backBufferPixelShader->SetSamplerState("Sampler", sampler);
 
-	dirPixelShader->SetFloat3("lightColour", dx::XMFLOAT3(0.5f, 0.5f, 0.5f));
-	dirPixelShader->SetFloat3("lightDirection", dx::XMFLOAT3(10.0f, -10.0f, 0.0f));
+	dirPixelShader->SetFloat3("lightColour", dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
+	dirPixelShader->SetFloat3("lightDirection", dx::XMFLOAT3(0.0f, 0.0f, 0.0f));
 
 	dirPixelShader->CopyAllBufferData();
 	dirPixelShader->SetShader();

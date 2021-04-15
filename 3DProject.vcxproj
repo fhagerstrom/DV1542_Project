@@ -155,6 +155,7 @@
     <ClInclude Include="ProjectEngine.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="SimpleShader.h" />
+    <ClInclude Include="Terrain.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
@@ -167,6 +168,7 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SimpleShader.cpp" />
+    <ClCompile Include="Terrain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

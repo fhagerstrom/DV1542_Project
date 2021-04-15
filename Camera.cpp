@@ -50,7 +50,7 @@ void Camera::Rotate(float x, float y)
 void Camera::Update(float deltaTime)
 {
 	// Current speed
-	float speed = deltaTime * 15;
+	float speed = deltaTime * 10;
 
 	// Init DXInput stuff
 	/*DIMOUSESTATE lastMouseState;
@@ -62,6 +62,11 @@ void Camera::Update(float deltaTime)
 
 	DIMouse->GetDeviceState(sizeof(DIMOUSESTATE), &currentMouseState);
 	DIKeyboard->GetDeviceState(sizeof(keyboardState), (LPVOID)&keyboardState);*/
+
+
+	// Speed up or down.
+	if (GetAsyncKeyState(VK_SHIFT) & 0x8000) { speed *= 3; }
+	if (GetAsyncKeyState(VK_CONTROL) & 0x8000) { speed *= 0.25f; }
 
 	// Keyboard movement
 	if (GetAsyncKeyState('W') & 0x8000) { MoveRelative(0, 0, speed); }
@@ -79,17 +84,13 @@ void Camera::Update(float deltaTime)
 	if (keyboardState[DIK_C] & 0x80) { MoveAbsolute(0, -speed, 0); }
 	if (keyboardState[DIK_SPACE] & 0x80) { MoveAbsolute(0, speed, 0); }*/
 
-	// Speed up or down.
-	if (GetAsyncKeyState(VK_SHIFT) & 0x8000) { speed *= 2; }
-	if (GetAsyncKeyState(VK_CONTROL) & 0x8000) { speed *= 0.25f; }
-
 	// Mouse movement - DXInput
 	/*if ((currentMouseState.lX != lastMouseState.lX)
 	{
 		float xDiff;
 		float yDiff;
 
-		currentMouseState.lY * 0.001f;
+		currentMouseState.lX * 0.001f;
 
 		lastMouseState = currentMouseState;
 	}*/

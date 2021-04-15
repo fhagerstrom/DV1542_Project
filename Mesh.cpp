@@ -82,7 +82,7 @@ Mesh::Mesh(ID3D11Device* device, const char* objFile)
 				"f %d/%d/%d %d/%d/%d %d/%d/%d %d/%d/%d", &i[0], &i[1], &i[2], &i[3], &i[4], &i[5],
 														 &i[6], &i[7], &i[8], &i[9], &i[10], &i[11]);
 
-			// - Create the verts by looking up corresponding data from vectors
+			// - Create the vertices by looking up corresponding data from vectors
 			// - OBJ File indices are 1-based opposed to DX, adjust them
 			Vertex v1;
 			v1.Position = positions[i[0] - 1];

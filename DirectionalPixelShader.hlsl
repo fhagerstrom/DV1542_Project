@@ -25,7 +25,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	float3 diffuse = Texture.Load(sampleIndices).xyz;
 
-	float3 l = -lightDirection;
+	float3 l = lightDirection;
 
 	float lightAmountDL = saturate(dot(normal, l));
 	float3 colour = lightColour * lightAmountDL * diffuse;
