@@ -8,7 +8,7 @@ SimpleShaderHandler::SimpleShaderHandler(ID3D11Device* device, ID3D11DeviceConte
 	this->device = device;
 	this->deviceContext = context;
 
-	// Set up fields
+	// Init fields
 	constantBufferCount = 0;
 	constantBuffers = 0;
 	shaderBlob = 0;
@@ -52,7 +52,7 @@ void SimpleShaderHandler::CleanUp()
 }
 
 // Loads the specified shader and builds the variable table using shader
-// reflection.  This must be a separate step from the constructor since
+// reflection. This must be a separate step from the constructor since
 // we can't invoke derived class overrides in the base class constructor.
 //
 // shaderFile - A wide string specifying the compiled shader to load
@@ -64,6 +64,7 @@ bool SimpleShaderHandler::LoadShaderFile(LPCWSTR shaderFile)
 	HRESULT hr = D3DReadFileToBlob(shaderFile, &shaderBlob);
 	if (hr != S_OK)
 	{
+		//printf("ERROR! Could not load shader to a blob\n");
 		return false;
 	}
 
@@ -72,21 +73,22 @@ bool SimpleShaderHandler::LoadShaderFile(LPCWSTR shaderFile)
 	isShaderValid = CreateShader(shaderBlob);
 	if (!isShaderValid)
 	{
+		//printf("ERROR! Could not create shader shaderblob\n");
 		return false;
 	}
 
 	// Set up shader reflection to get information about
 	// this shader and its variables,  buffers, etc.
-	ID3D11ShaderReflection* refl;
+	ID3D11ShaderReflection* reflection;
 	D3DReflect(
 		shaderBlob->GetBufferPointer(),
 		shaderBlob->GetBufferSize(),
 		IID_ID3D11ShaderReflection,
-		(void**)&refl);
+		(void**)&reflection);
 	
 	// Get the description of the shader
 	D3D11_SHADER_DESC shaderDesc;
-	refl->GetDesc(&shaderDesc);
+	reflection->GetDesc(&shaderDesc);
 
 	// Create resource arrays
 	constantBufferCount = shaderDesc.ConstantBuffers;
@@ -98,7 +100,7 @@ bool SimpleShaderHandler::LoadShaderFile(LPCWSTR shaderFile)
 	{
 		// Get this resource's description
 		D3D11_SHADER_INPUT_BIND_DESC resourceDesc;
-		refl->GetResourceBindingDesc(r, &resourceDesc);
+		reflection->GetResourceBindingDesc(r, &resourceDesc);
 
 		// Check the type
 		switch (resourceDesc.Type)
@@ -134,7 +136,7 @@ bool SimpleShaderHandler::LoadShaderFile(LPCWSTR shaderFile)
 	{
 		// Get this buffer
 		ID3D11ShaderReflectionConstantBuffer* cb =
-			refl->GetConstantBufferByIndex(b);
+			reflection->GetConstantBufferByIndex(b);
 		
 		// Get the description of this buffer
 		D3D11_SHADER_BUFFER_DESC bufferDesc;
@@ -143,7 +145,7 @@ bool SimpleShaderHandler::LoadShaderFile(LPCWSTR shaderFile)
 		// Get the description of the resource binding, so
 		// we know exactly how it's bound in the shader
 		D3D11_SHADER_INPUT_BIND_DESC bindDesc;
-		refl->GetResourceBindingDescByName(bufferDesc.Name, &bindDesc);
+		reflection->GetResourceBindingDescByName(bufferDesc.Name, &bindDesc);
 		
 		// Set up the buffer and put its pointer in the table
 		constantBuffers[b].bindIndex = bindDesc.BindPoint;
@@ -192,7 +194,7 @@ bool SimpleShaderHandler::LoadShaderFile(LPCWSTR shaderFile)
 	}
 
 	// All set
-	refl->Release();
+	reflection->Release();
 	return true;
 }
 
@@ -209,14 +211,19 @@ SimpleShaderVariable* SimpleShaderHandler::FindVariable(std::string name, int si
 
 	// Did we find the key?
 	if (result == varTable.end())
+	{
+		//printf("ERROR! SimpleShaderHandler::FindVariable failed!\n");
 		return 0;
-
+	}
 	// Grab the result from the iterator
 	SimpleShaderVariable* var = &(result->second);
 
 	// Is the data size correct ?
 	if (size > 0 && var->Size != size)
+	{
+		//printf("ERROR! Data size is incorrect!\n");
 		return 0;
+	}
 
 	// Success
 	return var;
@@ -231,8 +238,10 @@ SimpleConstantBuffer* SimpleShaderHandler::FindConstantBuffer(std::string name)
 
 	// Did we find the key?
 	if (result == cbTable.end())
+	{
+		//printf("ERROR! couldn't find ConstantBuffer! \n");
 		return 0;
-
+	}
 	// Success
 	return result->second;
 }
@@ -241,8 +250,11 @@ SimpleConstantBuffer* SimpleShaderHandler::FindConstantBuffer(std::string name)
 void SimpleShaderHandler::SetShader()
 {
 	// Ensure the shader is valid
-	if (!isShaderValid) return;
-
+	if (!isShaderValid) 
+	{	
+		//printf("ERROR! Could not ensure that simpleshader is valid!\n");
+		return;
+	}
 	// Set the shader and any relevant constant buffers, which
 	// is an overloaded method in a subclass
 	SetShaderAndCBs();
@@ -254,8 +266,11 @@ void SimpleShaderHandler::SetShader()
 void SimpleShaderHandler::CopyAllBufferData()
 {
 	// Ensure the shader is valid
-	if (!isShaderValid) return;
-
+	if (!isShaderValid)
+	{
+		//printf("ERROR! Could not ensure that shader is valid\n");
+		return;
+	}
 	// Loop through the constant buffers and copy all data
 	for (unsigned int i = 0; i < constantBufferCount; i++)
 	{
@@ -276,20 +291,26 @@ void SimpleShaderHandler::CopyAllBufferData()
 void SimpleShaderHandler::CopyBufferData(unsigned int index)
 {
 	// Ensure the shader is valid
-	if (!isShaderValid) return;
-
-	// Validate the index
-	if(index >= this->constantBufferCount)
+	if (!isShaderValid)
+	{
+		//printf("ERROR! Could not ensure that shader is valid Copybufferdata!\n");
 		return;
-
+	}
+	// Validate the index
+	if (index >= this->constantBufferCount)
+	{
+		//printf("ERROR! Could not validate index! constantBufferCount\n");
+		return;
+	}
 	// Check for the buffer
 	SimpleConstantBuffer* cb = &this->constantBuffers[index];
-	if (!cb) return;
-
+	if (!cb)
+	{
+		//printf("ERROR! Could not check constant buffer properly!\n");
+		return;
+	}
 	// Copy the data and get out
-	deviceContext->UpdateSubresource(
-		cb->ConstantBuffer, 0, 0, 
-		cb->LocalDataBuffer, 0, 0);
+	deviceContext->UpdateSubresource(cb->ConstantBuffer, 0, 0, cb->LocalDataBuffer, 0, 0);
 }
 
 // Copies local data to the shader's specified constant buffer
@@ -299,12 +320,18 @@ void SimpleShaderHandler::CopyBufferData(unsigned int index)
 void SimpleShaderHandler::CopyBufferData(std::string bufferName)
 {
 	// Ensure the shader is valid
-	if (!isShaderValid) return;
-
+	if (!isShaderValid)
+	{
+		//printf("ERROR! Shader not valid! CopyBufferData \n");
+		return;
+	}
 	// Check for the buffer
 	SimpleConstantBuffer* cb = this->FindConstantBuffer(bufferName);
-	if (!cb) return;
-
+	if (!cb)
+	{
+		//printf("ERROR! Could not check for the buffer properly! CopyBufferData \n");
+		return;
+	}
 	// Copy the data and get out
 	deviceContext->UpdateSubresource(
 		cb->ConstantBuffer, 0, 0, 
@@ -323,8 +350,10 @@ bool SimpleShaderHandler::SetData(std::string name, const void* data, unsigned i
 	// Look for the variable and verify
 	SimpleShaderVariable* var = FindVariable(name, size);
 	if (var == 0)
+	{
+		//printf("ERROR! Could not verify variable! SetData\n");
 		return false;
-
+	}
 	// Set the data in the local data buffer
 	memcpy(
 		constantBuffers[var->ConstantBufferIndex].LocalDataBuffer + var->ByteOffset,
@@ -335,49 +364,37 @@ bool SimpleShaderHandler::SetData(std::string name, const void* data, unsigned i
 	return true;
 }
 
-// --------------------------------------------------------
 // Sets INTEGER data
-// --------------------------------------------------------
 bool SimpleShaderHandler::SetInt(std::string name, int data)
 {
 	return this->SetData(name, (void*)(&data), sizeof(int));
 }
 
-// --------------------------------------------------------
 // Sets a FLOAT variable by name in the local data buffer
-// --------------------------------------------------------
 bool SimpleShaderHandler::SetFloat(std::string name, float data)
 {
 	return this->SetData(name, (void*)(&data), sizeof(float));
 }
 
-// --------------------------------------------------------
 // Sets a FLOAT2 variable by name in the local data buffer
-// --------------------------------------------------------
 bool SimpleShaderHandler::SetFloat2(std::string name, const float data[2])
 {
 	return this->SetData(name, (void*)data, sizeof(float) * 2);
 }
 
-// --------------------------------------------------------
 // Sets a FLOAT2 variable by name in the local data buffer
-// --------------------------------------------------------
 bool SimpleShaderHandler::SetFloat2(std::string name, const DirectX::XMFLOAT2 data)
 {
 	return this->SetData(name, &data, sizeof(float) * 2);
 }
 
-// --------------------------------------------------------
 // Sets a FLOAT3 variable by name in the local data buffer
-// --------------------------------------------------------
 bool SimpleShaderHandler::SetFloat3(std::string name, const float data[3])
 {
 	return this->SetData(name, (void*)data, sizeof(float) * 3);
 }
 
-// --------------------------------------------------------
 // Sets a FLOAT3 variable by name in the local data buffer
-// --------------------------------------------------------
 bool SimpleShaderHandler::SetFloat3(std::string name, const DirectX::XMFLOAT3 data)
 {
 	return this->SetData(name, &data, sizeof(float) * 3);
@@ -424,8 +441,10 @@ const SimpleSRV* SimpleShaderHandler::GetShaderResourceViewInfo(std::string name
 
 	// Did we find the key?
 	if (result == textureTable.end())
+	{
+		//printf("ERROR! ShaderResourceViewInfo could not be found! \n");
 		return 0;
-
+	}
 	// Success
 	return result->second;
 }
@@ -436,18 +455,18 @@ const SimpleSRV* SimpleShaderHandler::GetShaderResourceViewInfo(std::string name
 const SimpleSRV* SimpleShaderHandler::GetShaderResourceViewInfo(unsigned int index)
 {
 	// Valid index?
-	if (index >= shaderResourceViews.size()) return 0;
-
+	if (index >= shaderResourceViews.size())
+	{
+		//printf("ERROR! No valid index \n");
+		return 0;
+	}
 	// Grab the bind index
 	return shaderResourceViews[index];
 }
 
-
-// --------------------------------------------------------
 // Gets info about a sampler in the shader (or null)
 // 
 // name - the name of the sampler
-// --------------------------------------------------------
 const SimpleSampler* SimpleShaderHandler::GetSamplerInfo(std::string name)
 {
 	// Look for the key
@@ -456,73 +475,66 @@ const SimpleSampler* SimpleShaderHandler::GetSamplerInfo(std::string name)
 
 	// Did we find the key?
 	if (result == samplerTable.end())
+	{
+		//printf("ERROR! Sampler info could not be found. \n");
 		return 0;
-
+	}
 	// Success
 	return result->second;
 }
 
-// --------------------------------------------------------
 // Gets info about a sampler in the shader (or null)
 // 
 // index - the index of the sampler
-// --------------------------------------------------------
 const SimpleSampler* SimpleShaderHandler::GetSamplerInfo(unsigned int index)
 {
 	// Valid index?
-	if (index >= samplerStates.size()) return 0;
-
+	if (index >= samplerStates.size())
+	{
+		//printf("ERROR! Could not get Sampler info!\n");
+		return 0;
+	}
 	// Grab the bind index
 	return samplerStates[index];
 }
 
-
-// --------------------------------------------------------
 // Gets the number of constant buffers in this shader
-// --------------------------------------------------------
 unsigned int SimpleShaderHandler::GetBufferCount() { return constantBufferCount; }
 
-
-
-// --------------------------------------------------------
 // Gets the size of a particular constant buffer, or -1
-// --------------------------------------------------------
 unsigned int SimpleShaderHandler::GetBufferSize(unsigned int index)
 {
 	// Valid index?
 	if (index >= constantBufferCount)
+	{
+		printf("ERROR! GetBufferSize index invalid!\n");
 		return -1;
-
+	}
 	// Grab the size
 	return constantBuffers[index].Size;
 }
 
-// --------------------------------------------------------
 // Gets info about a particular constant buffer 
 // by name, if it exists
-// --------------------------------------------------------
 const SimpleConstantBuffer * SimpleShaderHandler::GetBufferInfo(std::string name)
 {
 	return FindConstantBuffer(name);
 }
 
-// --------------------------------------------------------
 // Gets info about a particular constant buffer 
 //
 // index - the index of the constant buffer
-// --------------------------------------------------------
 const SimpleConstantBuffer * SimpleShaderHandler::GetBufferInfo(unsigned int index)
 {
 	// Check for valid index
-	if (index >= constantBufferCount) return 0;
-
+	if (index >= constantBufferCount)
+	{
+		//printf("ERROR! GetBufferInfo Index was not valid! \n");
+		return 0;
+	}
 	// Return the specific buffer
 	return &constantBuffers[index];
 }
-
-
-
-
 
 //*****************************************************************************
 // VERTEX SHADER
@@ -531,8 +543,7 @@ const SimpleConstantBuffer * SimpleShaderHandler::GetBufferInfo(unsigned int ind
 // Constructor just calls the base
 SimpleVertexShader::SimpleVertexShader(ID3D11Device* device, ID3D11DeviceContext* context) : SimpleShaderHandler(device, context) 
 { 
-	// Ensure we set to zero to successfully trigger
-	// the Input Layout creation during LoadShader()
+	// Ensure we set to zero to successfully trigger the input layout creation during LoadShader()
 	this->inputLayout = 0;
 	this->shader = 0;
 	this->perInstanceCompatible = false;
@@ -579,12 +590,15 @@ bool SimpleVertexShader::CreateShader(ID3DBlob* shaderBlob)
 
 	// Did the creation work?
 	if (result != S_OK)
+	{
+		//printf("ERROR! The creation of VertexShader did not work! \n");
 		return false;
-
+	}
 	// Do we already have an input layout? This would come from one of the constructor overloads
 	if (inputLayout)
+	{
 		return true;
-
+	}
 	// Vertex shader was created successfully, so we now use the
 	// shader code to re-reflect and create an input layout that 
 	// matches what the vertex shader expects.
@@ -677,8 +691,11 @@ bool SimpleVertexShader::CreateShader(ID3DBlob* shaderBlob)
 void SimpleVertexShader::SetShaderAndCBs()
 {
 	// Is shader valid?
-	if (!isShaderValid) return;
-
+	if (!isShaderValid)
+	{
+		//printf("ERROR! SetShaderAndCBs:: shader is not valid.\n");
+		return;
+	}
 	// Set the shader and input layout
 	deviceContext->IASetInputLayout(inputLayout);
 	deviceContext->VSSetShader(shader, 0, 0);
@@ -701,8 +718,10 @@ bool SimpleVertexShader::SetShaderResourceView(std::string name, ID3D11ShaderRes
 	// Look for the variable and verify
 	const SimpleSRV* srvInfo = GetShaderResourceViewInfo(name);
 	if (srvInfo == 0)
+	{
+		//printf("ERROR! SetShaderResourceView::Couldn't verify the variable! \n");
 		return false;
-
+	}
 	// Set the shader resource view
 	deviceContext->VSSetShaderResources(srvInfo->bindIndex, 1, &srv);
 
@@ -719,8 +738,10 @@ bool SimpleVertexShader::SetSamplerState(std::string name, ID3D11SamplerState* s
 	// Look for the variable and verify
 	const SimpleSampler* sampInfo = GetSamplerInfo(name);
 	if (sampInfo == 0)
+	{
+		//printf("ERROR! Couldn't Set SamplerState \n");
 		return false;
-
+	}
 	// Set the shader resource view
 	deviceContext->VSSetSamplers(sampInfo->bindIndex, 1, &samplerState);
 
@@ -779,8 +800,11 @@ bool SimplePixelShader::CreateShader(ID3DBlob* shaderBlob)
 void SimplePixelShader::SetShaderAndCBs()
 {
 	// Is shader valid?
-	if (!isShaderValid) return;
-	
+	if (!isShaderValid)
+	{
+		//printf("ERROR! SetShaderAndCBs:: shader is invalid! \n");
+		return;
+	}
 	// Set the shader
 	deviceContext->PSSetShader(shader, 0, 0);
 

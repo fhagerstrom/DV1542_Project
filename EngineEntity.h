@@ -5,11 +5,22 @@
 #include "Mesh.h"
 #include "Material.h"
 
+namespace dx = DirectX;
+
 class EngineEntity
 {
+private:
+	Mesh* mesh;
+	Material* mat;
+	dx::XMFLOAT3 lightCol;
+	dx::XMFLOAT4X4 worldMatrix;
+	dx::XMFLOAT3 position;
+	dx::XMFLOAT3 rotation;
+	dx::XMFLOAT3 scale;
+
 public:
 	EngineEntity(Mesh* mesh, Material* material);
-	EngineEntity(Mesh* mesh, DirectX::XMFLOAT3 lightColour);
+	EngineEntity(Mesh* mesh, dx::XMFLOAT3 lightColour);
 	~EngineEntity();
 
 	void UpdateWorldMatrix();
@@ -22,20 +33,11 @@ public:
 	void SetScale(float x, float y, float z)	{ scale.x = x; scale.y = y; scale.z = z; }
 
 	Mesh* GetMesh() { return mesh; }
-	DirectX::XMFLOAT4X4 GetWorldMatrix() { return worldMatrix; }
 	Material* GetMaterial() { return mat; }
+	dx::XMFLOAT4X4 GetWorldMatrix() { return worldMatrix; }
 
-	DirectX::XMFLOAT3 GetLightColour();
-	DirectX::XMFLOAT3 GetPosition();
-private:
-
-	Mesh* mesh;
-	Material* mat;
-	DirectX::XMFLOAT3 lightCol;
-	DirectX::XMFLOAT4X4 worldMatrix;
-	DirectX::XMFLOAT3 position;
-	DirectX::XMFLOAT3 rotation;
-	DirectX::XMFLOAT3 scale;
+	dx::XMFLOAT3 GetLightColour();
+	dx::XMFLOAT3 GetPosition();
 
 };
 

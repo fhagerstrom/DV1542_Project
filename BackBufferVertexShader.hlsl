@@ -9,7 +9,7 @@ VertexToPixel main(uint id : SV_VertexID)
 {
 	VertexToPixel output;
 
-	// Calculate the UV (0,0) to (2,2) via the ID
+	// Calculate the UV (0, 0) to (2, 2) via the ID
 	output.uv = float2(
 		(id << 1) & 2,  // id % 2 * 2
 		id & 2);

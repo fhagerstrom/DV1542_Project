@@ -1,9 +1,7 @@
 #include "ProjectEngine.h"
-#include "Vertex.h"
-#include "WICTextureLoader.h" // DirectX Tool Kit
 
 // For the DirectX Math library
-namespace dx = DirectX;
+using namespace DirectX;
 
 
 Engine::Engine(HINSTANCE hInstance) : DXInit( 
@@ -44,7 +42,8 @@ Engine::~Engine()
 	delete pixelShader;
 	delete vertexShader;
 
-	for (auto& mesh : meshes) delete mesh;
+	for (auto& mesh : meshes) 
+		delete mesh;
 
 	delete objectMaterial;
 	delete planeMaterial;
@@ -64,7 +63,7 @@ Engine::~Engine()
 
 	depthStencilBuffer->Release();
 	depthStencilView->Release();
-	rasterizer->Release();
+	deferredRasterState->Release();
 	blendState->Release();
 
 
@@ -93,6 +92,7 @@ void Engine::Init()
 	LoadMesh();
 	LoadTextures();	
 	CreateMaterials();
+	CreateTerrain();
 	CreateBasicGeometry();	
 	LightEntityInitialize();
 	
@@ -138,14 +138,12 @@ void Engine::SetDefferedSetup(int textureWidth, int textureHeight)
 	renderTargetViewDesc8.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	renderTargetViewDesc8.Texture2D.MipSlice = 0;
 
-
-	//Create Render target view
+	// Create Render target view
 	device->CreateRenderTargetView(renderTargetTextureArray[0], &renderTargetViewDesc32, &renderTargetViewArray[0]);
 	device->CreateRenderTargetView(renderTargetTextureArray[1], &renderTargetViewDesc32, &renderTargetViewArray[1]);
 	device->CreateRenderTargetView(renderTargetTextureArray[2], &renderTargetViewDesc8, &renderTargetViewArray[2]);
 
-
-	//Shader Resource View Description
+	// Shader Resource View Description
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 	ZeroMemory(&srvDesc, sizeof(srvDesc));
 	srvDesc.Format = textureDesc.Format;
@@ -181,7 +179,7 @@ void Engine::SetDefferedSetup(int textureWidth, int textureHeight)
 
 	device->CreateTexture2D(&depthBufferDesc, NULL, &depthStencilBuffer);
 
-	//Depth Stencil Description
+	// Depth Stencil Description
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
 	ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
 	depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -190,16 +188,16 @@ void Engine::SetDefferedSetup(int textureWidth, int textureHeight)
 
 	device->CreateDepthStencilView(depthStencilBuffer, &depthStencilViewDesc, &depthStencilView);
 
-	//Rasterizer setup
+	// Rasterizer setup
 	D3D11_RASTERIZER_DESC rasterizerDesc;
 	ZeroMemory(&rasterizerDesc, sizeof(rasterizerDesc));
 	rasterizerDesc.CullMode = D3D11_CULL_NONE;
 	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 	rasterizerDesc.DepthClipEnable = false;
 
-	device->CreateRasterizerState(&rasterizerDesc, &rasterizer);
+	device->CreateRasterizerState(&rasterizerDesc, &deferredRasterState);
 
-	//Blend state setup
+	// Blend state setup
 	D3D11_BLEND_DESC blendDesc;
 	ZeroMemory(&blendDesc, sizeof(blendDesc));
 	blendDesc.AlphaToCoverageEnable = false;
@@ -304,6 +302,38 @@ void Engine::CreateMaterials()
 	planeMaterial = new Material(vertexShader, pixelShader, planeTextureSRV, planeNormalMapSRV, sampler);
 }
 
+void Engine::CreateTerrain()
+{
+	terrain = new Terrain;
+
+	terrain->LoadSetup("Debug/Terrain/TerrainSetup.txt");
+	terrain->LoadHeightMap();
+	terrain->SetTerrainCoordinates();
+	terrain->BuildTerrainModel();
+	terrain->InitBuffers(device);
+
+	EngineEntity* terrainEntity = new EngineEntity(terrain->GetMesh(), objectMaterial);
+	entities.push_back(terrainEntity);
+
+
+	// Setup a rasterizer desc for wireframe "mode"
+	D3D11_RASTERIZER_DESC rasterDesc;
+
+	rasterDesc.AntialiasedLineEnable = false;
+	rasterDesc.CullMode = D3D11_CULL_BACK;
+	rasterDesc.DepthBias = 0;
+	rasterDesc.DepthBiasClamp = 0.0f;
+	rasterDesc.DepthClipEnable = true;
+	rasterDesc.FillMode = D3D11_FILL_WIREFRAME;
+	rasterDesc.FrontCounterClockwise = false;
+	rasterDesc.MultisampleEnable = false;
+	rasterDesc.ScissorEnable = false;
+	rasterDesc.SlopeScaledDepthBias = 0.0f;
+
+	// Create the wire frame rasterizer state.
+	device->CreateRasterizerState(&rasterDesc, &wireframeRasterState);
+}
+
 void Engine::CreateBasicGeometry()
 {
 	// Create objects and planes.
@@ -367,7 +397,7 @@ void Engine::CreateBasicGeometry()
 
 void Engine::LightEntityInitialize()
 {
-	// @TODO: Make the scene brighter hehu
+	// @TODO: Make the scene brighter
 	// Some weird shit happens
 	lightEntity1 = new EngineEntity(objectMesh, dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
 	lightEntity1->SetPosition(3, 0, 0);
@@ -440,6 +470,8 @@ void Engine::Draw(float deltaTime, float totalTime)
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	
+	terrain->RenderTerrain(context);
+
 	// Bind render target view array and depth stencil buffer to output render pipeline
 	context->OMSetRenderTargets(BUFFER_COUNT, renderTargetViewArray, depthStencilView);
 
@@ -456,7 +488,6 @@ void Engine::Draw(float deltaTime, float totalTime)
 	{
 		ID3D11Buffer* vBuffer = entities[i]->GetMesh()->GetVertexBuffer();
 		ID3D11Buffer* iBuffer = entities[i]->GetMesh()->GetIndexBuffer();
-
 
 		deferredVertexShader->SetMatrix4x4("world", entities[i]->GetWorldMatrix());
 		deferredVertexShader->SetMatrix4x4("view", camera->GetView());
@@ -482,7 +513,7 @@ void Engine::Draw(float deltaTime, float totalTime)
 	context->ClearRenderTargetView(backBufferRTV, bgColour);
 	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-	context->RSSetState(rasterizer);
+	context->RSSetState(deferredRasterState);
 	float blend[4] = { 1, 1, 1, 1 };
 	context->OMSetBlendState(blendState, blend, 0xFFFFFFFF);
 	context->OMSetDepthStencilState(depthState, 0);
@@ -563,7 +594,6 @@ void Engine::MouseReleased(WPARAM buttonState, int x, int y)
 
 void Engine::MouseMoving(WPARAM buttonState, int x, int y)
 {
-	
 	if (buttonState & 0x0001)
 	{
 		float xDiff = (x - prevMousePos.x) * 0.005f;

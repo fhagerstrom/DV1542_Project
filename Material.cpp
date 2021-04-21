@@ -17,17 +17,17 @@ Material::~Material()
 
 }
 
-ID3D11ShaderResourceView * Material::GetTextureSRV()
+ID3D11ShaderResourceView* Material::GetTextureSRV()
 {
-	return _materialSRV;;
+	return _materialSRV;
 }
 
-ID3D11ShaderResourceView * Material::GetNormalMapSRV()
+ID3D11ShaderResourceView* Material::GetNormalMapSRV()
 {
 	return _materialNormal;
 }
 
-ID3D11SamplerState * Material::GetSamplerState()
+ID3D11SamplerState* Material::GetSamplerState()
 {
 	return _materialSampler;
 }

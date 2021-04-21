@@ -3,6 +3,7 @@
 // #define MAX_LIGHTS 2
 
 #include <DirectXMath.h>
+
 #include "DXInit.h"
 #include "SimpleShader.h"
 #include "Camera.h"
@@ -10,7 +11,10 @@
 #include "EngineEntity.h"
 #include "Renderer.h"
 #include "Material.h"
+#include "Terrain.h"
 #include "Lights.h"
+#include "Vertex.h"
+#include "WICTextureLoader.h" // DirectX Tool Kit
 
 class Engine : public DXInit
 {
@@ -35,14 +39,17 @@ private:
 	EngineEntity* lightEntity7;
 	EngineEntity* lightEntity8;
 
+	// Add mesh objects.
 	Mesh* objectMesh;
 	Mesh* planeMesh;
-
-	Renderer renderer;
 
 	// Material class objects.
 	Material* objectMaterial;
 	Material* planeMaterial;
+
+	Terrain* terrain;
+
+	Renderer renderer;
 
 	// Initialization helper functions.
 	void SetDefferedSetup(int textureWidth, int textureHeight);
@@ -51,6 +58,7 @@ private:
 	void LoadMesh();
 	void LoadTextures();
 	void CreateMaterials();
+	void CreateTerrain();
 	void CreateBasicGeometry();
 	void LightEntityInitialize();
 
@@ -67,7 +75,8 @@ private:
 	ID3D11Texture2D* depthStencilBuffer;
 	ID3D11DepthStencilState* depthState;
 
-	ID3D11RasterizerState* rasterizer;
+	ID3D11RasterizerState* deferredRasterState;
+	ID3D11RasterizerState* wireframeRasterState;
 	ID3D11BlendState* blendState;
 
 	// Buffers to hold geometry data
@@ -103,7 +112,7 @@ public:
 	void Update(float deltaTime, float totalTime);
 	void Draw(float deltaTime, float totalTime);
 
-	// Overridden mouse input helper methods
+	// Mouse input helper methods - Change to DX Input
 	void MousePressed (WPARAM buttonState, int x, int y);
 	void MouseReleased (WPARAM buttonState, int x, int y);
 	void MouseMoving (WPARAM buttonState, int x, int y);

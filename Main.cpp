@@ -26,8 +26,9 @@ int WINAPI WinMain(
 	if(FAILED(hr)) return hr;
 
 	hr = projectEngine.InitDirectX();
-	if(FAILED(hr)) return hr;
 
-	
+	if(FAILED(hr)) 
+		return hr;
+
 	return projectEngine.Run();
 }

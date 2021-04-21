@@ -149,6 +149,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="DXInit.h" />
     <ClInclude Include="EngineEntity.h" />
+    <ClInclude Include="Input.h" />
     <ClInclude Include="Lights.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
@@ -156,12 +157,14 @@
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="SimpleShader.h" />
     <ClInclude Include="Terrain.h" />
+    <ClInclude Include="TerrainZone.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DXInit.cpp" />
     <ClCompile Include="EngineEntity.cpp" />
+    <ClCompile Include="Input.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="ProjectEngine.cpp" />
@@ -169,6 +172,7 @@
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SimpleShader.cpp" />
     <ClCompile Include="Terrain.cpp" />
+    <ClCompile Include="TerrainZone.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
