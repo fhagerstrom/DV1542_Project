@@ -30,7 +30,7 @@ Engine::Engine(HINSTANCE hInstance) : DXInit(
 #if defined(DEBUG) || defined(_DEBUG)
 	// Create a console window 
 	CreateConsoleWindow(500, 120, 32, 120);
-	printf("Console window created successfully. Prints go here.");
+	std::cout << "Console window created successfully. Prints for debugging goes here!" << std::endl;;
 #endif
 }
 
@@ -268,6 +268,14 @@ void Engine::LoadShaders()
 	dirPixelShader = new SimplePixelShader(device, context);
 	if (!dirPixelShader->LoadShaderFile(L"Debug/DirectionalPixelShader.cso"))
 		dirPixelShader->LoadShaderFile(L"Debug/DirectionalPixelShader.cso");
+
+	particleVertexShader = new SimpleVertexShader(device, context);
+	if (!particleVertexShader->LoadShaderFile(L"Debug/ParticleVertexShader.cso"))
+		particleVertexShader->LoadShaderFile(L"Debug/ParticleVertexShader.cso");
+
+	particlePixelShader = new SimplePixelShader(device, context);
+	if (!particlePixelShader->LoadShaderFile(L"Debug/ParticlePixelShader.cso"))
+		particlePixelShader->LoadShaderFile(L"Debug/ParticlePixelShader.cso");
 }
 
 void Engine::LoadMesh()
@@ -304,23 +312,21 @@ void Engine::CreateMaterials()
 
 void Engine::CreateTerrain()
 {
-	terrain = new Terrain;
+	/*terrain = new Terrain;
+	HeightMapInfo hmInfo;
 
-	terrain->LoadSetup("Debug/Terrain/TerrainSetup.txt");
-	terrain->LoadHeightMap();
-	terrain->SetTerrainCoordinates();
-	terrain->BuildTerrainModel();
-	terrain->InitBuffers(device);
+	terrain->LoadHeightMap("Debug/Terrain/heightmap.bmp", hmInfo);
+	terrain->InitTerrain(hmInfo);
+	terrain->InitBuffers(device);*/
 
-	EngineEntity* terrainEntity = new EngineEntity(terrain->GetMesh(), objectMaterial);
-	entities.push_back(terrainEntity);
+	/*EngineEntity* terrainEntity = new EngineEntity(terrainEntity->GetTerrain(), objectMaterial);
+	entities.push_back(terrainEntity);*/
 
-
-	// Setup a rasterizer desc for wireframe "mode"
+	// Setup a rasterizer desc for wireframe mode
 	D3D11_RASTERIZER_DESC rasterDesc;
 
 	rasterDesc.AntialiasedLineEnable = false;
-	rasterDesc.CullMode = D3D11_CULL_BACK;
+	rasterDesc.CullMode = D3D11_CULL_NONE;
 	rasterDesc.DepthBias = 0;
 	rasterDesc.DepthBiasClamp = 0.0f;
 	rasterDesc.DepthClipEnable = true;
@@ -331,7 +337,7 @@ void Engine::CreateTerrain()
 	rasterDesc.SlopeScaledDepthBias = 0.0f;
 
 	// Create the wire frame rasterizer state.
-	device->CreateRasterizerState(&rasterDesc, &wireframeRasterState);
+	// device->CreateRasterizerState(&rasterDesc, &wireframeRasterState);
 }
 
 void Engine::CreateBasicGeometry()
@@ -344,9 +350,9 @@ void Engine::CreateBasicGeometry()
 	EngineEntity* sphere4 = new EngineEntity(objectMesh, objectMaterial);
 	
 	EngineEntity* plane1 = new EngineEntity(planeMesh, planeMaterial);
-	EngineEntity* plane2 = new EngineEntity(planeMesh, planeMaterial);
+	/*EngineEntity* plane2 = new EngineEntity(planeMesh, planeMaterial);
 	EngineEntity* plane3 = new EngineEntity(planeMesh, planeMaterial);
-	EngineEntity* plane4 = new EngineEntity(planeMesh, planeMaterial);
+	EngineEntity* plane4 = new EngineEntity(planeMesh, planeMaterial);*/
 
 	// Add objects to vector.
 	entities.push_back(sphere);
@@ -357,9 +363,9 @@ void Engine::CreateBasicGeometry()
 
 	// Add planes to vector.
 	entities.push_back(plane1);
-	entities.push_back(plane2);
+	/*entities.push_back(plane2);
 	entities.push_back(plane3);
-	entities.push_back(plane4);
+	entities.push_back(plane4);*/
 
 	sphere->SetScale(0.5f, 0.5f, 0.5f);
 	sphere->SetPosition(0.0f, -2.0f, 0.0f);
@@ -377,20 +383,20 @@ void Engine::CreateBasicGeometry()
 	sphere4->SetPosition(-2.0f, -2.0f, 2.0f);
 
 	// Bottom
-	plane1->SetScale(5.0f, 0.01f, 5.0f);
+	plane1->SetScale(8.0f, 0.01f, 10.0f);
 	plane1->SetPosition(0.0f, -3.0f, 0.0f);
 
 	// Right
-	plane2->SetScale(0.01f, 3.0f, 5.0f);
-	plane2->SetPosition(5.0f, 0.0f, 0.0f);
+	//plane2->SetScale(0.01f, 3.0f, 5.0f);
+	//plane2->SetPosition(5.0f, 0.0f, 0.0f);
 
-	// Left
-	plane3->SetScale(0.01f, 3.0f, 5.0f);
-	plane3->SetPosition(-5.0f, 0.0f, 0.0f);
+	//// Left
+	//plane3->SetScale(0.01f, 3.0f, 5.0f);
+	//plane3->SetPosition(-5.0f, 0.0f, 0.0f);
 
-	// Back
-	plane4->SetScale(5.0f, 3.0f, 0.01f);
-	plane4->SetPosition(0.0f, 0.0f, 5.0f);	
+	//// Back
+	//plane4->SetScale(5.0f, 3.0f, 0.01f);
+	//plane4->SetPosition(0.0f, 0.0f, 5.0f);	
 
 	currentEntity = 0;
 }
@@ -407,7 +413,7 @@ void Engine::LightEntityInitialize()
 	lightEntity2->SetPosition(-3, 0, 0);
 	lightEntity2->SetScale(5, 5, 5);
 
-	lightEntity3 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.3f, 0.5f, 0.1f));
+	lightEntity3 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.3f, 0.8f, 0.1f));
 	lightEntity3->SetPosition(-1, 1, 0);
 	lightEntity3->SetScale(5, 5, 5);
 
@@ -465,12 +471,10 @@ void Engine::Update(float deltaTime, float totalTime)
 
 void Engine::Draw(float deltaTime, float totalTime)
 {
-	const float bgColour[4] = {0.1f, 0.1f, 0.1f, 0.0f};
+	const float bgColour[4] = {0.1f, 0.1f, 0.1f, 1.0f};
 	int i;
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
-	
-	terrain->RenderTerrain(context);
 
 	// Bind render target view array and depth stencil buffer to output render pipeline
 	context->OMSetRenderTargets(BUFFER_COUNT, renderTargetViewArray, depthStencilView);
@@ -520,7 +524,7 @@ void Engine::Draw(float deltaTime, float totalTime)
 
 	dirVertexShader->SetShader();
 
-	dirPixelShader->SetShaderResourceView("Position", shaderResourceViewArray[0]);
+	dirPixelShader->SetShaderResourceView("position", shaderResourceViewArray[0]);
 	dirPixelShader->SetShaderResourceView("NormalMap", shaderResourceViewArray[1]);
 	dirPixelShader->SetShaderResourceView("Texture", shaderResourceViewArray[2]);
 	backBufferPixelShader->SetSamplerState("Sampler", sampler);
@@ -530,6 +534,8 @@ void Engine::Draw(float deltaTime, float totalTime)
 
 	dirPixelShader->CopyAllBufferData();
 	dirPixelShader->SetShader();
+
+	particleVertexShader->SetShader();
 
 	ID3D11Buffer* nothing = 0;
 	context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);

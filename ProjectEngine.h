@@ -3,6 +3,7 @@
 // #define MAX_LIGHTS 2
 
 #include <DirectXMath.h>
+#include <iostream>
 
 #include "DXInit.h"
 #include "SimpleShader.h"
@@ -67,9 +68,10 @@ private:
 	ID3D11ShaderResourceView* objectNormalMapSRV;
 	ID3D11ShaderResourceView* planeTextureSRV;
 	ID3D11ShaderResourceView* planeNormalMapSRV;
+
 	ID3D11SamplerState* sampler;
 
-	//RenderTargets for deferred rendering.
+	// RenderTargets for deferred rendering.
 	ID3D11RenderTargetView* renderTargetViewArray[BUFFER_COUNT];
 	ID3D11ShaderResourceView* shaderResourceViewArray[BUFFER_COUNT];
 	ID3D11Texture2D* depthStencilBuffer;
@@ -94,6 +96,8 @@ private:
 	SimplePixelShader* lightPixelShader;
 	SimpleVertexShader* dirVertexShader;
 	SimplePixelShader* dirPixelShader;
+	SimpleVertexShader* particleVertexShader;
+	SimplePixelShader* particlePixelShader;
 
 	// The matrices to go from model space to screen space
 	DirectX::XMFLOAT4X4 worldMatrix;

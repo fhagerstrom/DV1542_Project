@@ -10,14 +10,14 @@ struct Vertex
 
 	}
 
-	Vertex(float x, float y, float z, float u, float v, float nx, float ny, float nz) : Position(x, y, z), UV(u, v), Normal(nx, ny, nz) 
+	Vertex(float x, float y, float z, float u, float v, float nx, float ny, float nz) : position(x, y, z), uv(u, v), normal(nx, ny, nz) 
 	{
 
 	}
 
-	DirectX::XMFLOAT3 Position;	    // The position of the vertex
-	DirectX::XMFLOAT2 UV;           // UV Coordinate for texturing
-	DirectX::XMFLOAT3 Normal;       // Normal for lighting
-	DirectX::XMFLOAT3 Tangent;		// For normal mapping
-	DirectX::XMFLOAT4 Colour;
+	DirectX::XMFLOAT3 position;	    // The position of the vertex
+	DirectX::XMFLOAT2 uv;           // uv Coordinate for texturing
+	DirectX::XMFLOAT3 normal;       // normal for lighting
+	DirectX::XMFLOAT3 tangent;		// For normal mapping
+	DirectX::XMFLOAT4 colour;		// Terrain related
 };

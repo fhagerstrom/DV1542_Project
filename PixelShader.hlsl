@@ -5,7 +5,7 @@ SamplerState Sampler : register(s0);
 
 struct PointLight
 {
-	float4 Colour;
+	float4 colour;
 	float3 Position;
 };
 
@@ -100,10 +100,10 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float3 totalDirLight = DirLightColour * dirLightAmount * textureColour;
 
 	// Total point Light
-	float3 totalPointLight = (pointLight3.Colour * pointLightAmount3 * textureColour) + (pointLight4.Colour * pointLightAmount4 * textureColour);
+	float3 totalPointLight = (pointLight3.colour * pointLightAmount3 * textureColour) + (pointLight4.colour * pointLightAmount4 * textureColour);
 
 	// Total Spotlight
-	float3 totalSpotLight = (spotAmount1 * pointLight1.Colour * textureColour) + (spotAmount2 * pointLight2.Colour * textureColour);
+	float3 totalSpotLight = (spotAmount1 * pointLight1.colour * textureColour) + (spotAmount2 * pointLight2.colour * textureColour);
 
 	float3 totalLight = totalPointLight + totalSpotLight + spec + spec1;
 

@@ -1,9 +1,5 @@
 #include "Mesh.h"
 
-#include <DirectXMath.h>
-#include <vector>
-#include <fstream>
-
 using namespace DirectX;
 
 Mesh::Mesh(ID3D11Device* device, Vertex* verticeArray, int numVertices, unsigned int* indexArray, int numIndices)
@@ -29,7 +25,9 @@ Mesh::Mesh(ID3D11Device* device, const char* objFile)
 
 		// If not found, give up
 		if (!obj.is_open())
-			return;
+		{
+			std::cout << "Obj file not found!" << std::endl;
+		}
 	}
 
 	// Variables used while reading the file
@@ -85,19 +83,19 @@ Mesh::Mesh(ID3D11Device* device, const char* objFile)
 			// - Create the vertices by looking up corresponding data from vectors
 			// - OBJ File indices are 1-based opposed to DX, adjust them
 			Vertex v1;
-			v1.Position = positions[i[0] - 1];
-			v1.UV = uvs[i[1] - 1];
-			v1.Normal = normals[i[2] - 1];
+			v1.position = positions[i[0] - 1];
+			v1.uv = uvs[i[1] - 1];
+			v1.normal = normals[i[2] - 1];
 
 			Vertex v2;
-			v2.Position = positions[i[3] - 1];
-			v2.UV = uvs[i[4] - 1];
-			v2.Normal = normals[i[5] - 1];
+			v2.position = positions[i[3] - 1];
+			v2.uv = uvs[i[4] - 1];
+			v2.normal = normals[i[5] - 1];
 
 			Vertex v3;
-			v3.Position = positions[i[6] - 1];
-			v3.UV = uvs[i[7] - 1];
-			v3.Normal = normals[i[8] - 1];
+			v3.position = positions[i[6] - 1];
+			v3.uv = uvs[i[7] - 1];
+			v3.normal = normals[i[8] - 1];
 
 			// The model is most likely in a right-handed space (Most 3D model programs uses a right-handed coordinate system).
 			// We want to convert to a left-handed space for DirectX. 
@@ -105,24 +103,24 @@ Mesh::Mesh(ID3D11Device* device, const char* objFile)
 			//  - Invert Z position
 			//  - Invert the normal's Z
 			//  - Flip the winding order
-			// We also need to flip the UV coordinate 
+			// We also need to flip the uv coordinate 
 			// since DirectX defines the origin as the top left of the texture, 
 			// and many 3D modeling packages use the bottom left as the origin.
 
-			// Flip the UV's
-			v1.UV.y = 1.0f - v1.UV.y;
-			v2.UV.y = 1.0f - v2.UV.y;
-			v3.UV.y = 1.0f - v3.UV.y;
+			// Flip the uv's
+			v1.uv.y = 1.0f - v1.uv.y;
+			v2.uv.y = 1.0f - v2.uv.y;
+			v3.uv.y = 1.0f - v3.uv.y;
 
 			// Flip Z coordinates
-			v1.Position.z *= -1.0f;
-			v2.Position.z *= -1.0f;
-			v3.Position.z *= -1.0f;
+			v1.position.z *= -1.0f;
+			v2.position.z *= -1.0f;
+			v3.position.z *= -1.0f;
 
 			// Flip normal Z
-			v1.Normal.z *= -1.0f;
-			v2.Normal.z *= -1.0f;
-			v3.Normal.z *= -1.0f;
+			v1.normal.z *= -1.0f;
+			v2.normal.z *= -1.0f;
+			v3.normal.z *= -1.0f;
 
 			// Add the vertices to the vector (flipping the winding order)
 			vertices.push_back(v1);
@@ -139,14 +137,14 @@ Mesh::Mesh(ID3D11Device* device, const char* objFile)
 			{
 				// Make the last vertex
 				Vertex v4;
-				v4.Position = positions[i[9] - 1];
-				v4.UV = uvs[i[10] - 1];
-				v4.Normal = normals[i[11] - 1];
+				v4.position = positions[i[9] - 1];
+				v4.uv = uvs[i[10] - 1];
+				v4.normal = normals[i[11] - 1];
 
-				// Flip the UV, Z coord and normal
-				v4.UV.y = 1.0f - v4.UV.y;
-				v4.Position.z *= -1.0f;
-				v4.Normal.z *= -1.0f;
+				// Flip the uv, Z coord and normal
+				v4.uv.y = 1.0f - v4.uv.y;
+				v4.position.z *= -1.0f;
+				v4.normal.z *= -1.0f;
 
 				// Add a whole triangle (flipping the winding order)
 				vertices.push_back(v1);
@@ -214,7 +212,7 @@ void Mesh::CalculateTangents(Vertex* vertices, int numVertices, unsigned int* in
 	// Reset tangents
 	for (int i = 0; i < numVertices; i++)
 	{
-		vertices[i].Tangent = XMFLOAT3(0, 0, 0);
+		vertices[i].tangent = XMFLOAT3(0, 0, 0);
 	}
 
 	// Calculate tangents one whole triangle at a time
@@ -229,20 +227,20 @@ void Mesh::CalculateTangents(Vertex* vertices, int numVertices, unsigned int* in
 		Vertex* v3 = &vertices[i3];
 
 		// Calculate vectors relative to triangle positions
-		float x1 = v2->Position.x - v1->Position.x;
-		float y1 = v2->Position.y - v1->Position.y;
-		float z1 = v2->Position.z - v1->Position.z;
+		float x1 = v2->position.x - v1->position.x;
+		float y1 = v2->position.y - v1->position.y;
+		float z1 = v2->position.z - v1->position.z;
 
-		float x2 = v3->Position.x - v1->Position.x;
-		float y2 = v3->Position.y - v1->Position.y;
-		float z2 = v3->Position.z - v1->Position.z;
+		float x2 = v3->position.x - v1->position.x;
+		float y2 = v3->position.y - v1->position.y;
+		float z2 = v3->position.z - v1->position.z;
 
 		// Do the same for vectors relative to triangle uv's
-		float s1 = v2->UV.x - v1->UV.x;
-		float t1 = v2->UV.y - v1->UV.y;
+		float s1 = v2->uv.x - v1->uv.x;
+		float t1 = v2->uv.y - v1->uv.y;
 
-		float s2 = v3->UV.x - v1->UV.x;
-		float t2 = v3->UV.y - v1->UV.y;
+		float s2 = v3->uv.x - v1->uv.x;
+		float t2 = v3->uv.y - v1->uv.y;
 
 		// Create vectors for tangent calculation
 		float r = 1.0f / (s1 * t2 - s2 * t1);
@@ -252,30 +250,30 @@ void Mesh::CalculateTangents(Vertex* vertices, int numVertices, unsigned int* in
 		float tz = (t2 * z1 - t1 * z2) * r;
 
 		// Adjust tangents of each vert of the triangle
-		v1->Tangent.x += tx; 
-		v1->Tangent.y += ty; 
-		v1->Tangent.z += tz;
+		v1->tangent.x += tx; 
+		v1->tangent.y += ty; 
+		v1->tangent.z += tz;
 
-		v2->Tangent.x += tx; 
-		v2->Tangent.y += ty; 
-		v2->Tangent.z += tz;
+		v2->tangent.x += tx; 
+		v2->tangent.y += ty; 
+		v2->tangent.z += tz;
 
-		v3->Tangent.x += tx; 
-		v3->Tangent.y += ty; 
-		v3->Tangent.z += tz;
+		v3->tangent.x += tx; 
+		v3->tangent.y += ty; 
+		v3->tangent.z += tz;
 	}
 
 	// Ensure all of the tangents are orthogonal to the normals
 	for (int i = 0; i < numVertices; i++)
 	{
 		// Grab the two vectors
-		XMVECTOR normal = XMLoadFloat3(&vertices[i].Normal);
-		XMVECTOR tangent = XMLoadFloat3(&vertices[i].Tangent);
+		XMVECTOR normal = XMLoadFloat3(&vertices[i].normal);
+		XMVECTOR tangent = XMLoadFloat3(&vertices[i].tangent);
 
-		// Use Gram-Schmidt orthogonalize
+		// Use Gram-Schmidt orthogonalization algorithm
 		tangent = XMVector3Normalize(tangent - normal * XMVector3Dot(normal, tangent));
 		
 		// Store the tangent
-		XMStoreFloat3(&vertices[i].Tangent, tangent);
+		XMStoreFloat3(&vertices[i].tangent, tangent);
 	}
 }

@@ -13,6 +13,12 @@ EngineEntity::EngineEntity(Mesh* mesh, Material* material)
 	scale = dx::XMFLOAT3(1, 1, 1);
 }
 
+EngineEntity::EngineEntity(Terrain* terrain, Material* material)
+{
+	terr = terrain;
+	mat = material;
+}
+
 EngineEntity::EngineEntity(Mesh* mesh, DirectX::XMFLOAT3 lightColour)
 {
 	this->mesh = mesh;
@@ -39,14 +45,4 @@ void EngineEntity::UpdateWorldMatrix()
 
 	dx::XMMATRIX total = scaling * rotationZ * rotationY * rotationX * translation;
 	XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(total));
-}
-
-DirectX::XMFLOAT3 EngineEntity::GetLightColour()
-{
-	return lightCol;
-}
-
-DirectX::XMFLOAT3 EngineEntity::GetPosition()
-{
-	return position;
 }

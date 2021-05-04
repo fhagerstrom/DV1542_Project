@@ -1,9 +1,5 @@
-
 #include <Windows.h>
 #include "ProjectEngine.h"
-
-
-
 
 int WINAPI WinMain(
 	HINSTANCE hInstance,		// The handle to this app's instance

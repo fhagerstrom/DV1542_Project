@@ -1,4 +1,4 @@
-Filename: Debug/Terrain/heightmap2.bmp
+Filename: Debug/Terrain/heightmap.bmp
 Terrain Height: 257
 Terrain Width: 257
 Terrain Scaling: 15.0

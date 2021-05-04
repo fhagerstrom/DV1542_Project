@@ -16,8 +16,9 @@ Camera::Camera(float x, float y, float z)
 }
 
 Camera::~Camera()
-{ }
+{
 
+}
 
 void Camera::MoveRelative(float x, float y, float z)
 {

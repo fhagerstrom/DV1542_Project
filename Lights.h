@@ -8,13 +8,13 @@ namespace dx = DirectX;
 
 struct PointLight
 {
-	dx::XMFLOAT4 Colour;
-	dx::XMFLOAT3 Position;
+	dx::XMFLOAT4 colour;
+	dx::XMFLOAT3 position;
 
 	void SetpointLightValues(dx::XMFLOAT4 _colour, dx::XMFLOAT3 _position)
 	{
-		Colour = _colour;
-		Position = _position;
+		colour = _colour;
+		position = _position;
 	}
 };
 

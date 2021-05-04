@@ -263,8 +263,7 @@ void DXInit::UpdateTimer()
 	previousTime = currentTime;
 }
 
-// Updates the window's title bar with several stats once
-// per second, including:
+// Updates the window's title bar with several stats once per second, including:
 //  - The window's width & height
 //  - The current FPS and ms/frame
 //  - The version of DirectX being used
