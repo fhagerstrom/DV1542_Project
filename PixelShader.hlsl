@@ -62,7 +62,6 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float4 textureColour = Texture.Sample(Sampler, input.uv);
 
 	// Directional light calculation
-
 	float dirLightAmount = saturate(dot(input.normal, -normalize(DirLightDirection)));
 
 	// Point light calculation

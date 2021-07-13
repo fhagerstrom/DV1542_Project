@@ -47,7 +47,6 @@ public:
 	ParticleSystem(const ParticleSystem& other);
 	~ParticleSystem();
 
-
 	int GetIndexCount() { return numIndices; };
 
 

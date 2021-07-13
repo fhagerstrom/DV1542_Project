@@ -13,11 +13,11 @@ EngineEntity::EngineEntity(Mesh* mesh, Material* material)
 	scale = dx::XMFLOAT3(1, 1, 1);
 }
 
-EngineEntity::EngineEntity(Terrain* terrain, Material* material)
-{
-	terr = terrain;
-	mat = material;
-}
+//EngineEntity::EngineEntity(Terrain* terrain, Material* material)
+//{
+//	terr = terrain;
+//	mat = material;
+//}
 
 EngineEntity::EngineEntity(Mesh* mesh, DirectX::XMFLOAT3 lightColour)
 {

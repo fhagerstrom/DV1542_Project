@@ -4,7 +4,6 @@
 
 #include "Mesh.h"
 #include "Material.h"
-#include "Terrain.h"
 
 namespace dx = DirectX;
 
@@ -13,7 +12,6 @@ class EngineEntity
 private:
 	Mesh* mesh;
 	Material* mat;
-	Terrain* terr;
 	dx::XMFLOAT3 lightCol;
 	dx::XMFLOAT4X4 worldMatrix;
 	dx::XMFLOAT3 position;
@@ -22,7 +20,7 @@ private:
 
 public:
 	EngineEntity(Mesh* mesh, Material* material);
-	EngineEntity(Terrain* terrain, Material* material);
+	// EngineEntity(Terrain* terrain, Material* material);
 	EngineEntity(Mesh* mesh, dx::XMFLOAT3 lightColour);
 	~EngineEntity();
 
@@ -37,7 +35,6 @@ public:
 
 	Mesh* GetMesh() { return mesh; }
 	Material* GetMaterial() { return mat; }
-	Terrain* GetTerrain() { return terr; }
 	dx::XMFLOAT4X4 GetWorldMatrix() { return worldMatrix; }
 
 	dx::XMFLOAT3 GetLightColour() { return lightCol; };

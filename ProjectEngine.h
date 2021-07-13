@@ -59,7 +59,6 @@ private:
 	void LoadMesh();
 	void LoadTextures();
 	void CreateMaterials();
-	void CreateTerrain();
 	void CreateBasicGeometry();
 	void LightEntityInitialize();
 
@@ -78,7 +77,6 @@ private:
 	ID3D11DepthStencilState* depthState;
 
 	ID3D11RasterizerState* deferredRasterState;
-	ID3D11RasterizerState* wireframeRasterState;
 	ID3D11BlendState* blendState;
 
 	// Buffers to hold geometry data
@@ -98,6 +96,8 @@ private:
 	SimplePixelShader* dirPixelShader;
 	SimpleVertexShader* particleVertexShader;
 	SimplePixelShader* particlePixelShader;
+	SimpleVertexShader* waterVertexShader;
+	SimplePixelShader* waterPixelShader;
 
 	// The matrices to go from model space to screen space
 	DirectX::XMFLOAT4X4 worldMatrix;

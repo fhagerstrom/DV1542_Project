@@ -27,14 +27,14 @@ float4 main(in VertexToPixel input) : SV_TARGET0
 	float3 l = lightPosition - position;
 	float distance = length(l);
 
-	if (distance > 4.0f)
+	if (distance > 3.0f)
 	{
 		return float4(0.0f, 0.0f, 0.0f, 0.0f);
 	}
 
 	l /= distance;
 
-	float attenuation = max(0.0f, 1.0f - (distance / 4.0f));
+	float attenuation = max(0.0f, 1.0f - (distance / 3.0f));
 
 	float lightAmount = saturate(dot(normal, l));
 	float3 colour = lightAmount * lightColour * attenuation;

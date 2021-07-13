@@ -6,7 +6,7 @@ SamplerState Sampler	: register(s0);
 struct VertexToPixel
 {
 	float4 position	: SV_POSITION;
-	float3 normal : NORMALWS;
+	float3 Normal : NORMALWS;
 	float3 tangent : TANGENTWS;
 	float3 worldPos	: POSITIONWS;
 	float2 uv : TEXCOORD;
@@ -14,7 +14,7 @@ struct VertexToPixel
 
 struct PixelShaderOutput
 {
-	float4 normal : SV_Target0; // normal mapping
+	float4 Normal : SV_Target0; // Normal mapping
 	float4 Diffuse	: SV_Target1; // colour
 	float4 Position	: SV_Target2;
 };
@@ -23,24 +23,24 @@ PixelShaderOutput main(VertexToPixel input)
 {
 	PixelShaderOutput output;
 
-	input.normal = normalize(input.normal);
+	input.Normal = normalize(input.Normal);
 	input.tangent = normalize(input.tangent);
 
-	// Read and unpack normal from map
+	// Read and unpack Normal from map
 	float3 normalFromMap = NormalMap.Sample(Sampler, input.uv).xyz * 2 - 1;
 
 	// Transform from tangent to world space
-	float3 n = input.normal;
+	float3 n = input.Normal;
 	float3 t = normalize(input.tangent - n * dot(input.tangent, n));
 	float3 b = cross(t, n);
 
 	float3x3 tbn = float3x3(t, b, n);
-	input.normal = normalize(mul(normalFromMap, tbn));
+	input.Normal = normalize(mul(normalFromMap, tbn));
 
 	// Sample the texture
 	float4 textureColour = Texture.Sample(Sampler, input.uv);
 
-	output.normal = float4(input.normal, 1.0f);
+	output.Normal = float4(input.Normal, 1.0f);
 	output.Diffuse = textureColour;
 	output.Position = float4(input.worldPos, 1.0f);
 

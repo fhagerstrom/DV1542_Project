@@ -17,7 +17,6 @@ struct VertexToPixel
 	
 };
 
-
 VertexToPixel main(VertexShaderInput input)
 {
 	VertexToPixel output;

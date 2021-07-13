@@ -92,7 +92,6 @@ void Engine::Init()
 	LoadMesh();
 	LoadTextures();	
 	CreateMaterials();
-	CreateTerrain();
 	CreateBasicGeometry();	
 	LightEntityInitialize();
 	
@@ -276,6 +275,14 @@ void Engine::LoadShaders()
 	particlePixelShader = new SimplePixelShader(device, context);
 	if (!particlePixelShader->LoadShaderFile(L"Debug/ParticlePixelShader.cso"))
 		particlePixelShader->LoadShaderFile(L"Debug/ParticlePixelShader.cso");
+
+	waterVertexShader = new SimpleVertexShader(device, context);
+	if (!particleVertexShader->LoadShaderFile(L"Debug/WaterVertexShader.cso"))
+		particleVertexShader->LoadShaderFile(L"Debug/WaterVertexShader.cso");
+
+	waterPixelShader = new SimplePixelShader(device, context);
+	if (!particlePixelShader->LoadShaderFile(L"Debug/WaterPixelShader.cso"))
+		particlePixelShader->LoadShaderFile(L"Debug/WaterPixelShader.cso");
 }
 
 void Engine::LoadMesh()
@@ -310,36 +317,6 @@ void Engine::CreateMaterials()
 	planeMaterial = new Material(vertexShader, pixelShader, planeTextureSRV, planeNormalMapSRV, sampler);
 }
 
-void Engine::CreateTerrain()
-{
-	/*terrain = new Terrain;
-	HeightMapInfo hmInfo;
-
-	terrain->LoadHeightMap("Debug/Terrain/heightmap.bmp", hmInfo);
-	terrain->InitTerrain(hmInfo);
-	terrain->InitBuffers(device);*/
-
-	/*EngineEntity* terrainEntity = new EngineEntity(terrainEntity->GetTerrain(), objectMaterial);
-	entities.push_back(terrainEntity);*/
-
-	// Setup a rasterizer desc for wireframe mode
-	D3D11_RASTERIZER_DESC rasterDesc;
-
-	rasterDesc.AntialiasedLineEnable = false;
-	rasterDesc.CullMode = D3D11_CULL_NONE;
-	rasterDesc.DepthBias = 0;
-	rasterDesc.DepthBiasClamp = 0.0f;
-	rasterDesc.DepthClipEnable = true;
-	rasterDesc.FillMode = D3D11_FILL_WIREFRAME;
-	rasterDesc.FrontCounterClockwise = false;
-	rasterDesc.MultisampleEnable = false;
-	rasterDesc.ScissorEnable = false;
-	rasterDesc.SlopeScaledDepthBias = 0.0f;
-
-	// Create the wire frame rasterizer state.
-	// device->CreateRasterizerState(&rasterDesc, &wireframeRasterState);
-}
-
 void Engine::CreateBasicGeometry()
 {
 	// Create objects and planes.
@@ -350,9 +327,9 @@ void Engine::CreateBasicGeometry()
 	EngineEntity* sphere4 = new EngineEntity(objectMesh, objectMaterial);
 	
 	EngineEntity* plane1 = new EngineEntity(planeMesh, planeMaterial);
-	/*EngineEntity* plane2 = new EngineEntity(planeMesh, planeMaterial);
+	EngineEntity* plane2 = new EngineEntity(planeMesh, planeMaterial);
 	EngineEntity* plane3 = new EngineEntity(planeMesh, planeMaterial);
-	EngineEntity* plane4 = new EngineEntity(planeMesh, planeMaterial);*/
+	EngineEntity* plane4 = new EngineEntity(planeMesh, planeMaterial);
 
 	// Add objects to vector.
 	entities.push_back(sphere);
@@ -363,9 +340,9 @@ void Engine::CreateBasicGeometry()
 
 	// Add planes to vector.
 	entities.push_back(plane1);
-	/*entities.push_back(plane2);
+	entities.push_back(plane2);
 	entities.push_back(plane3);
-	entities.push_back(plane4);*/
+	entities.push_back(plane4);
 
 	sphere->SetScale(0.5f, 0.5f, 0.5f);
 	sphere->SetPosition(0.0f, -2.0f, 0.0f);
@@ -387,16 +364,16 @@ void Engine::CreateBasicGeometry()
 	plane1->SetPosition(0.0f, -3.0f, 0.0f);
 
 	// Right
-	//plane2->SetScale(0.01f, 3.0f, 5.0f);
-	//plane2->SetPosition(5.0f, 0.0f, 0.0f);
+	plane2->SetScale(0.01f, 3.0f, 5.0f);
+	plane2->SetPosition(5.0f, 0.0f, 0.0f);
 
-	//// Left
-	//plane3->SetScale(0.01f, 3.0f, 5.0f);
-	//plane3->SetPosition(-5.0f, 0.0f, 0.0f);
+	// Left
+	plane3->SetScale(0.01f, 3.0f, 5.0f);
+	plane3->SetPosition(-5.0f, 0.0f, 0.0f);
 
-	//// Back
-	//plane4->SetScale(5.0f, 3.0f, 0.01f);
-	//plane4->SetPosition(0.0f, 0.0f, 5.0f);	
+	// Back
+	plane4->SetScale(5.0f, 3.0f, 0.01f);
+	plane4->SetPosition(0.0f, 0.0f, 5.0f);	
 
 	currentEntity = 0;
 }
@@ -421,7 +398,7 @@ void Engine::LightEntityInitialize()
 	lightEntity4->SetPosition(1, 1, 0);
 	lightEntity4->SetScale(5, 5, 5);
 
-	lightEntity5 = new EngineEntity(objectMesh, dx::XMFLOAT3(1.0f, 0.5f, 0.5f));
+	lightEntity5 = new EngineEntity(objectMesh, dx::XMFLOAT3(1.0f, 0.2f, 0.2f));
 	lightEntity5->SetPosition(-1, -1, 0);
 	lightEntity5->SetScale(5, 5, 5);
 
@@ -429,11 +406,11 @@ void Engine::LightEntityInitialize()
 	lightEntity6->SetPosition(1, -1, 0);
 	lightEntity6->SetScale(5, 5, 5);
 
-	lightEntity7 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.8f, 0.2f, 0.3f));
+	lightEntity7 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.2f, 0.2f, 1.0f));
 	lightEntity7->SetPosition(-2, 0, 1);
 	lightEntity7->SetScale(5, 5, 5);
 
-	lightEntity8 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.8f, 0.2f, 0.5f));
+	lightEntity8 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.5f, 0.2f, 1.0f));
 	lightEntity8->SetPosition(2, 0, 1);
 	lightEntity8->SetScale(5, 5, 5);
 
@@ -524,13 +501,13 @@ void Engine::Draw(float deltaTime, float totalTime)
 
 	dirVertexShader->SetShader();
 
-	dirPixelShader->SetShaderResourceView("position", shaderResourceViewArray[0]);
+	dirPixelShader->SetShaderResourceView("Position", shaderResourceViewArray[0]);
 	dirPixelShader->SetShaderResourceView("NormalMap", shaderResourceViewArray[1]);
 	dirPixelShader->SetShaderResourceView("Texture", shaderResourceViewArray[2]);
 	backBufferPixelShader->SetSamplerState("Sampler", sampler);
 
-	dirPixelShader->SetFloat3("lightColour", dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
-	dirPixelShader->SetFloat3("lightDirection", dx::XMFLOAT3(0.0f, 0.0f, 0.0f));
+	dirPixelShader->SetFloat3("lightColour", dx::XMFLOAT3(0.5f, 0.5f, 0.5f));
+	dirPixelShader->SetFloat3("lightDirection", dx::XMFLOAT3(10.0f, -10.0f, 0.0f));
 
 	dirPixelShader->CopyAllBufferData();
 	dirPixelShader->SetShader();
@@ -582,7 +559,7 @@ void Engine::Draw(float deltaTime, float totalTime)
 	swapChain->Present(0, 0);
 }
 
-// MOUSE INPUTS - ***BYTA TILL DX INPUT***
+// MOUSE INPUTS - *** BYTA TILL DX INPUT ***
 #pragma region Mouse Input
 
 void Engine::MousePressed(WPARAM buttonState, int x, int y)
