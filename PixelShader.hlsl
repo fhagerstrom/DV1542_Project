@@ -11,8 +11,8 @@ struct PointLight
 
 struct SpotLight
 {
-	float3 Direction;
-	float SpotPower;
+	float3 direction;
+	float spotPower;
 };
 
 cbuffer lightData : register(b0)
@@ -20,7 +20,7 @@ cbuffer lightData : register(b0)
 	float4 DirLightColour;
 	float3 DirLightDirection;
 	
-	// point Light sources for spotlight
+	// Point light sources for spotlight
 	PointLight pointLight1;
 	PointLight pointLight2;
 
@@ -79,11 +79,11 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 
 	// SpotLight calculation
-	float angleFromCenter1 = max(dot(dirToPointLight1, spotLight1.Direction), 0.0f);
-	float spotAmount1 = pow(angleFromCenter1, spotLight1.SpotPower);
+	float angleFromCenter1 = max(dot(dirToPointLight1, spotLight1.direction), 0.0f);
+	float spotAmount1 = pow(angleFromCenter1, spotLight1.spotPower);
 
-	float angleFromCenter2 = max(dot(dirToPointLight2, spotLight2.Direction), 0.0f);
-	float spotAmount2 = pow(angleFromCenter2, spotLight2.SpotPower);
+	float angleFromCenter2 = max(dot(dirToPointLight2, spotLight2.direction), 0.0f);
+	float spotAmount2 = pow(angleFromCenter2, spotLight2.spotPower);
 
 	// Specular (for point light)
 	float3 toCamera = normalize(CameraPosition - input.worldPos);

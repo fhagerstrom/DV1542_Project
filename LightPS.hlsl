@@ -42,7 +42,7 @@ float4 main(in VertexToPixel input) : SV_TARGET0
 	// Specular calculation.
 	float3 viewVector = cameraPosition - position;
 	float3 h = normalize(l + viewVector);
-	float specular = pow(saturate(dot(normal, h)), 10) * attenuation;
+	float specular = pow(saturate(dot(normal, h)), 32) * attenuation;
 
 	float3 finalDiffuse = colour * diffuse;
 	float3 finalSpecular = specular * diffuse * attenuation;

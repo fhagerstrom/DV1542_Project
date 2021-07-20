@@ -27,7 +27,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	float3 l = -lightDirection;
 
-	float lightAmountDL = saturate(dot(normal, l));
+	float lightAmountDL = saturate(dot(normal, normalize(l)));
 	float3 colour = lightColour * lightAmountDL * diffuse;
 
 	return float4(colour, 1.0f);

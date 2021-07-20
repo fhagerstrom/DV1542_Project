@@ -37,12 +37,12 @@ Mesh::Mesh(ID3D11Device* device, const char* objFile)
 	std::vector<Vertex> vertices;        // Vertices we're assembling
 	std::vector<UINT> indices;           // Indices of these verts
 	unsigned int verticeCounter = 0;     // Count of vertices/indices
-	char lineRead[100];                  // String for line reading
+	char lineRead[255];                  // String for line reading
 
 	while (obj.good())
 	{
 		// Get the line
-		obj.getline(lineRead, 100);
+		obj.getline(lineRead, 255);
 
 		// Check the type of line
 		if (lineRead[0] == 'v' && lineRead[1] == 'n')

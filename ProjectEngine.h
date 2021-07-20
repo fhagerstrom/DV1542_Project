@@ -12,10 +12,10 @@
 #include "EngineEntity.h"
 #include "Renderer.h"
 #include "Material.h"
-#include "Terrain.h"
 #include "Lights.h"
+#include "Water.h"
 #include "Vertex.h"
-#include "WICTextureLoader.h" // DirectX Tool Kit
+#include "WICTextureLoader.h" // DirectXTK
 
 class Engine : public DXInit
 {
@@ -39,16 +39,27 @@ private:
 	EngineEntity* lightEntity6;
 	EngineEntity* lightEntity7;
 	EngineEntity* lightEntity8;
+	EngineEntity* lightEntity9;
 
-	// Add mesh objects.
+	// Mesh objects.
 	Mesh* objectMesh;
 	Mesh* planeMesh;
+	Mesh* poolMesh;
+	Mesh* waterMesh;
 
 	// Material class objects.
 	Material* objectMaterial;
 	Material* planeMaterial;
+	Material* poolMaterial;
+	Material* waterMaterial;
 
-	Terrain* terrain;
+	// Water related objects.
+	Water* water;
+
+	// Sky related schtuff
+	ID3D11ShaderResourceView* skySRV;
+	ID3D11RasterizerState* rsSky;
+	ID3D11DepthStencilState* dsSky;
 
 	Renderer renderer;
 
@@ -60,6 +71,7 @@ private:
 	void LoadTextures();
 	void CreateMaterials();
 	void CreateBasicGeometry();
+	void SetupWater();
 	void LightEntityInitialize();
 
 	// Texture related schtuff.
@@ -67,10 +79,13 @@ private:
 	ID3D11ShaderResourceView* objectNormalMapSRV;
 	ID3D11ShaderResourceView* planeTextureSRV;
 	ID3D11ShaderResourceView* planeNormalMapSRV;
+	ID3D11ShaderResourceView* waterNormalMapSRV;
+	ID3D11ShaderResourceView* poolSRV;
+	ID3D11ShaderResourceView* poolNormalMapSRV;
 
 	ID3D11SamplerState* sampler;
 
-	// RenderTargets for deferred rendering.
+	// Render targets for deferred rendering.
 	ID3D11RenderTargetView* renderTargetViewArray[BUFFER_COUNT];
 	ID3D11ShaderResourceView* shaderResourceViewArray[BUFFER_COUNT];
 	ID3D11Texture2D* depthStencilBuffer;
@@ -96,8 +111,12 @@ private:
 	SimplePixelShader* dirPixelShader;
 	SimpleVertexShader* particleVertexShader;
 	SimplePixelShader* particlePixelShader;
+	SimpleVertexShader* skyboxVertexShader;
+	SimplePixelShader* skyboxPixelShader;
 	SimpleVertexShader* waterVertexShader;
 	SimplePixelShader* waterPixelShader;
+	SimpleVertexShader* refractionVertexShader;
+	SimplePixelShader* refractionPixelShader;
 
 	// The matrices to go from model space to screen space
 	DirectX::XMFLOAT4X4 worldMatrix;

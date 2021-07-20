@@ -11,16 +11,15 @@ class EngineEntity
 {
 private:
 	Mesh* mesh;
-	Material* mat;
-	dx::XMFLOAT3 lightCol;
+	Material* material;
 	dx::XMFLOAT4X4 worldMatrix;
+	dx::XMFLOAT3 lightColour;
 	dx::XMFLOAT3 position;
 	dx::XMFLOAT3 rotation;
 	dx::XMFLOAT3 scale;
 
 public:
 	EngineEntity(Mesh* mesh, Material* material);
-	// EngineEntity(Terrain* terrain, Material* material);
 	EngineEntity(Mesh* mesh, dx::XMFLOAT3 lightColour);
 	~EngineEntity();
 
@@ -34,10 +33,10 @@ public:
 	void SetScale(float x, float y, float z)	{ scale.x = x; scale.y = y; scale.z = z; }
 
 	Mesh* GetMesh() { return mesh; }
-	Material* GetMaterial() { return mat; }
+	Material* GetMaterial() { return material; }
 	dx::XMFLOAT4X4 GetWorldMatrix() { return worldMatrix; }
 
-	dx::XMFLOAT3 GetLightColour() { return lightCol; };
+	dx::XMFLOAT3 GetLightColour() { return lightColour; };
 	dx::XMFLOAT3 GetPosition() { return position; };
 
 };

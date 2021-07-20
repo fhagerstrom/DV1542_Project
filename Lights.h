@@ -11,22 +11,22 @@ struct PointLight
 	dx::XMFLOAT4 colour;
 	dx::XMFLOAT3 position;
 
-	void SetpointLightValues(dx::XMFLOAT4 _colour, dx::XMFLOAT3 _position)
+	void SetpointLightValues(dx::XMFLOAT4 colour, dx::XMFLOAT3 position)
 	{
-		colour = _colour;
-		position = _position;
+		this->colour = colour;
+		this->position = position;
 	}
 };
 
 struct SpotLight
 {
-	dx::XMFLOAT3 Direction;
-	float SpotPower;
+	dx::XMFLOAT3 direction;
+	float spotPower;
 	
 
-	void SetSpotLightValues(dx::XMFLOAT3 _direction, float _power)
+	void SetSpotLightValues(dx::XMFLOAT3 direction, float power)
 	{
-		Direction = _direction;
-		SpotPower = _power;
+		this->direction = direction;
+		spotPower = power;
 	}
 };

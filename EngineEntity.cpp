@@ -5,7 +5,7 @@ namespace dx = DirectX;
 EngineEntity::EngineEntity(Mesh* mesh, Material* material)
 {
 	this->mesh = mesh;
-	mat = material;
+	this->material = material;
 
 	XMStoreFloat4x4(&worldMatrix, dx::XMMatrixIdentity());
 	position = dx::XMFLOAT3(0, 0, 0);
@@ -13,16 +13,10 @@ EngineEntity::EngineEntity(Mesh* mesh, Material* material)
 	scale = dx::XMFLOAT3(1, 1, 1);
 }
 
-//EngineEntity::EngineEntity(Terrain* terrain, Material* material)
-//{
-//	terr = terrain;
-//	mat = material;
-//}
-
 EngineEntity::EngineEntity(Mesh* mesh, DirectX::XMFLOAT3 lightColour)
 {
 	this->mesh = mesh;
-	lightCol = lightColour;
+	this->lightColour = lightColour;
 
 	XMStoreFloat4x4(&worldMatrix, dx::XMMatrixIdentity());
 	position = dx::XMFLOAT3(0, 0, 0);
