@@ -21,6 +21,7 @@ private:
 public:
 	Mesh(ID3D11Device* device, Vertex* verticeArray, int numVertices, unsigned int* indexArray, int numIndices);
 	Mesh(ID3D11Device* device, const char* objFile);
+	// Mesh(ID3D11Device* device, const char* mtlFile);
 	~Mesh();
 
 	ID3D11Buffer* GetVertexBuffer() { return vBuffer; }

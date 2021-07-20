@@ -41,7 +41,7 @@ Engine::~Engine()
 	delete camera;
 	delete water;
 
-	for (auto& mesh : meshes) 
+	for (auto& mesh : entities) 
 		delete mesh;
 
 	for (auto& entity : entities)
@@ -315,7 +315,7 @@ void Engine::SetupWater()
 {
 	// Create water object and initialize.
 	water = new Water;
-	water->Initialize(device, L"Debug/Textures/waterNormal.jpg", 2.5f, 1.0f);
+	water->Initialize(device, L"Debug/Textures/NormalMaps/waterNormal.jpg", 2.5f, 1.0f);
 	
 	// TODO: Refraction and reflection
 }
@@ -325,20 +325,20 @@ void Engine::LoadTextures()
 	// Load texture stuff.
 	// OBJECTS
 	// SPHERE
-	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/scrapedMetal.jpg", 0, &objectTextureSRV);
-	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/metalNormals.jpg", 0, &objectNormalMapSRV);
+	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/scrapedmetal.jpg", 0, &objectTextureSRV);
+	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/NormalMaps/metalNormals.jpg", 0, &objectNormalMapSRV);
 
 	// PLANE / GROUND
-	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/crackedIce.jpg", 0, &planeTextureSRV);
-	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/iceNormals.png", 0, &planeNormalMapSRV);
+	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/icySnow.jpg", 0, &planeTextureSRV);
+	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/NormalMaps/snowNormals.jpg", 0, &planeNormalMapSRV);
 
 	// SKYMAP (WIP)
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/overcastMap.jpg", 0, &skySRV);
 
 	// POOL AND WATER (WIP)
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/bathTiles.jpg", 0, &poolSRV);
-	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/triangleTileNormals.jpg", 0, &poolNormalMapSRV);
-	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/waterNormal.jpg", 0, &waterNormalMapSRV);
+	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/NormalMaps/triangleTileNormals.jpg", 0, &poolNormalMapSRV);
+	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/NormalMaps/waterNormals.jpg", 0, &waterNormalMapSRV);
 }
 
 void Engine::CreateMaterials()
@@ -366,10 +366,10 @@ void Engine::CreateBasicGeometry()
 	// Create objects.
 	// SPHERES
 	EngineEntity* sphere = new EngineEntity(objectMesh, objectMaterial);
-	EngineEntity* sphere1 = new EngineEntity(objectMesh, objectMaterial);
+	/*EngineEntity* sphere1 = new EngineEntity(objectMesh, objectMaterial);
 	EngineEntity* sphere2 = new EngineEntity(objectMesh, objectMaterial);
 	EngineEntity* sphere3 = new EngineEntity(objectMesh, objectMaterial);
-	EngineEntity* sphere4 = new EngineEntity(objectMesh, objectMaterial);
+	EngineEntity* sphere4 = new EngineEntity(objectMesh, objectMaterial);*/
 
 	// POOL FOR WATER
 	EngineEntity* pool = new EngineEntity(poolMesh, poolMaterial);
@@ -379,18 +379,18 @@ void Engine::CreateBasicGeometry()
 
 	// Add objects to vector.
 	entities.push_back(sphere);
-	entities.push_back(sphere1);
+	/*entities.push_back(sphere1);
 	entities.push_back(sphere2);
 	entities.push_back(sphere3);
-	entities.push_back(sphere4);
+	entities.push_back(sphere4);*/
 
 	// Add pool to vector
 	entities.push_back(pool);
 
-	sphere->SetScale(0.5f, 0.5f, 0.5f);
-	sphere->SetPosition(0.0f, -1.0f, 0.0f);
+	sphere->SetScale(1.5f, 1.5f, 1.5f);
+	sphere->SetPosition(-3.0f, 2.5f, 2.0f);
 
-	sphere1->SetScale(0.5f, 0.5f, 0.5f);
+	/*sphere1->SetScale(0.5f, 0.5f, 0.5f);
 	sphere1->SetPosition(-2.0f, -1.0f, -2.0f);
 
 	sphere2->SetScale(0.5f, 0.5f, 0.5f);
@@ -400,14 +400,14 @@ void Engine::CreateBasicGeometry()
 	sphere3->SetPosition(2.0f, -1.0f, 2.0f);
 
 	sphere4->SetScale(0.5f, 0.5f, 0.5f);
-	sphere4->SetPosition(-2.0f, -1.0f, 2.0f);
+	sphere4->SetPosition(-2.0f, -1.0f, 2.0f);*/
 
 	// Bottom
 	ground->SetScale(5.0f, 0.025f, 5.0f);
 	ground->SetPosition(0.0f, -2.0f, 0.0f);
 
 	pool->SetScale(1.0f, 1.0f, 1.0f);
-	pool->SetPosition(3.0f, -1.9f, 4.0f);
+	pool->SetPosition(0.0f, -1.9f, 0.0f);
 
 	currentEntity = 0;
 }
@@ -423,27 +423,27 @@ void Engine::LightEntityInitialize()
 	lightEntity2->SetPosition(-2, 0, 0);
 	lightEntity2->SetScale(5, 5, 5);
 
-	lightEntity3 = new EngineEntity(objectMesh, dx::XMFLOAT3(1.0f, 0.3f, 0.3f));
-	lightEntity3->SetPosition(4, 0, 5);
+	lightEntity3 = new EngineEntity(objectMesh, dx::XMFLOAT3(1.0f, 0.2f, 0.2f));
+	lightEntity3->SetPosition(3, 0, 5);
 	lightEntity3->SetScale(5, 5, 5);
 
-	lightEntity4 = new EngineEntity(objectMesh, dx::XMFLOAT3(1.0f, 0.3f, 0.3f));
-	lightEntity4->SetPosition(-4, 0, 5);
+	lightEntity4 = new EngineEntity(objectMesh, dx::XMFLOAT3(1.0f, 0.2f, 0.2f));
+	lightEntity4->SetPosition(-3, 0, 5);
 	lightEntity4->SetScale(5, 5, 5);
 
-	lightEntity5 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.3f, 1.0f, 0.3f));
+	lightEntity5 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.2f, 0.6f, 0.6f));
 	lightEntity5->SetPosition(4, 0, -5);
 	lightEntity5->SetScale(5, 5, 5);
 
-	lightEntity6 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.3f, 1.0f, 0.3f));
+	lightEntity6 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.2f, 0.6f, 0.6f));
 	lightEntity6->SetPosition(-4, 0, -5);
 	lightEntity6->SetScale(5, 5, 5);
 
-	lightEntity7 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.3f, 0.3f, 1.0f));
+	lightEntity7 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.2f, 0.2f, 1.0f));
 	lightEntity7->SetPosition(2, 0, 2);
 	lightEntity7->SetScale(5, 5, 5);
 
-	lightEntity8 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.3f, 0.3f, 1.0f));
+	lightEntity8 = new EngineEntity(objectMesh, dx::XMFLOAT3(0.2f, 0.2f, 1.0f));
 	lightEntity8->SetPosition(-2, 0, 2);
 	lightEntity8->SetScale(5, 5, 5);
 
@@ -500,8 +500,8 @@ void Engine::Draw(float deltaTime, float totalTime)
 	
 	for (unsigned int i = 0; i < entities.size(); i++)
 	{
-		ID3D11Buffer* vBuffer = entities[i]->GetMesh()->GetVertexBuffer();
-		ID3D11Buffer* iBuffer = entities[i]->GetMesh()->GetIndexBuffer();
+		vertexBuffer = entities[i]->GetMesh()->GetVertexBuffer();
+		indexBuffer = entities[i]->GetMesh()->GetIndexBuffer();
 
 		deferredVertexShader->SetMatrix4x4("world", entities[i]->GetWorldMatrix());
 		deferredVertexShader->SetMatrix4x4("view", camera->GetView());
@@ -517,8 +517,8 @@ void Engine::Draw(float deltaTime, float totalTime)
 		deferredPixelShader->CopyAllBufferData();
 		deferredPixelShader->SetShader();
 
-		context->IASetVertexBuffers(0, 1, &vBuffer, &stride, &offset);
-		context->IASetIndexBuffer(iBuffer, DXGI_FORMAT_R32_UINT, 0);
+		context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+		context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		
 		context->DrawIndexed(entities[i]->GetMesh()->GetIndexCount(), 0, 0);
 	}
@@ -539,8 +539,8 @@ void Engine::Draw(float deltaTime, float totalTime)
 	dirPixelShader->SetShaderResourceView("Texture", shaderResourceViewArray[2]);
 	backBufferPixelShader->SetSamplerState("Sampler", sampler);
 
-	dirPixelShader->SetFloat3("lightColour", dx::XMFLOAT3(0.8f, 0.8f, 0.8f));
-	dirPixelShader->SetFloat3("lightDirection", dx::XMFLOAT3(1.0f, 0.0f, 0.0f));
+	dirPixelShader->SetFloat3("lightColour", dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
+	dirPixelShader->SetFloat3("lightDirection", dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
 
 	dirPixelShader->CopyAllBufferData();
 	dirPixelShader->SetShader();
@@ -581,11 +581,12 @@ void Engine::Draw(float deltaTime, float totalTime)
 		context->DrawIndexed(lightEntities[i]->GetMesh()->GetIndexCount(), 0, 0);
 	}
 	
+	// Reset the render state.
 	context->RSSetState(NULL);
 	context->OMSetBlendState(NULL, blend, 0xFFFFFFFF);
 	context->OMSetDepthStencilState(NULL, 0);
 	
-	context->Draw(4, 0);
+	context->Draw(3, 0);
 
 	swapChain->Present(0, 0);
 }

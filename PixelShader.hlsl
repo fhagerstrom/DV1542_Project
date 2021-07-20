@@ -1,6 +1,7 @@
 // External texture-related data
 Texture2D Texture : register(t0);
 Texture2D NormalMap : register(t1);
+TextureCube SkyMap : register(t2);
 SamplerState Sampler : register(s0);
 
 struct PointLight
@@ -88,11 +89,11 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// Specular (for point light)
 	float3 toCamera = normalize(CameraPosition - input.worldPos);
 	float3 reflection = reflect(-dirToPointLight3, input.normal);
-	float spec = pow(max(dot(reflection, toCamera), 0), 32);
+	float spec = pow(max(dot(reflection, toCamera), 0), 64);
 
 	float3 toCamera1 = normalize(CameraPosition - input.worldPos);
 	float3 reflection1 = reflect(-dirToPointLight4, input.normal);
-	float spec1 = pow(max(dot(reflection1, toCamera1), 0), 32);
+	float spec1 = pow(max(dot(reflection1, toCamera1), 0), 64);
 
 
 	// Total directional Light
@@ -105,6 +106,11 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float3 totalSpotLight = (spotAmount1 * pointLight1.colour * textureColour) + (spotAmount2 * pointLight2.colour * textureColour);
 
 	float3 totalLight = totalPointLight + totalSpotLight + spec + spec1;
+
+	//// Calculate the reflection vector from the camera
+	//// bouncing off the surface
+	//float4 skyColor = Sky.Sample(Sampler, reflect(-toCamera, input.normal));
+	//return lerp(textureColor, skyColor, 0.5f);
 
 	return float4(totalLight, 1.0f);
 }

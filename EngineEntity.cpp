@@ -13,7 +13,7 @@ EngineEntity::EngineEntity(Mesh* mesh, Material* material)
 	scale = dx::XMFLOAT3(1, 1, 1);
 }
 
-EngineEntity::EngineEntity(Mesh* mesh, DirectX::XMFLOAT3 lightColour)
+EngineEntity::EngineEntity(Mesh* mesh, dx::XMFLOAT3 lightColour)
 {
 	this->mesh = mesh;
 	this->lightColour = lightColour;

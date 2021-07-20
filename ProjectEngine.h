@@ -61,6 +61,15 @@ private:
 	ID3D11RasterizerState* rsSky;
 	ID3D11DepthStencilState* dsSky;
 
+	// Lights
+	PointLight pointLight1;
+	PointLight pointLight2;
+	PointLight pointLight3;
+	PointLight pointLight4;
+
+	SpotLight spotLight1;
+	SpotLight spotLight2;
+
 	Renderer renderer;
 
 	// Initialization helper functions.
