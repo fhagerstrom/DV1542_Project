@@ -107,10 +107,10 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	float3 totalLight = totalPointLight + totalSpotLight + spec + spec1;
 
-	//// Calculate the reflection vector from the camera
-	//// bouncing off the surface
-	//float4 skyColor = Sky.Sample(Sampler, reflect(-toCamera, input.normal));
-	//return lerp(textureColor, skyColor, 0.5f);
+	// Calculate the reflection vector from the camera
+	// bouncing off the surface
+	/*float4 skyColor = Sky.Sample(Sampler, reflect(-toCamera, input.normal));
+	return lerp(textureColor, skyColor, 0.5f);*/
 
 	return float4(totalLight, 1.0f);
 }
