@@ -20,10 +20,7 @@ cbuffer CameraPos : register(b0)
 }
 
 [maxvertexcount(3)]
-void main(
-	triangle GSInput input[3] : SV_POSITION, 
-	inout TriangleStream< GSOutput > output
-)
+void main(triangle GSInput input[3] : SV_POSITION, inout TriangleStream< GSOutput > output)
 {
 	float3 p0 = input[0].pos.xyz;
 	float3 p1 = input[1].pos.xyz;
@@ -32,10 +29,11 @@ void main(
 	float3 faceNormal = normalize(cross(p1 - p0, p2 - p0));
 
 	// To determine if we are facing the front or back of the triangle we need to do 
-	// dot product with facenormal and a vector that goes from camera to the triangle. 
+	// dot product with facenormal and the negative first vertice of the triangle
 	// if that is >= 0 the cull it
-	float3 fpv0 = p0 - camPos;//  point on triangle - focal point
-	float cullValue = dot(faceNormal, -p0);
+	
+	//since camera is origin we do this math
+	float cullValue = dot(-p0, faceNormal); 
 
 	if (cullValue >= 0.0f)
 	{

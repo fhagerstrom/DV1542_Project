@@ -27,7 +27,7 @@ EngineEntity::EngineEntity(Mesh* mesh, dx::XMFLOAT3 lightColour)
 EngineEntity::~EngineEntity()
 {
 
-}
+}	
 
 void EngineEntity::UpdateWorldMatrix()
 {

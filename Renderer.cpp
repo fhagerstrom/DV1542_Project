@@ -19,8 +19,8 @@ void Renderer::SetLights()
 	pointLight3.SetpointLightValues(dx::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f), dx::XMFLOAT3(-1, 1, 0));
 	pointLight4.SetpointLightValues(dx::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f), dx::XMFLOAT3(1, 1, 0));
 
-	spotLight1.SetSpotLightValues(dx::XMFLOAT3(0, 1, 0), 1.0f);
-	spotLight2.SetSpotLightValues(dx::XMFLOAT3(0, 1, 0), 1.0f);
+	spotLight1.SetSpotLightValues(dx::XMFLOAT3(0, 1, 0), 64.0f);
+	spotLight2.SetSpotLightValues(dx::XMFLOAT3(0, 1, 0), 64.0f);
 }
 
  

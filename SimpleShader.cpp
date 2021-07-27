@@ -873,9 +873,7 @@ SimpleGeometryShader::SimpleGeometryShader(ID3D11Device* device, ID3D11DeviceCon
 	this->allowStreamOutRasterization = allowStreamOutRasterization;
 }
 
-// --------------------------------------------------------
 // Destructor - Clean up actual shader (base will be called automatically)
-// --------------------------------------------------------
 SimpleGeometryShader::~SimpleGeometryShader()
 {
 	CleanUp();
@@ -1114,4 +1112,242 @@ unsigned int SimpleGeometryShader::CalcComponentCount(unsigned int mask)
 	result += (unsigned int)((mask & 4) == 4);
 	result += (unsigned int)((mask & 8) == 8);
 	return result;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// ------ SIMPLE DOMAIN SHADER ------------------------------------------------
+///////////////////////////////////////////////////////////////////////////////
+
+// --------------------------------------------------------
+// Constructor calls the base
+// --------------------------------------------------------
+SimpleDomainShader::SimpleDomainShader(ID3D11Device* device, ID3D11DeviceContext* context)
+	: SimpleShaderHandler(device, context)
+{
+	this->shader = 0;
+}
+
+// --------------------------------------------------------
+// Destructor - Clean up actual shader (base will be called automatically)
+// --------------------------------------------------------
+SimpleDomainShader::~SimpleDomainShader()
+{
+	CleanUp();
+}
+
+// --------------------------------------------------------
+// Handles cleaning up shader and base class clean up
+// --------------------------------------------------------
+void SimpleDomainShader::CleanUp()
+{
+	SimpleShaderHandler::CleanUp();
+	if (shader) { shader->Release(); shader = 0; }
+}
+
+// --------------------------------------------------------
+// Creates the DirectX domain shader
+//
+// shaderBlob - The shader's compiled code
+//
+// Returns true if shader is created correctly, false otherwise
+// --------------------------------------------------------
+bool SimpleDomainShader::CreateShader(ID3DBlob* shaderBlob)
+{
+	// Clean up first, in the event this method is
+	// called more than once on the same object
+	this->CleanUp();
+
+	// Create the shader from the blob
+	HRESULT result = device->CreateDomainShader(
+		shaderBlob->GetBufferPointer(),
+		shaderBlob->GetBufferSize(),
+		0,
+		&shader);
+
+	// Check the result
+	return (result == S_OK);
+}
+
+// --------------------------------------------------------
+// Sets the domain shader and constant buffers for
+// future DirectX drawing
+// --------------------------------------------------------
+void SimpleDomainShader::SetShaderAndCBs()
+{
+	// Is shader valid?
+	if (!isShaderValid) return;
+
+	// Set the shader
+	deviceContext->DSSetShader(shader, 0, 0);
+
+	// Set the constant buffers
+	for (unsigned int i = 0; i < constantBufferCount; i++)
+	{
+		deviceContext->DSSetConstantBuffers(
+			constantBuffers[i].bindIndex,
+			1,
+			&constantBuffers[i].ConstantBuffer);
+	}
+}
+
+// --------------------------------------------------------
+// Sets a shader resource view in the domain shader stage
+//
+// name - The name of the texture resource in the shader
+// srv - The shader resource view of the texture in GPU memory
+//
+// Returns true if a texture of the given name was found, false otherwise
+// --------------------------------------------------------
+bool SimpleDomainShader::SetShaderResourceView(std::string name, ID3D11ShaderResourceView* srv)
+{
+	// Look for the variable and verify
+	const SimpleSRV* srvInfo = GetShaderResourceViewInfo(name);
+	if (srvInfo == 0)
+		return false;
+
+	// Set the shader resource view
+	deviceContext->DSSetShaderResources(srvInfo->bindIndex, 1, &srv);
+
+	// Success
+	return true;
+}
+
+// --------------------------------------------------------
+// Sets a sampler state in the domain shader stage
+//
+// name - The name of the sampler state in the shader
+// samplerState - The sampler state in GPU memory
+//
+// Returns true if a sampler of the given name was found, false otherwise
+// --------------------------------------------------------
+bool SimpleDomainShader::SetSamplerState(std::string name, ID3D11SamplerState* samplerState)
+{
+	// Look for the variable and verify
+	const SimpleSampler* sampInfo = GetSamplerInfo(name);
+	if (sampInfo == 0)
+		return false;
+
+	// Set the shader resource view
+	deviceContext->DSSetSamplers(sampInfo->bindIndex, 1, &samplerState);
+
+	// Success
+	return true;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// ------ SIMPLE HULL SHADER --------------------------------------------------
+///////////////////////////////////////////////////////////////////////////////
+
+// --------------------------------------------------------
+// Constructor just calls the base
+// --------------------------------------------------------
+SimpleHullShader::SimpleHullShader(ID3D11Device* device, ID3D11DeviceContext* context)
+	: SimpleShaderHandler(device, context)
+{
+	this->shader = 0;
+}
+
+// --------------------------------------------------------
+// Destructor - Clean up actual shader (base will be called automatically)
+// --------------------------------------------------------
+SimpleHullShader::~SimpleHullShader()
+{
+	CleanUp();
+}
+
+// --------------------------------------------------------
+// Handles cleaning up shader and base class clean up
+// --------------------------------------------------------
+void SimpleHullShader::CleanUp()
+{
+	SimpleShaderHandler::CleanUp();
+	if (shader) { shader->Release(); shader = 0; }
+}
+
+// --------------------------------------------------------
+// Creates the DirectX hull shader
+//
+// shaderBlob - The shader's compiled code
+//
+// Returns true if shader is created correctly, false otherwise
+// --------------------------------------------------------
+bool SimpleHullShader::CreateShader(ID3DBlob* shaderBlob)
+{
+	// Clean up first, in the event this method is
+	// called more than once on the same object
+	this->CleanUp();
+
+	// Create the shader from the blob
+	HRESULT result = device->CreateHullShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), 0, &shader);
+
+	// Check the result
+	return (result == S_OK);
+}
+
+// --------------------------------------------------------
+// Sets the hull shader and constant buffers for
+// future DirectX drawing
+// --------------------------------------------------------
+void SimpleHullShader::SetShaderAndCBs()
+{
+	// Is shader valid?
+	if (!isShaderValid) return;
+
+	// Set the shader
+	deviceContext->HSSetShader(shader, 0, 0);
+
+	// Set the constant buffers?
+	for (unsigned int i = 0; i < constantBufferCount; i++)
+	{
+		deviceContext->HSSetConstantBuffers(
+			constantBuffers[i].bindIndex,
+			1,
+			&constantBuffers[i].ConstantBuffer);
+	}
+}
+
+// --------------------------------------------------------
+// Sets a shader resource view in the hull shader stage
+//
+// name - The name of the texture resource in the shader
+// srv - The shader resource view of the texture in GPU memory
+//
+// Returns true if a texture of the given name was found, false otherwise
+// --------------------------------------------------------
+bool SimpleHullShader::SetShaderResourceView(std::string name, ID3D11ShaderResourceView* srv)
+{
+	// Look for the variable and verify
+	const SimpleSRV* srvInfo = GetShaderResourceViewInfo(name);
+	if (srvInfo == 0)
+		return false;
+
+	// Set the shader resource view
+	deviceContext->HSSetShaderResources(srvInfo->bindIndex, 1, &srv);
+
+	// Success
+	return true;
+}
+
+// --------------------------------------------------------
+// Sets a sampler state in the hull shader stage
+//
+// name - The name of the sampler state in the shader
+// samplerState - The sampler state in GPU memory
+//
+// Returns true if a sampler of the given name was found, false otherwise
+// --------------------------------------------------------
+bool SimpleHullShader::SetSamplerState(std::string name, ID3D11SamplerState* samplerState)
+{
+	// Look for the variable and verify
+	const SimpleSampler* sampInfo = GetSamplerInfo(name);
+	if (sampInfo == 0)
+		return false;
+
+	// Set the shader resource view
+	deviceContext->HSSetSamplers(sampInfo->bindIndex, 1, &samplerState);
+
+	// Success
+	return true;
 }

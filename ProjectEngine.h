@@ -44,6 +44,7 @@ private:
 	// Mesh objects.
 	Mesh* objectMesh;
 	Mesh* planeMesh;
+	Mesh* lightMesh;
 	Mesh* poolMesh;
 	Mesh* waterMesh;
 

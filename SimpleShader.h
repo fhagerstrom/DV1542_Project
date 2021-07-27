@@ -129,7 +129,9 @@ public:
 	ID3DBlob* GetShaderBlob() { return shaderBlob; }
 };
 
-// Derived class for VERTEX shaders
+// --------------------------------------------------------
+// VERTEX shaders
+// --------------------------------------------------------
 class SimpleVertexShader : public SimpleShaderHandler
 {
 protected:
@@ -152,7 +154,9 @@ public:
 	bool SetSamplerState(std::string name, ID3D11SamplerState* samplerState);
 };
 
-// Derived class for PIXEL shaders
+// --------------------------------------------------------
+// PIXEL shaders
+// --------------------------------------------------------
 class SimplePixelShader : public SimpleShaderHandler
 {
 protected:
@@ -203,4 +207,44 @@ protected:
 
 	// Helpers
 	unsigned int CalcComponentCount(unsigned int mask);
+};
+
+// --------------------------------------------------------
+// DOMAIN shaders
+// --------------------------------------------------------
+class SimpleDomainShader : public SimpleShaderHandler
+{
+public:
+	SimpleDomainShader(ID3D11Device* device, ID3D11DeviceContext* context);
+	~SimpleDomainShader();
+	ID3D11DomainShader* GetDirectXShader() { return shader; }
+
+	bool SetShaderResourceView(std::string name, ID3D11ShaderResourceView* srv);
+	bool SetSamplerState(std::string name, ID3D11SamplerState* samplerState);
+
+protected:
+	ID3D11DomainShader* shader;
+	bool CreateShader(ID3DBlob* shaderBlob);
+	void SetShaderAndCBs();
+	void CleanUp();
+};
+
+// --------------------------------------------------------
+// HULL shaders
+// --------------------------------------------------------
+class SimpleHullShader : public SimpleShaderHandler
+{
+public:
+	SimpleHullShader(ID3D11Device* device, ID3D11DeviceContext* context);
+	~SimpleHullShader();
+	ID3D11HullShader* GetDirectXShader() { return shader; }
+
+	bool SetShaderResourceView(std::string name, ID3D11ShaderResourceView* srv);
+	bool SetSamplerState(std::string name, ID3D11SamplerState* samplerState);
+
+protected:
+	ID3D11HullShader* shader;
+	bool CreateShader(ID3DBlob* shaderBlob);
+	void SetShaderAndCBs();
+	void CleanUp();
 };
