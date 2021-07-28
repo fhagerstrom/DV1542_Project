@@ -302,10 +302,6 @@ void Engine::LoadShaders()
 	refractionPixelShader = new SimplePixelShader(device, context);
 	if (!refractionPixelShader->LoadShaderFile(L"Debug/RefractionPS.cso"))
 		refractionPixelShader->LoadShaderFile(L"RefractionPS.cso");
-
-	backfaceGeometryShader = new SimpleGeometryShader(device, context);
-	if (!backfaceGeometryShader->LoadShaderFile(L"Debug/BackfaceGS.cso"))
-		backfaceGeometryShader->LoadShaderFile(L"BackfaceGS.cso");
 }
 
 void Engine::LoadMesh()
@@ -330,11 +326,16 @@ void Engine::LoadTextures()
 	// Load texture stuff.
 	// OBJECTS
 	// SPHERE
+<<<<<<< HEAD
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/gold.jpg", 0, &objectTextureSRV);
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/NormalMaps/goldNormals.jpg", 0, &objectNormalMapSRV);
+=======
+	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/scrapedmetal.jpg", 0, &objectTextureSRV);
+	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/NormalMaps/metalNormals.jpg", 0, &objectNormalMapSRV);
+>>>>>>> parent of 2b8132d (Update 2021-07-26)
 
 	// PLANE / GROUND
-	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/snow.jpg", 0, &planeTextureSRV);
+	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/icySnow.jpg", 0, &planeTextureSRV);
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/NormalMaps/snowNormals.jpg", 0, &planeNormalMapSRV);
 
 	// SKYMAP (WIP)
@@ -474,10 +475,14 @@ void Engine::Update(float deltaTime, float totalTime)
 		entities[i]->UpdateWorldMatrix();
 	}
 	
-	for (unsigned int j = 0; j < lightEntities.size(); j++)
-	{
-		lightEntities[j]->UpdateWorldMatrix();
-	}
+	lightEntity1->UpdateWorldMatrix();
+	lightEntity2->UpdateWorldMatrix();
+	lightEntity3->UpdateWorldMatrix();
+	lightEntity4->UpdateWorldMatrix();
+	lightEntity5->UpdateWorldMatrix();
+	lightEntity6->UpdateWorldMatrix();
+	lightEntity7->UpdateWorldMatrix();
+	lightEntity8->UpdateWorldMatrix();
 }
 
 void Engine::Draw(float deltaTime, float totalTime)
@@ -546,10 +551,18 @@ void Engine::Draw(float deltaTime, float totalTime)
 	backBufferPixelShader->SetSamplerState("Sampler", sampler);
 
 	dirPixelShader->SetFloat3("lightColour", dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
+<<<<<<< HEAD
 	dirPixelShader->SetFloat3("lightDirection", dx::XMFLOAT3(10.0f, -10.0f, 0.0f));
+=======
+	dirPixelShader->SetFloat3("lightDirection", dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
+>>>>>>> parent of 2b8132d (Update 2021-07-26)
 
 	dirPixelShader->CopyAllBufferData();
 	dirPixelShader->SetShader();
+
+	/*ID3D11Buffer* nothing = 0;
+	context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
+	context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);*/
 
 	for (int i = 0; i < lightEntities.size(); i++)
 	{
@@ -588,18 +601,23 @@ void Engine::Draw(float deltaTime, float totalTime)
 
 		context->DrawIndexed(lightEntities[i]->GetMesh()->GetIndexCount(), 0, 0);
 	}
+<<<<<<< HEAD
 
 	// renderer.SetLights();
+=======
+>>>>>>> parent of 2b8132d (Update 2021-07-26)
 	
 	// Reset the render state.
 	context->RSSetState(NULL);
 	context->OMSetBlendState(NULL, blend, 0xFFFFFFFF);
 	context->OMSetDepthStencilState(NULL, 0);
+	
+	context->Draw(3, 0);
 
 	swapChain->Present(0, 0);
 }
 
-// MOUSE INPUTS
+// MOUSE INPUTS - *** BYTA TILL DX INPUT ***
 #pragma region Mouse Input
 
 void Engine::MousePressed(WPARAM buttonState, int x, int y)

@@ -120,7 +120,7 @@ HRESULT DXInit::InitDirectX()
 		D3D_DRIVER_TYPE_HARDWARE,	// We want to use the hardware (GPU)
 		0,							// Used when doing software rendering
 		deviceFlags,				// Any special options
-		0,							// Optional array of possible versions we want as fallbacks
+		0,							// Optional array of possible verisons we want as fallbacks
 		0,							// The number of fallbacks in the above param
 		D3D11_SDK_VERSION,			// Current version of the SDK
 		&swapDesc,					// Address of swap chain options
@@ -175,6 +175,29 @@ HRESULT DXInit::InitDirectX()
 
 	return S_OK;
 }
+
+//HRESULT DXInit::InitDirectInput(HINSTANCE hInstance)
+//{
+//	HRESULT hr = S_OK;
+//
+//	hr = DirectInput8Create(hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, NULL);
+//
+//	hr = directInput->CreateDevice(GUID_SysKeyboard,
+//		&DIKeyboard,
+//		NULL);
+//
+//	hr = directInput->CreateDevice(GUID_SysMouse,
+//		&DIMouse,
+//		NULL);
+//
+//	hr = DIKeyboard->SetDataFormat(&c_dfDIKeyboard);
+//	hr = DIKeyboard->SetCooperativeLevel(hWnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
+//
+//	hr = DIMouse->SetDataFormat(&c_dfDIMouse);
+//	hr = DIMouse->SetCooperativeLevel(hWnd, DISCL_EXCLUSIVE | DISCL_NOWINKEY | DISCL_FOREGROUND);
+//
+//	return S_OK;
+//}
 
 HRESULT DXInit::Run()
 {

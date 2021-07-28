@@ -127,7 +127,6 @@ private:
 	SimplePixelShader* waterPixelShader;
 	SimpleVertexShader* refractionVertexShader;
 	SimplePixelShader* refractionPixelShader;
-	SimpleGeometryShader* backfaceGeometryShader;
 
 	// The matrices to go from model space to screen space
 	DirectX::XMFLOAT4X4 worldMatrix;
