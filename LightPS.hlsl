@@ -28,6 +28,7 @@ float4 main(in VertexToPixel input) : SV_TARGET0
 	float distance = length(l);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 	if (distance > 5.0f)
 	{
 		return float4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -41,6 +42,11 @@ float4 main(in VertexToPixel input) : SV_TARGET0
 
 	float attenuation = 1.0f / (distance * distance);
 >>>>>>> parent of 2b8132d (Update 2021-07-26)
+=======
+	l /= distance;
+
+	float attenuation = 1.0f / (distance * distance);
+>>>>>>> parent of 2b8132d (Update 2021-07-26)
 
 	float lightAmount = saturate(dot(normal, l));
 	float3 colour = lightAmount * lightColour * attenuation;
@@ -49,7 +55,11 @@ float4 main(in VertexToPixel input) : SV_TARGET0
 	float3 viewVector = cameraPosition - position;
 	float3 h = normalize(l + viewVector);
 <<<<<<< HEAD
+<<<<<<< HEAD
 	float specular = pow(saturate(dot(normal, h)), 128) * attenuation;
+=======
+	float specular = pow(saturate(dot(normal, h)), 10) * attenuation;
+>>>>>>> parent of 2b8132d (Update 2021-07-26)
 =======
 	float specular = pow(saturate(dot(normal, h)), 10) * attenuation;
 >>>>>>> parent of 2b8132d (Update 2021-07-26)

@@ -152,6 +152,7 @@
       <Filter>Resource Files</Filter>
     </FxCompile>
 <<<<<<< HEAD
+<<<<<<< HEAD
     <FxCompile Include="BackfaceGS.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
@@ -164,6 +165,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+=======
+>>>>>>> parent of 2b8132d (Update 2021-07-26)
 =======
 >>>>>>> parent of 2b8132d (Update 2021-07-26)
   </ItemGroup>
