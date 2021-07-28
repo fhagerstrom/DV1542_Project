@@ -856,6 +856,7 @@ bool SimplePixelShader::SetSamplerState(std::string name, ID3D11SamplerState* sa
 
 	// Success
 	return true;
+<<<<<<< HEAD
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1350,4 +1351,6 @@ bool SimpleHullShader::SetSamplerState(std::string name, ID3D11SamplerState* sam
 
 	// Success
 	return true;
+=======
+>>>>>>> parent of 2b8132d (Update 2021-07-26)
 }

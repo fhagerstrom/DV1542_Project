@@ -15,7 +15,7 @@ struct VertexToPixel
 struct PixelShaderOutput
 {
 	float4 Normal : SV_Target0; // Normal mapping
-	float4 Diffuse	: SV_Target1; // Colour
+	float4 Diffuse	: SV_Target1; // colour
 	float4 Position	: SV_Target2;
 };
 

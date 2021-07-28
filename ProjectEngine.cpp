@@ -347,7 +347,7 @@ void Engine::LoadTextures()
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/NormalMaps/goldNormals.jpg", 0, &objectNormalMapSRV);
 
 	// PLANE / GROUND
-	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/snow.jpg", 0, &planeTextureSRV);
+	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/icySnow.jpg", 0, &planeTextureSRV);
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/NormalMaps/snowNormals.jpg", 0, &planeNormalMapSRV);
 
 	// SKYMAP (WIP)
@@ -487,10 +487,14 @@ void Engine::Update(float deltaTime, float totalTime)
 		entities[i]->UpdateWorldMatrix();
 	}
 	
-	for (unsigned int j = 0; j < lightEntities.size(); j++)
-	{
-		lightEntities[j]->UpdateWorldMatrix();
-	}
+	lightEntity1->UpdateWorldMatrix();
+	lightEntity2->UpdateWorldMatrix();
+	lightEntity3->UpdateWorldMatrix();
+	lightEntity4->UpdateWorldMatrix();
+	lightEntity5->UpdateWorldMatrix();
+	lightEntity6->UpdateWorldMatrix();
+	lightEntity7->UpdateWorldMatrix();
+	lightEntity8->UpdateWorldMatrix();
 }
 
 void Engine::Draw(float deltaTime, float totalTime)
@@ -564,6 +568,10 @@ void Engine::Draw(float deltaTime, float totalTime)
 	dirPixelShader->CopyAllBufferData();
 	dirPixelShader->SetShader();
 
+	/*ID3D11Buffer* nothing = 0;
+	context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
+	context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);*/
+
 	for (int i = 0; i < lightEntities.size(); i++)
 	{
 		ID3D11Buffer* vBufferLight = lightEntities[i]->GetMesh()->GetVertexBuffer();
@@ -594,18 +602,18 @@ void Engine::Draw(float deltaTime, float totalTime)
 
 		context->DrawIndexed(lightEntities[i]->GetMesh()->GetIndexCount(), 0, 0);
 	}
-
-	// renderer.SetLights();
 	
 	// Reset the render state.
 	context->RSSetState(NULL);
 	context->OMSetBlendState(NULL, blend, 0xFFFFFFFF);
 	context->OMSetDepthStencilState(NULL, 0);
+	
+	context->Draw(3, 0);
 
 	swapChain->Present(0, 0);
 }
 
-// MOUSE INPUTS
+// MOUSE INPUTS - *** BYTA TILL DX INPUT ***
 #pragma region Mouse Input
 
 void Engine::MousePressed(WPARAM buttonState, int x, int y)
