@@ -94,9 +94,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <FxCompile Include="VertexShader.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
@@ -151,7 +148,6 @@
     <FxCompile Include="RefractionPS.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
-<<<<<<< HEAD
     <FxCompile Include="BackfaceGS.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
@@ -164,7 +160,5 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-=======
->>>>>>> parent of 2b8132d (Update 2021-07-26)
   </ItemGroup>
 </Project>

@@ -13,14 +13,14 @@ private:
 	Mesh* mesh;
 	Material* material;
 	dx::XMFLOAT4X4 worldMatrix;
-	dx::XMFLOAT3 lightColour;
+	dx::XMFLOAT3 lightColor;
 	dx::XMFLOAT3 position;
 	dx::XMFLOAT3 rotation;
 	dx::XMFLOAT3 scale;
 
 public:
 	EngineEntity(Mesh* mesh, Material* material);
-	EngineEntity(Mesh* mesh, dx::XMFLOAT3 lightColour);
+	EngineEntity(Mesh* mesh, dx::XMFLOAT3 lightColor);
 	~EngineEntity();
 
 	void UpdateWorldMatrix();
@@ -36,7 +36,7 @@ public:
 	Material* GetMaterial() { return material; }
 	dx::XMFLOAT4X4 GetWorldMatrix() { return worldMatrix; }
 
-	dx::XMFLOAT3 GetLightColour() { return lightColour; };
+	dx::XMFLOAT3 GetLightColor() { return lightColor; };
 	dx::XMFLOAT3 GetPosition() { return position; };
 
 };

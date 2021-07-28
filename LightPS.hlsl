@@ -1,5 +1,5 @@
 Texture2D Texture : register(t0);
-Texture2D NormalMap	: register(t1);
+Texture2D NormalMap : register(t1);
 Texture2D PositionTexture : register(t2);
 
 SamplerState basicSampler : register(s0);
@@ -7,50 +7,50 @@ SamplerState basicSampler : register(s0);
 cbuffer LightData : register(b0)
 {
 	float3 cameraPosition;
-	float3 lightColour;
+	float3 lightColor;
 	float3 lightPosition;
 }
 
 struct VertexToPixel
 {
-	float4 position	: SV_POSITION;
+	float4 position : SV_POSITION;
+
 };
 
 float4 main(in VertexToPixel input) : SV_TARGET0
 {
+
 	int3 sampleIndices = int3(input.position.xy, 0);
 
 	float3 normal = NormalMap.Load(sampleIndices).xyz;
 	float3 position = PositionTexture.Load(sampleIndices).xyz;
 	float3 diffuse = Texture.Load(sampleIndices).xyz;
 
-	float3 l = lightPosition - position;
-	float distance = length(l);
+	float3 lightToPixel = lightPosition - position;
+	float distance = length(lightToPixel);
 
-	if (distance > 5.0f)
+	if (distance > 4.0f)
 	{
-		return float4(0.0f, 0.0f, 0.0f, 1.0f);
+		return float4(0.0f, 0.0f, 0.0f, 0.0f);
 	}
 
-	l /= distance;
+	lightToPixel /= distance;
 
-	float attenuation = max(0.0f, 1.0f - (distance / 5.0f));
-	l /= distance;
+	float att = max(0.0f, 1.0f - (distance / 4.0f));
 
-	float attenuation = 1.0f / (distance * distance);
+	float lightAmount = saturate(dot(normal, lightToPixel));
+	float3 color = lightAmount * lightColor * att;
 
-	float lightAmount = saturate(dot(normal, l));
-	float3 colour = lightAmount * lightColour * attenuation;
+	//Specular calc
+	float3 V = cameraPosition - position;
+	float3 H = normalize(lightToPixel + V);
+	float specular = pow(saturate(dot(normal, H)), 10) * att;
 
-	// Specular calculation.
-	float3 viewVector = cameraPosition - position;
-	float3 h = normalize(l + viewVector);
+	float3 finalDiffuse = color * diffuse;
+	float3 finalSpecular = specular * diffuse * att;
 
-	float specular = pow(saturate(dot(normal, h)), 32) * attenuation;
+	float4 totalColor = float4(finalDiffuse + finalSpecular, 1.0f);
+	return totalColor;
 
-	float3 finalDiffuse = colour * diffuse;
-	float3 finalSpecular = specular * diffuse * attenuation;
-
-	float4 totalColour = float4(finalDiffuse + finalSpecular, 1.0f);
-	return totalColour;
+	
 }

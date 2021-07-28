@@ -19,5 +19,4 @@ struct Vertex
 	DirectX::XMFLOAT2 uv;           // uv Coordinate for texturing
 	DirectX::XMFLOAT3 normal;       // normal for lighting
 	DirectX::XMFLOAT3 tangent;		// For normal mapping
-	DirectX::XMFLOAT4 colour;		// Terrain related
 };

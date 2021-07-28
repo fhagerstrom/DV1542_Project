@@ -15,7 +15,7 @@ struct VertexToPixel
 struct PixelShaderOutput
 {
 	float4 Normal : SV_Target0; // Normal mapping
-	float4 Diffuse	: SV_Target1; // colour
+	float4 Diffuse	: SV_Target1; // Color
 	float4 Position	: SV_Target2;
 };
 
@@ -38,10 +38,10 @@ PixelShaderOutput main(VertexToPixel input)
 	input.normal = normalize(mul(normalFromMap, tbn));
 
 	// Sample the texture
-	float4 textureColour = Texture.Sample(Sampler, input.uv);
+	float4 textureColor = Texture.Sample(Sampler, input.uv);
 
 	output.Normal = float4(input.normal, 1.0f);
-	output.Diffuse = textureColour;
+	output.Diffuse = textureColor;
 	output.Position = float4(input.worldPos, 1.0f);
 
 	return output;

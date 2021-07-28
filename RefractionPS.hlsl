@@ -49,13 +49,13 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float spec = pow(max(dot(reflection, toCamera), 0), 32);
 
 	// Sample the texture.
-	float4 textureColour = shaderTexture.Sample(Sampler, input.uv);
+	float4 textureColor = shaderTexture.Sample(Sampler, input.uv);
 
 	// Calculate the reflection vector from the camera
 	// bouncing off the surface.
-	float4 skyColour = Sky.Sample(Sampler, reflect(-toCamera, input.normal));
+	float4 skycolor = Sky.Sample(Sampler, reflect(-toCamera, input.normal));
 
-	return lerp(textureColour, skyColour, 0.5f);
+	return lerp(textureColor, skycolor, 0.5f);
 
-	return textureColour;
+	return textureColor;
 }

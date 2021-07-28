@@ -9,14 +9,14 @@ struct VertexShaderInput
 {
     float4 position : POSITION;
     float2 uv : UVCOORD0;
-    float4 colour : COLOUR;
+    float4 color : color;
 };
 
 struct VertexToPixel
 {
     float4 position : SV_POSITION;
     float2 uv : UVCOORD0;
-    float4 colour : COLOUR;
+    float4 color : color;
 };
 
 
@@ -34,8 +34,8 @@ VertexToPixel main(VertexShaderInput input)
     
     output.uv = input.uv;
 
-    // Store the particle colour for pixel shader. 
-    output.colour = input.colour;
+    // Store the particle color for pixel shader. 
+    output.color = input.color;
 
 	return output;
 }

@@ -9,6 +9,6 @@ struct VertexToPixel
 
 float4 main(VertexToPixel input) : SV_TARGET
 {
-	float4 totalColour = Texture.Sample(Sampler, input.uv);
-	return totalColour;
+	float4 totalColor = Texture.Sample(Sampler, input.uv);
+	return totalColor;
 }

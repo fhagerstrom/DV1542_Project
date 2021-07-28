@@ -1,18 +1,18 @@
-Texture2D Position	: register(t0);
-Texture2D NormalMap	: register(t1);
-Texture2D Texture	: register(t2);
-
-SamplerState Sampler : register(s0);
+Texture2D Position : register(t0);
+Texture2D NormalMap : register(t1);
+Texture2D Texture : register(t2);
 
 cbuffer ExternalData : register(b0)
 {
-	float3 lightColour;
-	float3 lightDirection;
+	float3 lightColor;
+	float3 lightDir;
 }
+
+SamplerState Sampler : register(s0);
 
 struct VertexToPixel
 {
-	float4 position	: SV_POSITION;
+	float4 position : SV_POSITION;
 };
 
 float4 main(VertexToPixel input) : SV_TARGET
@@ -25,10 +25,10 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	float3 diffuse = Texture.Load(sampleIndices).xyz;
 
-	float3 l = -lightDirection;
+	float3 L = -lightDir;
 
-	float lightAmountDL = saturate(dot(normal, normalize(l)));
-	float3 colour = lightColour * lightAmountDL * diffuse;
+	float lightAmountDL = saturate(dot(normal, L));
+	float3 color = lightColor * lightAmountDL * diffuse;
 
-	return float4(colour, 1.0f);
+	return float4(color, 1.0f);
 }

@@ -1,6 +1,6 @@
 #pragma once
-#define BUFFER_COUNT 3
 // #define MAX_LIGHTS 2
+const int BUFFER_COUNT = 3;
 
 #include <DirectXMath.h>
 #include <iostream>
@@ -21,7 +21,6 @@ class Engine : public DXInit
 {
 private:
 	// Input and mesh swapping.
-	bool prevTab;
 	unsigned int currentEntity;
 
 	// Keep track of objects and entities to clean up.

@@ -6,8 +6,8 @@ SamplerState Sampler : register(s0);
 
 struct PointLight
 {
-	float4 colour;
-	float3 Position;
+	float4 color;
+	float3 position;
 };
 
 struct SpotLight
@@ -18,7 +18,7 @@ struct SpotLight
 
 cbuffer lightData : register(b0)
 {
-	float4 DirLightColour;
+	float4 DirLightColor;
 	float3 DirLightDirection;
 	
 	// Point light sources for spotlight
@@ -60,22 +60,22 @@ float4 main(VertexToPixel input) : SV_TARGET
 	input.normal = normalize(mul(normalFromMap, tbn));
 
 	// Sample the texture
-	float4 textureColour = Texture.Sample(Sampler, input.uv);
+	float4 textureColor = Texture.Sample(Sampler, input.uv);
 
 	// Directional light calculation
 	float dirLightAmount = saturate(dot(input.normal, -normalize(DirLightDirection)));
 
 	// Point light calculation
-	float3 dirToPointLight1 = normalize(pointLight1.Position - input.worldPos);
+	float3 dirToPointLight1 = normalize(pointLight1.position - input.worldPos);
 	float pointLightAmount1 = saturate(dot(input.normal, dirToPointLight1));
 
-	float3 dirToPointLight2 = normalize(pointLight2.Position - input.worldPos);
+	float3 dirToPointLight2 = normalize(pointLight2.position - input.worldPos);
 	float pointLightAmount2 = saturate(dot(input.normal, dirToPointLight2));
 
-	float3 dirToPointLight3 = normalize(pointLight3.Position - input.worldPos);
+	float3 dirToPointLight3 = normalize(pointLight3.position - input.worldPos);
 	float pointLightAmount3 = saturate(dot(input.normal, dirToPointLight3));
 
-	float3 dirToPointLight4 = normalize(pointLight4.Position - input.worldPos);
+	float3 dirToPointLight4 = normalize(pointLight4.position - input.worldPos);
 	float pointLightAmount4 = saturate(dot(input.normal, dirToPointLight4));
 
 
@@ -97,20 +97,20 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 
 	// Total directional Light
-	float3 totalDirLight = DirLightColour * dirLightAmount * textureColour;
+	float3 totalDirLight = DirLightColor * dirLightAmount * textureColor;
 
 	// Total point Light
-	float3 totalPointLight = (pointLight3.colour * pointLightAmount3 * textureColour) + (pointLight4.colour * pointLightAmount4 * textureColour);
+	float3 totalPointLight = (pointLight3.color * pointLightAmount3 * textureColor) + (pointLight4.color * pointLightAmount4 * textureColor);
 
 	// Total Spotlight
-	float3 totalSpotLight = (spotAmount1 * pointLight1.colour * textureColour) + (spotAmount2 * pointLight2.colour * textureColour);
+	float3 totalSpotLight = (spotAmount1 * pointLight1.color * textureColor) + (spotAmount2 * pointLight2.color * textureColor);
 
 	float3 totalLight = totalPointLight + totalSpotLight + spec + spec1;
 
-	//// Calculate the reflection vector from the camera
-	//// bouncing off the surface
-	//float4 skyColor = Sky.Sample(Sampler, reflect(-toCamera, input.normal));
-	//return lerp(textureColor, skyColor, 0.5f);
+	// Calculate the reflection vector from the camera
+	// bouncing off the surface
+	/*float4 skyColor = Sky.Sample(Sampler, reflect(-toCamera, input.normal));
+	return lerp(textureColor, skyColor, 0.5f);*/
 
 	return float4(totalLight, 1.0f);
 }

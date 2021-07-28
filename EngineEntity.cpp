@@ -13,10 +13,10 @@ EngineEntity::EngineEntity(Mesh* mesh, Material* material)
 	scale = dx::XMFLOAT3(1, 1, 1);
 }
 
-EngineEntity::EngineEntity(Mesh* mesh, dx::XMFLOAT3 lightColour)
+EngineEntity::EngineEntity(Mesh* mesh, dx::XMFLOAT3 lightColor)
 {
 	this->mesh = mesh;
-	this->lightColour = lightColour;
+	this->lightColor = lightColor;
 
 	XMStoreFloat4x4(&worldMatrix, dx::XMMatrixIdentity());
 	position = dx::XMFLOAT3(0, 0, 0);
