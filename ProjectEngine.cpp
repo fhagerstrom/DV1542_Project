@@ -108,6 +108,11 @@ void Engine::Init()
 	CreateBasicGeometry();
 	// SetupWater();
 	LightEntityInitialize();
+
+	// Tessellation - Displacement mapping
+	tessellationAmount = 10.0f;
+	HBias = 1.0f;
+	HScale = 0.5f;
 	
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
@@ -306,6 +311,14 @@ void Engine::LoadShaders()
 	backfaceGeometryShader = new SimpleGeometryShader(device, context);
 	if (!backfaceGeometryShader->LoadShaderFile(L"Debug/BackfaceGS.cso"))
 		backfaceGeometryShader->LoadShaderFile(L"BackfaceGS.cso");
+
+	displacementDomainShader = new SimpleDomainShader(device, context);
+	if (!displacementDomainShader->LoadShaderFile(L"Debug/DisplacementDS.cso"))
+		displacementDomainShader->LoadShaderFile(L"DisplacementDS.cso");
+
+	displacementHullShader = new SimpleHullShader(device, context);
+	if (!displacementHullShader->LoadShaderFile(L"Debug/DisplacementHS.cso"))
+		displacementHullShader->LoadShaderFile(L"DisplacementHS.cso");
 }
 
 void Engine::LoadMesh()
@@ -392,8 +405,8 @@ void Engine::CreateBasicGeometry()
 	// Add pool to vector
 	entities.push_back(pool);
 
-	monkey->SetScale(0.5f, 0.5f, 0.5f);
-	monkey->SetPosition(0.0f, -1.0f, 0.0f);
+	monkey->SetScale(1.0f, 1.0f, 1.0f);
+	monkey->SetPosition(0.0f, -0.5f, 0.0f);
 
 	/*sphere1->SetScale(0.5f, 0.5f, 0.5f);
 	sphere1->SetPosition(-2.0f, -1.0f, -2.0f);
@@ -422,11 +435,11 @@ void Engine::LightEntityInitialize()
 	// TODO: Make the scene brighter.
 	lightEntity1 = new EngineEntity(lightMesh, dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
 	lightEntity1->SetPosition(0, 0, 0);
-	lightEntity1->SetScale(100, 100, 100);
+	lightEntity1->SetScale(5, 5, 5);
 
 	lightEntity2 = new EngineEntity(lightMesh, dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
 	lightEntity2->SetPosition(0, 0, 0);
-	lightEntity2->SetScale(100, 100, 100);
+	lightEntity2->SetScale(5, 5, 5);
 
 	lightEntity3 = new EngineEntity(lightMesh, dx::XMFLOAT3(1.0f, 0.2f, 0.2f));
 	lightEntity3->SetPosition(3, 0, 5);
@@ -566,23 +579,16 @@ void Engine::Draw(float deltaTime, float totalTime)
 		lightVertexShader->CopyAllBufferData();
 		lightVertexShader->SetShader();
 
-		lightPixelShader->SetSamplerState("Sampler", sampler);
 		lightPixelShader->SetShaderResourceView("NormalMap", shaderResourceViewArray[0]);
 		lightPixelShader->SetShaderResourceView("Texture", shaderResourceViewArray[1]);
 		lightPixelShader->SetShaderResourceView("PositionTexture", shaderResourceViewArray[2]);
 
+		lightPixelShader->SetSamplerState("basicSampler", sampler);
+
 		lightPixelShader->SetFloat3("cameraPosition", camera->GetPosition());
-		pointLight1.SetpointLightValues(XMFLOAT4(1.0f, 0.3f, 0.3f, 1.0), XMFLOAT3(-1, 0, 0));
-		pointLight2.SetpointLightValues(XMFLOAT4(0.5f, 1.0f, 0.5f, 1.0f), XMFLOAT3(1, 0, 0));
-		spotLight1.SetSpotLightValues(XMFLOAT3(2, 2, -2), 64.0f);
-		spotLight2.SetSpotLightValues(XMFLOAT3(-2, 2, -5), 64.0f);
 
-
-		lightPixelShader->SetFloat3("lightPosition", XMFLOAT3(0, 0, 0));
-		lightPixelShader->SetFloat4("lightColor", XMFLOAT4(1.0f, 0.3f, 0.3f, 1.0));
-		lightPixelShader->SetData("pointLight1", &pointLight1, sizeof(PointLight));
-		lightPixelShader->SetData("pointLight2", &pointLight2, sizeof(PointLight));
-
+		lightPixelShader->SetFloat3("lightColour", lightEntities[i]->GetLightColour());
+		lightPixelShader->SetFloat3("lightPosition", lightEntities[i]->GetPosition());
 		lightPixelShader->CopyAllBufferData();
 		lightPixelShader->SetShader();
 

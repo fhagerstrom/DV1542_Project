@@ -57,12 +57,17 @@ private:
 	// Water related objects.
 	Water* water;
 
-	// Sky related schtuff
+	// Sky related schtuff.
 	ID3D11ShaderResourceView* skySRV;
 	ID3D11RasterizerState* rsSky;
 	ID3D11DepthStencilState* dsSky;
 
-	// Lights
+	// Displacement mapping.
+	float tessellationAmount;
+	float HScale;
+	float HBias;
+
+	// Lights.
 	PointLight pointLight1;
 	PointLight pointLight2;
 	PointLight pointLight3;
@@ -70,8 +75,6 @@ private:
 
 	SpotLight spotLight1;
 	SpotLight spotLight2;
-
-	Renderer renderer;
 
 	// Initialization helper functions.
 	void SetDefferedSetup(int textureWidth, int textureHeight);
@@ -128,6 +131,8 @@ private:
 	SimpleVertexShader* refractionVertexShader;
 	SimplePixelShader* refractionPixelShader;
 	SimpleGeometryShader* backfaceGeometryShader;
+	SimpleDomainShader* displacementDomainShader;
+	SimpleHullShader* displacementHullShader;
 
 	// The matrices to go from model space to screen space
 	DirectX::XMFLOAT4X4 worldMatrix;
