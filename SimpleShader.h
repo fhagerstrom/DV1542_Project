@@ -173,7 +173,6 @@ public:
 	bool SetShaderResourceView(std::string name, ID3D11ShaderResourceView* srv);
 	bool SetSamplerState(std::string name, ID3D11SamplerState* samplerState);
 <<<<<<< HEAD
-<<<<<<< HEAD
 };
 
 // --------------------------------------------------------
@@ -249,8 +248,6 @@ protected:
 	bool CreateShader(ID3DBlob* shaderBlob);
 	void SetShaderAndCBs();
 	void CleanUp();
-=======
->>>>>>> parent of 2b8132d (Update 2021-07-26)
 =======
 >>>>>>> parent of 2b8132d (Update 2021-07-26)
 };

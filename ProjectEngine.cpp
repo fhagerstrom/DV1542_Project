@@ -327,12 +327,9 @@ void Engine::LoadTextures()
 	// OBJECTS
 	// SPHERE
 <<<<<<< HEAD
-<<<<<<< HEAD
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/gold.jpg", 0, &objectTextureSRV);
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/NormalMaps/goldNormals.jpg", 0, &objectNormalMapSRV);
 =======
-=======
->>>>>>> parent of 2b8132d (Update 2021-07-26)
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/scrapedmetal.jpg", 0, &objectTextureSRV);
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/NormalMaps/metalNormals.jpg", 0, &objectNormalMapSRV);
 >>>>>>> parent of 2b8132d (Update 2021-07-26)
@@ -555,11 +552,7 @@ void Engine::Draw(float deltaTime, float totalTime)
 
 	dirPixelShader->SetFloat3("lightColour", dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
 <<<<<<< HEAD
-<<<<<<< HEAD
 	dirPixelShader->SetFloat3("lightDirection", dx::XMFLOAT3(10.0f, -10.0f, 0.0f));
-=======
-	dirPixelShader->SetFloat3("lightDirection", dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
->>>>>>> parent of 2b8132d (Update 2021-07-26)
 =======
 	dirPixelShader->SetFloat3("lightDirection", dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
 >>>>>>> parent of 2b8132d (Update 2021-07-26)
@@ -609,11 +602,8 @@ void Engine::Draw(float deltaTime, float totalTime)
 		context->DrawIndexed(lightEntities[i]->GetMesh()->GetIndexCount(), 0, 0);
 	}
 <<<<<<< HEAD
-<<<<<<< HEAD
 
 	// renderer.SetLights();
-=======
->>>>>>> parent of 2b8132d (Update 2021-07-26)
 =======
 >>>>>>> parent of 2b8132d (Update 2021-07-26)
 	
