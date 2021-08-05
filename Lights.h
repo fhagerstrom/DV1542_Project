@@ -22,7 +22,6 @@ struct SpotLight
 {
 	dx::XMFLOAT3 direction;
 	float spotPower;
-	
 
 	void SetSpotLightValues(dx::XMFLOAT3 direction, float power)
 	{

@@ -315,15 +315,11 @@ LRESULT DXInit::ProcessMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 		return 0;
 
 	// Mouse button being pressed (while the cursor is currently over our window)
-	case WM_LBUTTONDOWN:
-	case WM_MBUTTONDOWN:
 	case WM_RBUTTONDOWN:
 		MousePressed(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 		return 0;
 
 	// Mouse button being released (while the cursor is currently over our window)
-	case WM_LBUTTONUP:
-	case WM_MBUTTONUP:
 	case WM_RBUTTONUP:
 		MouseReleased(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 		return 0;

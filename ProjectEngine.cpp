@@ -63,6 +63,8 @@ Engine::~Engine()
 	delete backBufferVertexShader;
 	delete lightPixelShader;
 	delete lightVertexShader;
+	delete shadowPixelShader;
+	delete shadowVertexShader;
 	delete dirPixelShader;
 	delete dirVertexShader;
 	delete particleVertexShader;
@@ -99,7 +101,7 @@ Engine::~Engine()
 
 void Engine::Init()
 {
-	SetDefferedSetup(width, height);
+	SetRasterStates(width, height);
 	CreateMatrices();
 	LoadShaders();
 	LoadMesh();
@@ -117,8 +119,9 @@ void Engine::Init()
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-void Engine::SetDefferedSetup(int textureWidth, int textureHeight)
+void Engine::SetRasterStates(int textureWidth, int textureHeight)
 {
+	// DEFERRED SETUP
 	D3D11_TEXTURE2D_DESC textureDesc;
 	ZeroMemory(&textureDesc, sizeof(textureDesc));
 
@@ -234,6 +237,19 @@ void Engine::SetDefferedSetup(int textureWidth, int textureHeight)
 	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 
 	device->CreateDepthStencilState(&depthStencilDesc, &depthState);
+
+	// SKYBOX
+	/*D3D11_RASTERIZER_DESC rsDesc = {};
+	rsDesc.FillMode = D3D11_FILL_SOLID;
+	rsDesc.CullMode = D3D11_CULL_FRONT;
+	rsDesc.DepthClipEnable = true;
+	device->CreateRasterizerState(&rsDesc, &skyRasterState);
+
+	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
+	dsDesc.DepthEnable = true;
+	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+	device->CreateDepthStencilState(&dsDesc, &skyDs);*/
 }
 
 void Engine::CreateMatrices()
@@ -275,6 +291,14 @@ void Engine::LoadShaders()
 	lightPixelShader = new SimplePixelShader(device, context);
 	if (!lightPixelShader->LoadShaderFile(L"Debug/LightPS.cso"))
 		lightPixelShader->LoadShaderFile(L"LightPS.cso");
+
+	shadowVertexShader = new SimpleVertexShader(device, context);
+	if (!shadowVertexShader->LoadShaderFile(L"Debug/ShadowVS.cso"))
+		shadowVertexShader->LoadShaderFile(L"ShadowVS.cso");
+
+	shadowPixelShader = new SimplePixelShader(device, context);
+	if (!shadowPixelShader->LoadShaderFile(L"Debug/ShadowPS.cso"))
+		shadowPixelShader->LoadShaderFile(L"ShadowPS.cso");
 
 	dirVertexShader = new SimpleVertexShader(device, context);
 	if (!dirVertexShader->LoadShaderFile(L"Debug/DirectionalVS.cso"))
@@ -347,7 +371,7 @@ void Engine::LoadTextures()
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/NormalMaps/metalNormals.jpg", 0, &objectNormalMapSRV);
 
 	// PLANE / GROUND
-	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/icySnow.jpg", 0, &planeTextureSRV);
+	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/seamlessSnow.jpg", 0, &planeTextureSRV);
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/NormalMaps/snowNormals.jpg", 0, &planeNormalMapSRV);
 
 	// SKYMAP (WIP)
@@ -366,7 +390,7 @@ void Engine::CreateMaterials()
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	samplerDesc.MaxAnisotropy = 16;
+	samplerDesc.MaxAnisotropy = D3D11_DEFAULT_MAX_ANISOTROPY;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
 	device->CreateSamplerState(&samplerDesc, &sampler);
@@ -384,10 +408,7 @@ void Engine::CreateBasicGeometry()
 	// Create objects.
 	// SPHERES
 	EngineEntity* monkey = new EngineEntity(objectMesh, objectMaterial);
-	/*EngineEntity* sphere1 = new EngineEntity(objectMesh, objectMaterial);
-	EngineEntity* sphere2 = new EngineEntity(objectMesh, objectMaterial);
-	EngineEntity* sphere3 = new EngineEntity(objectMesh, objectMaterial);
-	EngineEntity* sphere4 = new EngineEntity(objectMesh, objectMaterial);*/
+	EngineEntity* monkey1 = new EngineEntity(objectMesh, objectMaterial);
 
 	// POOL FOR WATER
 	EngineEntity* pool = new EngineEntity(poolMesh, poolMaterial);
@@ -397,31 +418,20 @@ void Engine::CreateBasicGeometry()
 
 	// Add objects to vector.
 	entities.push_back(monkey);
-	/*entities.push_back(sphere1);
-	entities.push_back(sphere2);
-	entities.push_back(sphere3);
-	entities.push_back(sphere4);*/
+	entities.push_back(monkey1);
 
 	// Add pool to vector
 	entities.push_back(pool);
 
 	monkey->SetScale(1.0f, 1.0f, 1.0f);
-	monkey->SetPosition(0.0f, 0.0f, 0.0f);
+	monkey->SetPosition(0.0f, 1.0f, 0.0f);
 
-	/*sphere1->SetScale(0.5f, 0.5f, 0.5f);
-	sphere1->SetPosition(-2.0f, -1.0f, -2.0f);
-
-	sphere2->SetScale(0.5f, 0.5f, 0.5f);
-	sphere2->SetPosition(2.0f, -1.0f, -2.0f);
-
-	sphere3->SetScale(0.5f, 0.5f, 0.5f);
-	sphere3->SetPosition(2.0f, -1.0f, 2.0f);
-
-	sphere4->SetScale(0.5f, 0.5f, 0.5f);
-	sphere4->SetPosition(-2.0f, -1.0f, 2.0f);*/
+	monkey1->SetScale(1.0f, 1.0f, 1.0f);
+	monkey1->SetPosition(4.0f, 1.0f, 0.0f);
+	monkey1->SetRotation(0.0f, 90.0f, 0.0f);
 
 	// Bottom
-	ground->SetScale(5.0f, 0.025f, 5.0f);
+	ground->SetScale(10.0f, 0.025f, 10.0f);
 	ground->SetPosition(0.0f, -2.0f, 0.0f);
 
 	pool->SetScale(1.0f, 1.0f, 1.0f);
@@ -434,35 +444,35 @@ void Engine::LightEntityInitialize()
 {
 	// TODO: Make the scene brighter.
 	lightEntity1 = new EngineEntity(lightMesh, dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
-	lightEntity1->SetPosition(0, 0, 0);
+	lightEntity1->SetPosition(0, 0, -3);
 	lightEntity1->SetScale(5, 5, 5);
 
 	lightEntity2 = new EngineEntity(lightMesh, dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
-	lightEntity2->SetPosition(0, 0, 0);
+	lightEntity2->SetPosition(0, 0, 3);
 	lightEntity2->SetScale(5, 5, 5);
 
-	lightEntity3 = new EngineEntity(lightMesh, dx::XMFLOAT3(1.0f, 0.2f, 0.2f));
-	lightEntity3->SetPosition(2, 0, 2);
+	lightEntity3 = new EngineEntity(lightMesh, dx::XMFLOAT3(1.0f, 0.6f, 0.2f));
+	lightEntity3->SetPosition(3, 0, 2);
 	lightEntity3->SetScale(5, 5, 5);
 
-	lightEntity4 = new EngineEntity(lightMesh, dx::XMFLOAT3(1.0f, 0.2f, 0.2f));
-	lightEntity4->SetPosition(-2, 0, 2);
+	lightEntity4 = new EngineEntity(lightMesh, dx::XMFLOAT3(1.0f, 0.6f, 0.2f));
+	lightEntity4->SetPosition(-3, 0, 2);
 	lightEntity4->SetScale(5, 5, 5);
 
-	lightEntity5 = new EngineEntity(lightMesh, dx::XMFLOAT3(0.2f, 0.6f, 0.6f));
-	lightEntity5->SetPosition(4, 0, -5);
+	lightEntity5 = new EngineEntity(lightMesh, dx::XMFLOAT3(0.2f, 0.6f, 0.8f));
+	lightEntity5->SetPosition(3, 0, -2);
 	lightEntity5->SetScale(5, 5, 5);
 
-	lightEntity6 = new EngineEntity(lightMesh, dx::XMFLOAT3(0.2f, 0.6f, 0.6f));
-	lightEntity6->SetPosition(-4, 0, -5);
+	lightEntity6 = new EngineEntity(lightMesh, dx::XMFLOAT3(0.2f, 0.6f, 0.8f));
+	lightEntity6->SetPosition(-3, 0, -2);
 	lightEntity6->SetScale(5, 5, 5);
 
-	lightEntity7 = new EngineEntity(lightMesh, dx::XMFLOAT3(0.2f, 0.2f, 1.0f));
-	lightEntity7->SetPosition(2, 0, 2);
+	lightEntity7 = new EngineEntity(lightMesh, dx::XMFLOAT3(0.2f, 0.8f, 0.2f));
+	lightEntity7->SetPosition(3, 0, 1);
 	lightEntity7->SetScale(5, 5, 5);
 
-	lightEntity8 = new EngineEntity(lightMesh, dx::XMFLOAT3(0.2f, 0.2f, 1.0f));
-	lightEntity8->SetPosition(-2, 0, 2);
+	lightEntity8 = new EngineEntity(lightMesh, dx::XMFLOAT3(0.2f, 0.8f, 0.2f));
+	lightEntity8->SetPosition(-3, 0, 1);
 	lightEntity8->SetScale(5, 5, 5);
 
 	lightEntities.push_back(lightEntity1);
@@ -509,18 +519,18 @@ void Engine::Draw(float deltaTime, float totalTime)
 		context->ClearRenderTargetView(renderTargetViewArray[i], bgcolor);
 	}
 
+	// TODO: FIXA BACKFACE CULLINGEN - VART I HELSKOTTA LÄGGER VI DET??????
+	/*backfaceGeometryShader->SetFloat3("camPos", camera->GetPosition());
+	backfaceGeometryShader->CopyAllBufferData();
+	backfaceGeometryShader->SetShader();*/
+
 	// Clear the depth buffer
-	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);	
+	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	for (unsigned int i = 0; i < entities.size(); i++)
 	{
 		vertexBuffer = entities[i]->GetMesh()->GetVertexBuffer();
 		indexBuffer = entities[i]->GetMesh()->GetIndexBuffer();
-
-		// TODO: FIXA BACKFACE CULLINGEN - VART I HELSKOTTA LÄGGER VI DET??????
-		/*backfaceGeometryShader->SetFloat3("camPos", camera->GetPosition());
-		backfaceGeometryShader->CopyAllBufferData();
-		backfaceGeometryShader->SetShader();*/
 
 		deferredVertexShader->SetMatrix4x4("world", entities[i]->GetWorldMatrix());
 		deferredVertexShader->SetMatrix4x4("view", camera->GetView());
@@ -558,8 +568,8 @@ void Engine::Draw(float deltaTime, float totalTime)
 	dirPixelShader->SetShaderResourceView("Texture", shaderResourceViewArray[2]);
 	backBufferPixelShader->SetSamplerState("Sampler", sampler);
 
-	dirPixelShader->SetFloat3("lightColor", dx::XMFLOAT3(0.3f, 0.3f, 0.3f));
-	dirPixelShader->SetFloat3("lightDir", dx::XMFLOAT3(10.0f, -10.0f, 0.0f));
+	dirPixelShader->SetFloat3("lightColor", dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
+	dirPixelShader->SetFloat3("lightDir", dx::XMFLOAT3(1.0f, 0.0f, 0.0f));
 
 	dirPixelShader->CopyAllBufferData();
 	dirPixelShader->SetShader();
@@ -600,7 +610,23 @@ void Engine::Draw(float deltaTime, float totalTime)
 	context->OMSetBlendState(NULL, blend, 0xFFFFFFFF);
 	context->OMSetDepthStencilState(NULL, 0);
 
-	// context->Draw(6, 0);
+
+
+	//// Set up the sky shaders
+	//skyboxVertexShader->SetMatrix4x4("view", camera->GetView());
+	//skyboxVertexShader->SetMatrix4x4("projection", camera->GetProjection());
+	//skyboxVertexShader->CopyAllBufferData();
+	//skyboxVertexShader->SetShader();
+
+	//skyboxPixelShader->SetShaderResourceView("Sky", skySRV);
+	//skyboxPixelShader->CopyAllBufferData();
+	//skyboxPixelShader->SetShader();
+
+	//context->RSSetState(skyRasterState);
+	//context->OMSetDepthStencilState(skyDs, 0);
+	//context->DrawIndexed(planeMesh->GetIndexCount(), 0, 0);
+
+	//context->RSSetState(NULL);
 
 	swapChain->Present(0, 0);
 }

@@ -58,8 +58,8 @@ private:
 
 	// Sky related schtuff.
 	ID3D11ShaderResourceView* skySRV;
-	ID3D11RasterizerState* rsSky;
-	ID3D11DepthStencilState* dsSky;
+	ID3D11RasterizerState* skyRasterState;
+	ID3D11DepthStencilState* skyDs;
 
 	// Displacement mapping.
 	float tessellationAmount;
@@ -76,7 +76,7 @@ private:
 	SpotLight spotLight2;
 
 	// Initialization helper functions.
-	void SetDefferedSetup(int textureWidth, int textureHeight);
+	void SetRasterStates(int textureWidth, int textureHeight);
 	void CreateMatrices();
 	void LoadShaders();
 	void LoadMesh();
@@ -121,6 +121,8 @@ private:
 	SimplePixelShader* lightPixelShader;
 	SimpleVertexShader* dirVertexShader;
 	SimplePixelShader* dirPixelShader;
+	SimpleVertexShader* shadowVertexShader;
+	SimplePixelShader* shadowPixelShader;
 	SimpleVertexShader* particleVertexShader;
 	SimplePixelShader* particlePixelShader;
 	SimpleVertexShader* skyboxVertexShader;

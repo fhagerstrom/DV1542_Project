@@ -45,29 +45,14 @@ void Camera::Rotate(float x, float y)
 	XMStoreFloat4(&rotation, dx::XMQuaternionRotationRollPitchYaw(xRotation, yRotation, 0));
 }
 
-// Camera update, works like a spectator camera where you can fly freely across the scene.
-// @TODO: Change input do DirectX Input instead of sending OS messages.
-// NOTE FOR MOUSE CHECK - MAKE USE OF ROTATE FUNCTION
 void Camera::Update(float deltaTime)
 {
 	// Current speed
-	float speed = deltaTime * 10;
-
-	// Init DXInput stuff
-	/*DIMOUSESTATE lastMouseState;
-	DIMOUSESTATE currentMouseState;
-	BYTE keyboardState[256];
-
-	DIKeyboard->Acquire();
-	DIMouse->Acquire();
-
-	DIMouse->GetDeviceState(sizeof(DIMOUSESTATE), &currentMouseState);
-	DIKeyboard->GetDeviceState(sizeof(keyboardState), (LPVOID)&keyboardState);*/
-
+	float speed = deltaTime * 7;
 
 	// Speed up or down.
 	if (GetAsyncKeyState(VK_SHIFT) & 0x8000) { speed *= 3; }
-	if (GetAsyncKeyState(VK_CONTROL) & 0x8000) { speed *= 0.25f; }
+	if (GetAsyncKeyState(VK_CONTROL) & 0x8000) { speed *= 0.4f; }
 
 	// Keyboard movement
 	if (GetAsyncKeyState('W') & 0x8000) { MoveRelative(0, 0, speed); }
@@ -76,25 +61,6 @@ void Camera::Update(float deltaTime)
 	if (GetAsyncKeyState('D') & 0x8000) { MoveRelative(speed, 0, 0); }
 	if (GetAsyncKeyState('C') & 0x8000) { MoveAbsolute(0, -speed, 0); }
 	if (GetAsyncKeyState(VK_SPACE) & 0x8000) { MoveAbsolute(0, speed, 0); }
-
-	// Keyboard movement - DXInput
-	/*if (keyboardState[DIK_W] & 0x80) { MoveRelative(0, 0, speed); }
-	if (keyboardState[DIK_S] & 0x80) { MoveRelative(0, 0, -speed); }
-	if (keyboardState[DIK_A] & 0x80) { MoveRelative(-speed, 0, 0); }
-	if (keyboardState[DIK_D] & 0x80) { MoveRelative(speed, 0, 0); }
-	if (keyboardState[DIK_C] & 0x80) { MoveAbsolute(0, -speed, 0); }
-	if (keyboardState[DIK_SPACE] & 0x80) { MoveAbsolute(0, speed, 0); }*/
-
-	// Mouse movement - DXInput
-	/*if ((currentMouseState.lX != lastMouseState.lX)
-	{
-		float xDiff;
-		float yDiff;
-
-		currentMouseState.lX * 0.001f;
-
-		lastMouseState = currentMouseState;
-	}*/
 
 	// Check for reset
 	if (GetAsyncKeyState('R') & 0x8000)

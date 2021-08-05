@@ -89,11 +89,11 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// Specular (for point light)
 	float3 toCamera = normalize(CameraPosition - input.worldPos);
 	float3 reflection = reflect(-dirToPointLight3, input.normal);
-	float spec = pow(max(dot(reflection, toCamera), 0), 64);
+	float spec = pow(max(dot(reflection, toCamera), 0), 32);
 
 	float3 toCamera1 = normalize(CameraPosition - input.worldPos);
 	float3 reflection1 = reflect(-dirToPointLight4, input.normal);
-	float spec1 = pow(max(dot(reflection1, toCamera1), 0), 64);
+	float spec1 = pow(max(dot(reflection1, toCamera1), 0), 32);
 
 
 	// Total directional Light
