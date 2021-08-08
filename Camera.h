@@ -1,6 +1,7 @@
 #pragma once
 #include <Windows.h>
 #include <DirectXMath.h>
+#include <iostream>
 
 #include "DXInit.h"
 
@@ -30,6 +31,7 @@ public:
 
 	// Updating
 	void Update(float deltaTime);
+	void ResetCamera();
 	void UpdateViewMatrix();
 	void UpdateProjectionMatrix(float aspectRatio);
 

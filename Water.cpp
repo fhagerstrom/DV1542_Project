@@ -52,7 +52,7 @@ bool Water::Initialize(ID3D11Device* device, const WCHAR* textureFile, float wat
 	// Set scale for the water's normal map.
 	reflectRefractScale = 0.03f;
 
-	refractionTint = dx::XMFLOAT4(0.0f, 0.5f, 1.0f, 1.0f);
+	//refractionTint = dx::XMFLOAT4(0.0f, 0.5f, 1.0f, 1.0f);
 
 	specularShininess = 200.0f;
 

@@ -142,12 +142,6 @@
     <FxCompile Include="WaterVS.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
-    <FxCompile Include="RefractionVS.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="RefractionPS.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
     <FxCompile Include="BackfaceGS.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>

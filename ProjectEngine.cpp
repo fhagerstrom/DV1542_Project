@@ -18,6 +18,7 @@ Engine::Engine(HINSTANCE hInstance) : DXInit(
 	pixelShader = 0;
 	camera = 0;
 	water = 0;
+	currentScore = -1;
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -348,6 +349,7 @@ void Engine::LoadShaders()
 void Engine::LoadMesh()
 {
 	objectMesh = new Mesh(device, "Debug/Models/monkey.obj");
+	ringMesh = new Mesh(device, "Debug/Models/torusRing.obj");
 	planeMesh = new Mesh(device, "Debug/Models/cube.obj");
 	lightMesh = new Mesh(device, "Debug/Models/sphere.obj");
 	poolMesh = new Mesh(device, "Debug/Models/pool.obj");
@@ -396,6 +398,7 @@ void Engine::CreateMaterials()
 	device->CreateSamplerState(&samplerDesc, &sampler);
 
 	objectMaterial = new Material(vertexShader, pixelShader, objectTextureSRV, objectNormalMapSRV, sampler);
+	ringMaterial = new Material(vertexShader, pixelShader, objectTextureSRV, objectNormalMapSRV, sampler);
 	planeMaterial = new Material(vertexShader, pixelShader, planeTextureSRV, planeNormalMapSRV, sampler);
 	poolMaterial = new Material(vertexShader, pixelShader, poolSRV, poolNormalMapSRV, sampler);
 }
@@ -406,9 +409,11 @@ void Engine::CreateBasicGeometry()
 	EngineEntity* ground = new EngineEntity(planeMesh, planeMaterial);
 
 	// Create objects.
-	// SPHERES
 	EngineEntity* monkey = new EngineEntity(objectMesh, objectMaterial);
 	EngineEntity* monkey1 = new EngineEntity(objectMesh, objectMaterial);
+	EngineEntity* monkey2 = new EngineEntity(objectMesh, objectMaterial);
+
+	EngineEntity* ring = new EngineEntity(ringMesh, ringMaterial);
 
 	// POOL FOR WATER
 	EngineEntity* pool = new EngineEntity(poolMesh, poolMaterial);
@@ -419,6 +424,8 @@ void Engine::CreateBasicGeometry()
 	// Add objects to vector.
 	entities.push_back(monkey);
 	entities.push_back(monkey1);
+	entities.push_back(monkey2);
+	entities.push_back(ring);
 
 	// Add pool to vector
 	entities.push_back(pool);
@@ -428,7 +435,13 @@ void Engine::CreateBasicGeometry()
 
 	monkey1->SetScale(1.0f, 1.0f, 1.0f);
 	monkey1->SetPosition(4.0f, 1.0f, 0.0f);
-	monkey1->SetRotation(0.0f, 90.0f, 0.0f);
+
+	monkey2->SetScale(1.0f, 1.0f, 1.0f);
+	monkey2->SetPosition(-4.0f, 1.0f, 0.0f);
+
+	ring->SetScale(1.0f, 1.0f, 1.0f);
+	ring->SetPosition(0.0f, 2.0f, 4.0f);
+	ring->SetRotation(90.0f, 0.0f, 0.0f);
 
 	// Bottom
 	ground->SetScale(10.0f, 0.025f, 10.0f);
@@ -501,6 +514,40 @@ void Engine::Update(float deltaTime, float totalTime)
 	{
 		lightEntities[j]->UpdateWorldMatrix();
 	}
+
+
+	// Logic for flying through the torus ring object as a checkpoint. The checkpoint gives a point
+	// every time the player flies through it.
+	
+
+	//ring size: 2 y   4 z     0 x  //about +-0.5 intervall, eg. 1.5 < y < 2.5
+	// Check if player went through ring
+	if(currentScore == -1)
+	{
+		currentScore++;
+		std::cout << "Welcome to the game! Your goal is to go through the ring 10 times to win! \nYour current score is: 0" << std::endl;
+	}
+	
+	if(camera->GetPosition().x > -0.5f && camera->GetPosition().x < 0.5f)
+	{
+		if(camera->GetPosition().y > 1.0f && camera->GetPosition().y < 2.5f)
+		{
+			if (camera->GetPosition().z > 3.5f && camera->GetPosition().z < 4.5f )
+			{
+				camera->ResetCamera();
+				currentScore++;
+				std::cout << "Your current score is: " << currentScore << std::endl;
+				// Win condition
+				if(currentScore == 10)
+				{
+					std::cout << "You win!" << std::endl;
+					currentScore = 0;
+					std::cout << "Why not go again?" "\nYour current score is: " << currentScore << std::endl;
+				}
+			}
+		}
+	}
+
 }
 
 void Engine::Draw(float deltaTime, float totalTime)
@@ -605,7 +652,7 @@ void Engine::Draw(float deltaTime, float totalTime)
 		context->DrawIndexed(lightEntities[i]->GetMesh()->GetIndexCount(), 0, 0);
 	}
 	
-	// Reset the render state.
+	// ResetCamera the render state.
 	context->RSSetState(NULL);
 	context->OMSetBlendState(NULL, blend, 0xFFFFFFFF);
 	context->OMSetDepthStencilState(NULL, 0);

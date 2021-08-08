@@ -5,7 +5,7 @@ Texture2D depthMapTexture : register(t1);
 SamplerState SampleClamp : register(s0);
 SamplerState SampleWrap : register(s1);
 
-cbuffer LightBuffer
+cbuffer LightData
 {
 	float4 ambientColor;
 	float4 diffuseColor;
@@ -41,7 +41,7 @@ float4 main(PixelShaderOutput input) : SV_TARGET
 	projTexCoord.x = input.lightViewPosition.x / input.lightViewPosition.w / 2.0f + 0.5f;
 	projTexCoord.y = -input.lightViewPosition.y / input.lightViewPosition.w / 2.0f + 0.5f;
 
-	//check if proj coords are in the view of light, if not ouxel gets abient value
+	// Check if proj coords are in the view of light, if not ouxel gets abient value
 	if ((saturate(projTexCoord.x) == projTexCoord.x) && (saturate(projTexCoord.y == projTexCoord.y)))
 	{
 		//here we are in the view of light, so we retreive depth value from shadow map.

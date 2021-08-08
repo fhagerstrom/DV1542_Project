@@ -10,7 +10,7 @@ Camera::Camera(float x, float y, float z)
 	XMStoreFloat4(&rotation, dx::XMQuaternionIdentity());
 	xRotation = 0;
 	yRotation = 0;
-
+		
 	XMStoreFloat4x4(&viewMatrix, dx::XMMatrixIdentity());
 	XMStoreFloat4x4(&projMatrix, dx::XMMatrixIdentity());
 }
@@ -61,17 +61,25 @@ void Camera::Update(float deltaTime)
 	if (GetAsyncKeyState('D') & 0x8000) { MoveRelative(speed, 0, 0); }
 	if (GetAsyncKeyState('C') & 0x8000) { MoveAbsolute(0, -speed, 0); }
 	if (GetAsyncKeyState(VK_SPACE) & 0x8000) { MoveAbsolute(0, speed, 0); }
-
-	// Check for reset
-	if (GetAsyncKeyState('R') & 0x8000)
+	
+	if (GetAsyncKeyState('R') & 0x8000 )
 	{
 		position = startPosition;
 		xRotation = 0;
-		xRotation = 0;
+		yRotation = 0;
 		XMStoreFloat4(&rotation, dx::XMQuaternionIdentity());
 	}
 
-	// Update the view every frame - Hitta något mer optimiserat sätt att göra detta på WAAAAA
+	// Update the view every frame.
+	UpdateViewMatrix();
+}
+
+void Camera::ResetCamera()
+{
+	position = startPosition;
+	xRotation = 0;
+	yRotation = 0;
+	XMStoreFloat4(&rotation, dx::XMQuaternionIdentity());
 	UpdateViewMatrix();
 }
 

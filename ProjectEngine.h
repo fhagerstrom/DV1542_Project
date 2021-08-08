@@ -23,6 +23,9 @@ private:
 	// Input and mesh swapping.
 	unsigned int currentEntity;
 
+	// Keep track of how many times player have flown through ring.
+	int currentScore;
+
 	// Keep track of objects and entities to clean up.
 	std::vector<Mesh*> meshes;
 	std::vector<EngineEntity*> entities;
@@ -42,6 +45,7 @@ private:
 
 	// Mesh objects.
 	Mesh* objectMesh;
+	Mesh* ringMesh;
 	Mesh* planeMesh;
 	Mesh* lightMesh;
 	Mesh* poolMesh;
@@ -49,6 +53,7 @@ private:
 
 	// Material class objects.
 	Material* objectMaterial;
+	Material* ringMaterial;
 	Material* planeMaterial;
 	Material* poolMaterial;
 	Material* waterMaterial;

@@ -16,12 +16,11 @@ private:
 	int numIndices;
 
 	void CalculateTangents(Vertex* vertices, int numVertices, unsigned int* indices, int numIndices);
-	void CreateBuffers(ID3D11Device* device, Vertex* verticeArray, int numVerts, unsigned int* indexArray, int numIndices);
+	void CreateBuffers(ID3D11Device* device, Vertex* verticeArray, int numVertices, unsigned int* indexArray, int numIndices);
 
 public:
 	Mesh(ID3D11Device* device, Vertex* verticeArray, int numVertices, unsigned int* indexArray, int numIndices);
 	Mesh(ID3D11Device* device, const char* objFile);
-	// Mesh(ID3D11Device* device, const char* mtlFile);
 	~Mesh();
 
 	ID3D11Buffer* GetVertexBuffer() { return vBuffer; }

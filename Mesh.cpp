@@ -209,7 +209,7 @@ void Mesh::CreateBuffers(ID3D11Device* device, Vertex* verticeArray, int numVert
 // Calculates the tangents of the vertices in a mesh
 void Mesh::CalculateTangents(Vertex* vertices, int numVertices, unsigned int* indices, int numIndices)
 {
-	// Reset tangents
+	// ResetCamera tangents
 	for (int i = 0; i < numVertices; i++)
 	{
 		vertices[i].tangent = XMFLOAT3(0, 0, 0);
