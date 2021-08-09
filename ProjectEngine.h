@@ -51,6 +51,8 @@ private:
 	Mesh* poolMesh;
 	Mesh* waterMesh;
 
+	Water* water;
+
 	// Material class objects.
 	Material* objectMaterial;
 	Material* ringMaterial;
@@ -58,14 +60,9 @@ private:
 	Material* poolMaterial;
 	Material* waterMaterial;
 
-	// Water related objects.
-	Water* water;
-
-	// Sky related schtuff.
-	ID3D11ShaderResourceView* skySRV;
-	ID3D11RasterizerState* skyRasterState;
-	ID3D11DepthStencilState* skyDs;
-
+	// Water related float variable for "translation"
+	float waterTranslation;
+	
 	// Displacement mapping.
 	float tessellationAmount;
 	float HScale;
@@ -81,15 +78,16 @@ private:
 	SpotLight spotLight2;
 
 	// Initialization helper functions.
-	void SetRasterStates(int textureWidth, int textureHeight);
+	void SetDeferred(int textureWidth, int textureHeight);
 	void CreateMatrices();
 	void LoadShaders();
 	void LoadMesh();
 	void LoadTextures();
 	void CreateMaterials();
+	void CreateWater();
 	void CreateBasicGeometry();
-	void SetupWater();
 	void LightEntityInitialize();
+	void CalculateShadows();
 
 	// Texture related schtuff.
 	ID3D11ShaderResourceView* objectTextureSRV;
@@ -127,15 +125,10 @@ private:
 	SimpleVertexShader* dirVertexShader;
 	SimplePixelShader* dirPixelShader;
 	SimpleVertexShader* shadowVertexShader;
-	SimplePixelShader* shadowPixelShader;
 	SimpleVertexShader* particleVertexShader;
 	SimplePixelShader* particlePixelShader;
-	SimpleVertexShader* skyboxVertexShader;
-	SimplePixelShader* skyboxPixelShader;
 	SimpleVertexShader* waterVertexShader;
 	SimplePixelShader* waterPixelShader;
-	SimpleVertexShader* refractionVertexShader;
-	SimplePixelShader* refractionPixelShader;
 	SimpleGeometryShader* backfaceGeometryShader;
 	SimpleDomainShader* displacementDomainShader;
 	SimpleHullShader* displacementHullShader;

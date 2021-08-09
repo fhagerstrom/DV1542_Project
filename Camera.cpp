@@ -35,10 +35,11 @@ void Camera::MoveAbsolute(float x, float y, float z)
 
 void Camera::Rotate(float x, float y)
 {
-	
+	// Adjust current rotation.
 	xRotation += x;
 	yRotation += y;
 
+	// Clamp x rotation between PI/2 and -PI/2.
 	xRotation = max(min(xRotation, dx::XM_PIDIV2), -dx::XM_PIDIV2);
 
 	// Recreate the quaternion

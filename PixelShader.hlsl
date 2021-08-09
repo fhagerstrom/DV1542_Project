@@ -1,7 +1,6 @@
 // External texture-related data
 Texture2D Texture : register(t0);
 Texture2D NormalMap : register(t1);
-TextureCube SkyMap : register(t2);
 SamplerState Sampler : register(s0);
 
 struct PointLight

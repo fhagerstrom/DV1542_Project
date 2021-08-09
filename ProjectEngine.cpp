@@ -17,7 +17,6 @@ Engine::Engine(HINSTANCE hInstance) : DXInit(
 	vertexShader = 0;
 	pixelShader = 0;
 	camera = 0;
-	water = 0;
 	currentScore = -1;
 
 	for (int i = 0; i < 3; i++)
@@ -40,8 +39,7 @@ Engine::Engine(HINSTANCE hInstance) : DXInit(
 Engine::~Engine()
 {
 	delete camera;
-	delete water;
-
+	
 	for (auto& mesh : entities) 
 		delete mesh;
 
@@ -64,7 +62,6 @@ Engine::~Engine()
 	delete backBufferVertexShader;
 	delete lightPixelShader;
 	delete lightVertexShader;
-	delete shadowPixelShader;
 	delete shadowVertexShader;
 	delete dirPixelShader;
 	delete dirVertexShader;
@@ -72,10 +69,6 @@ Engine::~Engine()
 	delete particlePixelShader;
 	delete waterVertexShader;
 	delete waterPixelShader;
-	delete refractionVertexShader;
-	delete refractionPixelShader;
-	delete skyboxVertexShader;
-	delete skyboxPixelShader;
 
 	sampler->Release();
 
@@ -102,14 +95,13 @@ Engine::~Engine()
 
 void Engine::Init()
 {
-	SetRasterStates(width, height);
+	SetDeferred(width, height);
 	CreateMatrices();
 	LoadShaders();
 	LoadMesh();
 	LoadTextures();	
 	CreateMaterials();
 	CreateBasicGeometry();
-	// SetupWater();
 	LightEntityInitialize();
 
 	// Tessellation - Displacement mapping
@@ -120,7 +112,7 @@ void Engine::Init()
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-void Engine::SetRasterStates(int textureWidth, int textureHeight)
+void Engine::SetDeferred(int textureWidth, int textureHeight)
 {
 	// DEFERRED SETUP
 	D3D11_TEXTURE2D_DESC textureDesc;
@@ -238,19 +230,6 @@ void Engine::SetRasterStates(int textureWidth, int textureHeight)
 	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 
 	device->CreateDepthStencilState(&depthStencilDesc, &depthState);
-
-	// SKYBOX
-	/*D3D11_RASTERIZER_DESC rsDesc = {};
-	rsDesc.FillMode = D3D11_FILL_SOLID;
-	rsDesc.CullMode = D3D11_CULL_FRONT;
-	rsDesc.DepthClipEnable = true;
-	device->CreateRasterizerState(&rsDesc, &skyRasterState);
-
-	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
-	dsDesc.DepthEnable = true;
-	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-	device->CreateDepthStencilState(&dsDesc, &skyDs);*/
 }
 
 void Engine::CreateMatrices()
@@ -297,10 +276,6 @@ void Engine::LoadShaders()
 	if (!shadowVertexShader->LoadShaderFile(L"Debug/ShadowVS.cso"))
 		shadowVertexShader->LoadShaderFile(L"ShadowVS.cso");
 
-	shadowPixelShader = new SimplePixelShader(device, context);
-	if (!shadowPixelShader->LoadShaderFile(L"Debug/ShadowPS.cso"))
-		shadowPixelShader->LoadShaderFile(L"ShadowPS.cso");
-
 	dirVertexShader = new SimpleVertexShader(device, context);
 	if (!dirVertexShader->LoadShaderFile(L"Debug/DirectionalVS.cso"))
 		dirVertexShader->LoadShaderFile(L"DirectionalVS.cso");
@@ -325,14 +300,6 @@ void Engine::LoadShaders()
 	if (!waterPixelShader->LoadShaderFile(L"Debug/WaterPS.cso"))
 		waterPixelShader->LoadShaderFile(L"WaterPS.cso");
 
-	refractionVertexShader = new SimpleVertexShader(device, context);
-	if (!refractionVertexShader->LoadShaderFile(L"Debug/RefractionVS.cso"))
-		refractionVertexShader->LoadShaderFile(L"RefractionVS.cso");
-
-	refractionPixelShader = new SimplePixelShader(device, context);
-	if (!refractionPixelShader->LoadShaderFile(L"Debug/RefractionPS.cso"))
-		refractionPixelShader->LoadShaderFile(L"RefractionPS.cso");
-
 	backfaceGeometryShader = new SimpleGeometryShader(device, context);
 	if (!backfaceGeometryShader->LoadShaderFile(L"Debug/BackfaceGS.cso"))
 		backfaceGeometryShader->LoadShaderFile(L"BackfaceGS.cso");
@@ -355,15 +322,6 @@ void Engine::LoadMesh()
 	poolMesh = new Mesh(device, "Debug/Models/pool.obj");
 }
 
-void Engine::SetupWater()
-{
-	// Create water object and initialize.
-	water = new Water;
-	water->Initialize(device, L"Debug/Textures/NormalMaps/waterNormal.jpg", 2.5f, 1.0f);
-	
-	// TODO: Refraction and reflection
-}
-
 void Engine::LoadTextures()
 {
 	// Load texture stuff.
@@ -375,9 +333,6 @@ void Engine::LoadTextures()
 	// PLANE / GROUND
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/seamlessSnow.jpg", 0, &planeTextureSRV);
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/NormalMaps/snowNormals.jpg", 0, &planeNormalMapSRV);
-
-	// SKYMAP (WIP)
-	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/overcastMap.jpg", 0, &skySRV);
 
 	// POOL AND WATER (WIP)
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/bathTiles.jpg", 0, &poolSRV);
@@ -401,6 +356,13 @@ void Engine::CreateMaterials()
 	ringMaterial = new Material(vertexShader, pixelShader, objectTextureSRV, objectNormalMapSRV, sampler);
 	planeMaterial = new Material(vertexShader, pixelShader, planeTextureSRV, planeNormalMapSRV, sampler);
 	poolMaterial = new Material(vertexShader, pixelShader, poolSRV, poolNormalMapSRV, sampler);
+}
+
+void Engine::CreateWater()
+{
+	// Init water class and call functions to create.
+	water = new Water();
+	water->Initialize(device, L"Debug/Textures/seamlessWater.png", 2.75f, 1.0f);
 }
 
 void Engine::CreateBasicGeometry()
@@ -440,9 +402,9 @@ void Engine::CreateBasicGeometry()
 	monkey2->SetPosition(-4.0f, 1.0f, 0.0f);
 
 	ring->SetScale(1.0f, 1.0f, 1.0f);
-	ring->SetPosition(0.0f, 2.0f, 4.0f);
-	ring->SetRotation(90.0f, 0.0f, 0.0f);
-
+	ring->SetPosition(0.0f, 3.5f, 0.0f);
+	ring->SetRotation(80.0f, 0.0f, 0.0f);
+	
 	// Bottom
 	ground->SetScale(10.0f, 0.025f, 10.0f);
 	ground->SetPosition(0.0f, -2.0f, 0.0f);
@@ -498,12 +460,19 @@ void Engine::LightEntityInitialize()
 	lightEntities.push_back(lightEntity8);
 }
 
+void Engine::CalculateShadows()
+{
+	
+
+}
+
 void Engine::Update(float deltaTime, float totalTime)
 {
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
 
 	camera->Update(deltaTime);
+	water->Update();
 
 	for (unsigned int i = 0; i < entities.size(); i++)
 	{
@@ -519,8 +488,6 @@ void Engine::Update(float deltaTime, float totalTime)
 	// Logic for flying through the torus ring object as a checkpoint. The checkpoint gives a point
 	// every time the player flies through it.
 	
-
-	//ring size: 2 y   4 z     0 x  //about +-0.5 intervall, eg. 1.5 < y < 2.5
 	// Check if player went through ring
 	if(currentScore == -1)
 	{
@@ -528,18 +495,34 @@ void Engine::Update(float deltaTime, float totalTime)
 		std::cout << "Welcome to the game! Your goal is to go through the ring 10 times to win! \nYour current score is: 0" << std::endl;
 	}
 	
-	if(camera->GetPosition().x > -0.5f && camera->GetPosition().x < 0.5f)
+	// std::cout << "x: " << camera->GetPosition().x << "\ny: " << camera->GetPosition().y << "\nz: " << camera->GetPosition().z << std::endl;
+
+	// Access ring's position. Has index 4 in entities vector.
+	if(camera->GetPosition().x > (entities[4]->GetPosition().x - 0.5f) && camera->GetPosition().x < (entities[4]->GetPosition().x + 0.5f))
 	{
-		if(camera->GetPosition().y > 1.0f && camera->GetPosition().y < 2.5f)
+		if(camera->GetPosition().y > (entities[4]->GetPosition().y - 1.0f) && camera->GetPosition().y < entities[4]->GetPosition().y + 0.5f)
 		{
-			if (camera->GetPosition().z > 3.5f && camera->GetPosition().z < 4.5f )
+			if (camera->GetPosition().z > entities[4]->GetPosition().z - 0.5f && camera->GetPosition().z < entities[4]->GetPosition().z + 0.5f )
 			{
+																							// MAX - MIN
+				float randomX = -5.0f + static_cast <float> (rand()) /(static_cast <float> (RAND_MAX/(10.0f)));
+				float randomY = 0.5f + static_cast <float> (rand()) /(static_cast <float> (RAND_MAX/(4.0f)));
+				float randomZ = -5.0f + static_cast <float> (rand()) /(static_cast <float> (RAND_MAX/(10.0f)));
+				while(randomZ > -1.0f && randomZ < 1.0f) // So ring doesn't end up inside monkees.
+				{
+					randomZ = -5.0f + static_cast <float> (rand()) /(static_cast <float> (RAND_MAX/(10.0f)));
+				}
+				entities[4]->SetPosition(randomX, randomY, randomZ);
 				camera->ResetCamera();
 				currentScore++;
 				std::cout << "Your current score is: " << currentScore << std::endl;
-				// Win condition
+				std::cout << "The ring's position is: " << entities[4]->GetPosition().x << "  " 
+					<< entities[4]->GetPosition().y << "  " << entities[4]->GetPosition().z << std::endl;
+
+				// Win condition, reset position of ring to center and reset score.
 				if(currentScore == 10)
 				{
+					entities[4]->SetPosition(0.0f, 3.5f, 0.0f);
 					std::cout << "You win!" << std::endl;
 					currentScore = 0;
 					std::cout << "Why not go again?" "\nYour current score is: " << currentScore << std::endl;
@@ -552,7 +535,7 @@ void Engine::Update(float deltaTime, float totalTime)
 
 void Engine::Draw(float deltaTime, float totalTime)
 {
-	const float bgcolor[4] = {0.1f, 0.1f, 0.1f, 1.0f};
+	const float bgColor[4] = {0.0f, 0.0f, 0.1f, 1.0f};
 	int i;
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
@@ -563,7 +546,7 @@ void Engine::Draw(float deltaTime, float totalTime)
 	// Clear the render target buffers
 	for (i = 0; i < BUFFER_COUNT; i++)
 	{
-		context->ClearRenderTargetView(renderTargetViewArray[i], bgcolor);
+		context->ClearRenderTargetView(renderTargetViewArray[i], bgColor);
 	}
 
 	// TODO: FIXA BACKFACE CULLINGEN - VART I HELSKOTTA LÄGGER VI DET??????
@@ -573,6 +556,15 @@ void Engine::Draw(float deltaTime, float totalTime)
 
 	// Clear the depth buffer
 	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	// TODO: FIXA BACKFACE CULLINGEN - VART I HELSKOTTA LÄGGER VI DET??????
+	/*backfaceGeometryShader->SetFloat3("camPos", camera->GetPosition());
+	backfaceGeometryShader->CopyAllBufferData();
+	backfaceGeometryShader->SetShader();*/
+
+	/*shadowVertexShader->SetMatrix4x4("worldViewProj", lightEntities[0]->GetWorldMatrix());
+	shadowVertexShader->CopyBufferData("worldViewProj");
+	shadowVertexShader->SetShader();*/
 
 	for (unsigned int i = 0; i < entities.size(); i++)
 	{
@@ -598,9 +590,17 @@ void Engine::Draw(float deltaTime, float totalTime)
 		
 		context->DrawIndexed(entities[i]->GetMesh()->GetIndexCount(), 0, 0);
 	}
+
+	/*water->Render(context);
+	waterVertexShader->SetMatrix4x4("world", camera->);
+	waterVertexShader->SetMatrix4x4("view", camera->GetView());
+	waterVertexShader->SetMatrix4x4("projection", camera->GetProjection());
+
+	waterVertexShader->CopyAllBufferData();
+	waterVertexShader->SetShader();*/
 	
 	context->OMSetRenderTargets(1, &backBufferRTV, depthStencilView);
-	context->ClearRenderTargetView(backBufferRTV, bgcolor);
+	context->ClearRenderTargetView(backBufferRTV, bgColor);
 	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	context->RSSetState(deferredRasterState);
@@ -652,28 +652,10 @@ void Engine::Draw(float deltaTime, float totalTime)
 		context->DrawIndexed(lightEntities[i]->GetMesh()->GetIndexCount(), 0, 0);
 	}
 	
-	// ResetCamera the render state.
+	// Reset the render state.
 	context->RSSetState(NULL);
 	context->OMSetBlendState(NULL, blend, 0xFFFFFFFF);
 	context->OMSetDepthStencilState(NULL, 0);
-
-
-
-	//// Set up the sky shaders
-	//skyboxVertexShader->SetMatrix4x4("view", camera->GetView());
-	//skyboxVertexShader->SetMatrix4x4("projection", camera->GetProjection());
-	//skyboxVertexShader->CopyAllBufferData();
-	//skyboxVertexShader->SetShader();
-
-	//skyboxPixelShader->SetShaderResourceView("Sky", skySRV);
-	//skyboxPixelShader->CopyAllBufferData();
-	//skyboxPixelShader->SetShader();
-
-	//context->RSSetState(skyRasterState);
-	//context->OMSetDepthStencilState(skyDs, 0);
-	//context->DrawIndexed(planeMesh->GetIndexCount(), 0, 0);
-
-	//context->RSSetState(NULL);
 
 	swapChain->Present(0, 0);
 }

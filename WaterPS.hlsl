@@ -1,60 +1,43 @@
-SamplerState SampleTypePoint : register(s0);
-Texture2D reflectionTexture;
-Texture2D refractionTexture;
-Texture2D normalTexture;
-
-cbuffer WaterBuffer
+cbuffer waterData : register(b1)
 {
-	float waterTranslation;
-	float reflectRefractScale;
-	float2 padding;
-};
+    float waterTranslation;
+}
+
+//External texture-related data
+Texture2D Texture : register(t0);
+Texture2D NormalMap : register(t1);
+SamplerState Sampler : register(s0);
 
 struct VertexToPixel
 {
-	float4 position : SV_POSITION;
-	float2 tex : TEXCOORD0;
-	float4 reflectionPos : TEXCOORD1;
-	float4 refractionPos : TEXCOORD2;
+    float4 position : SV_POSITION;
+    float3 normal : NORMAL;
+    float3 tangent : TANGENT;
+    float4 worldPos : POSITION;
+    float2 uv : TEXCOORD;
 };
 
 float4 main(VertexToPixel input) : SV_TARGET
 {
-	float2 reflectTexCoord;
-	float2 refractTexCoord;
-	float4 normalMap;
-	float3 normal;
-	float4 reflectColor;
-	float4 refractionColor;
-	float4 color;
+	// Move the position the water normal is sampled from to simulate moving water.	
+    input.uv.x += waterTranslation;
 
-	// Move position that we sampled the water normal from. This will simulate moving water.
-	input.tex.y += waterTranslation;
 
-	// Calculate projected reflection texture coords
-	reflectTexCoord.x = input.reflectionPos.x / input.reflectionPos.w / 2.0f + 0.5f;
-	reflectTexCoord.y = input.reflectionPos.y / input.reflectionPos.w / 2.0f + 0.5f;
+    input.normal = normalize(input.normal);
+    input.tangent = normalize(input.tangent);
 
-	// Calculate the projected refraction texture coords
-	refractTexCoord.x = input.refractionPos.x / input.refractionPos.w / 2.0f + 0.5f;
-	refractTexCoord.y = input.refractionPos.y / input.refractionPos.w / 2.0f + 0.5f;
+	// Normal Mapping
+    float3 normalFromMap = NormalMap.Sample(Sampler, input.uv).rgb * 2 - 1;
 
-	// Sample normal from normal map texture
-	normalMap = normalTexture.Sample(SampleTypePoint, input.tex);
+	// Calculate my TBN matrix to get the normal into world space
+    float3 n = input.normal;
+    float3 t = normalize(input.tangent - n * dot(input.tangent, n));
+    float3 b = cross(t, n);
+    float3x3 tbn = float3x3(t, b, n);
 
-	// Expand range of normal from (0, 1) to (-1, +1)
-	normal = (normalMap.xyz * 2.0f) - 1.0f;
+    input.normal = normalize(mul(normalFromMap, tbn));
 
-	// Re-position the texture coord sampling pos by normal map value to simulate rippling wave effect
-	reflectTexCoord = reflectTexCoord + (normal.xy * reflectRefractScale);
-	refractTexCoord = refractTexCoord + (normal.xy * reflectRefractScale);
-
-	// Sample texture pixels from textures using updated texture coords
-	reflectColor = reflectionTexture.Sample(SampleTypePoint, reflectTexCoord);
-	refractionColor = refractionTexture.Sample(SampleTypePoint, refractTexCoord);
-
-	// Combine reflection AND refraction results to get the final color
-	color = lerp(reflectColor, refractionColor, 0.6f);
-
-	return color;
+    float4 color = Texture.Sample(Sampler, input.uv);
+    
+    return color;
 }

@@ -248,3 +248,4 @@ protected:
 	void SetShaderAndCBs();
 	void CleanUp();
 };
+

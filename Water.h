@@ -15,13 +15,10 @@ private:
 	ID3D11ShaderResourceView* waterSRV;
 
 	dx::XMFLOAT2 normalMapTiling;
-	dx::XMFLOAT4 refractionTint;
 
 	int vertexCount, indexCount;
 	float waterHeight;
 	float waterTranslation;
-	float reflectRefractScale;
-	float specularShininess;
 
 	bool InitializeBuffers(ID3D11Device* device, float waterRadius);
 	bool LoadTexture(ID3D11Device* device, const WCHAR* textureFile);
@@ -39,11 +36,8 @@ public:
 
 	int GetIndexCount() { return indexCount; };
 	float GetWaterHeight() { return waterHeight; }
-	float GetWaterTranslation() { return waterTranslation; }
-	float GetReflectRefractScale() { return reflectRefractScale; }
 	float GetSpecularShininess() { return specularShininess; }
 
 	dx::XMFLOAT2 GetNormalMapTiling() { return normalMapTiling; }
-	dx::XMFLOAT4 GetRefractionTint() { return refractionTint; }
 
 };

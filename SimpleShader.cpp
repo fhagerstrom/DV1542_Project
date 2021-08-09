@@ -268,7 +268,6 @@ void SimpleShaderHandler::CopyAllBufferData()
 	// Ensure the shader is valid
 	if (!isShaderValid)
 	{
-		//printf("ERROR! Could not ensure that shader is valid\n");
 		return;
 	}
 	// Loop through the constant buffers and copy all data
