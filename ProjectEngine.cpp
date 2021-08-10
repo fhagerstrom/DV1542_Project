@@ -69,7 +69,11 @@ Engine::~Engine()
 	delete particlePixelShader;
 	delete waterVertexShader;
 	delete waterPixelShader;
-
+	
+	shadowDSV->Release();
+	shadowSRV->Release();
+	shadowRasterizer->Release();
+	shadowSampler->Release();
 	sampler->Release();
 
 	objectTextureSRV->Release();
@@ -101,8 +105,10 @@ void Engine::Init()
 	LoadMesh();
 	LoadTextures();	
 	CreateMaterials();
+	CreateWater();
 	CreateBasicGeometry();
 	LightEntityInitialize();
+	// CreateShadow();
 
 	// Tessellation - Displacement mapping
 	tessellationAmount = 10.0f;
@@ -236,6 +242,21 @@ void Engine::CreateMatrices()
 {
 	camera = new Camera(0, 0, -10);
 	camera->UpdateProjectionMatrix((float)width / height);
+
+	// Shadow view matrix (basicly the light's perspective)
+	XMMATRIX shadowView = XMMatrixLookAtLH(
+		XMVectorSet(0, 0, -10, 0), // Eye position
+		XMVectorSet(0, 0, 0, 0),		// Look at pos
+		XMVectorSet(0, 1, 0, 0));		// Up
+	XMStoreFloat4x4(&shadowViewMatrix, XMMatrixTranspose(shadowView));
+
+	// Shadow projection matrix
+	XMMATRIX shadowProj = XMMatrixOrthographicLH(
+		10.0f,		// Ortho width
+		10.0f,		// Ortho height       NOTE: tweak these values???
+		0.1f,		// Near plane
+		100.0f);	// Far plane
+	XMStoreFloat4x4(&shadowProjectionMatrix, XMMatrixTranspose(shadowProj));
 }
 
 void Engine::LoadShaders()
@@ -297,8 +318,8 @@ void Engine::LoadShaders()
 		waterVertexShader->LoadShaderFile(L"WaterVS.cso");
 
 	waterPixelShader = new SimplePixelShader(device, context);
-	if (!waterPixelShader->LoadShaderFile(L"Debug/WaterPS.cso"))
-		waterPixelShader->LoadShaderFile(L"WaterPS.cso");
+	if (!waterPixelShader->LoadShaderFile(L"Debug/waterPixelShader.cso"))
+		waterPixelShader->LoadShaderFile(L"waterPixelShader.cso");
 
 	backfaceGeometryShader = new SimpleGeometryShader(device, context);
 	if (!backfaceGeometryShader->LoadShaderFile(L"Debug/BackfaceGS.cso"))
@@ -320,6 +341,7 @@ void Engine::LoadMesh()
 	planeMesh = new Mesh(device, "Debug/Models/cube.obj");
 	lightMesh = new Mesh(device, "Debug/Models/sphere.obj");
 	poolMesh = new Mesh(device, "Debug/Models/pool.obj");
+	waterMesh = new Mesh(device, "Debug/Models/cube.obj");
 }
 
 void Engine::LoadTextures()
@@ -337,6 +359,7 @@ void Engine::LoadTextures()
 	// POOL AND WATER (WIP)
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/bathTiles.jpg", 0, &poolSRV);
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/NormalMaps/triangleTileNormals.jpg", 0, &poolNormalMapSRV);
+	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/seamlessWater.png", 0, &waterSRV);
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/NormalMaps/waterNormals.jpg", 0, &waterNormalMapSRV);
 }
 
@@ -356,6 +379,7 @@ void Engine::CreateMaterials()
 	ringMaterial = new Material(vertexShader, pixelShader, objectTextureSRV, objectNormalMapSRV, sampler);
 	planeMaterial = new Material(vertexShader, pixelShader, planeTextureSRV, planeNormalMapSRV, sampler);
 	poolMaterial = new Material(vertexShader, pixelShader, poolSRV, poolNormalMapSRV, sampler);
+	waterMaterial = new Material(waterVertexShader, waterPixelShader, waterSRV, waterNormalMapSRV, sampler);
 }
 
 void Engine::CreateWater()
@@ -377,8 +401,9 @@ void Engine::CreateBasicGeometry()
 
 	EngineEntity* ring = new EngineEntity(ringMesh, ringMaterial);
 
-	// POOL FOR WATER
+	// Pool and water
 	EngineEntity* pool = new EngineEntity(poolMesh, poolMaterial);
+	EngineEntity* water = new EngineEntity(waterMesh, waterMaterial);
 
 	// Add plane (ground) to vector.
 	entities.push_back(ground);
@@ -389,8 +414,9 @@ void Engine::CreateBasicGeometry()
 	entities.push_back(monkey2);
 	entities.push_back(ring);
 
-	// Add pool to vector
+	// Add pool and water to vector
 	entities.push_back(pool);
+	entities.push_back(water);
 
 	monkey->SetScale(1.0f, 1.0f, 1.0f);
 	monkey->SetPosition(0.0f, 1.0f, 0.0f);
@@ -411,6 +437,9 @@ void Engine::CreateBasicGeometry()
 
 	pool->SetScale(1.0f, 1.0f, 1.0f);
 	pool->SetPosition(0.0f, -1.9f, 0.0f);
+
+	water->SetScale(3.0f, 0.05f, 1.8f);
+	water->SetPosition(0.0f, -1.8f, 0.0f);
 
 	currentEntity = 0;
 }
@@ -460,11 +489,142 @@ void Engine::LightEntityInitialize()
 	lightEntities.push_back(lightEntity8);
 }
 
-void Engine::CalculateShadows()
-{
-	
+//void Engine::CreateShadows()
+//{
+//	shadowMapSize = 2048;  //correct value?
+//
+//	// Create the texture that will be used as shadow map
+//	D3D11_TEXTURE2D_DESC shadowDescription = {};
+//	shadowDescription.Width = shadowMapSize;
+//	shadowDescription.Height = shadowMapSize;
+//	shadowDescription.ArraySize = 1;
+//	shadowDescription.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+//	shadowDescription.CPUAccessFlags = 0;
+//	shadowDescription.Format = DXGI_FORMAT_R32_TYPELESS;
+//	shadowDescription.MipLevels = 1;
+//	shadowDescription.MiscFlags = 0;
+//	shadowDescription.SampleDesc.Count = 1;
+//	shadowDescription.SampleDesc.Quality = 0;
+//	shadowDescription.Usage = D3D11_USAGE_DEFAULT;
+//	ID3D11Texture2D* shadowTexture;
+//	device->CreateTexture2D(&shadowDescription, 0, &shadowTexture);
+//
+//	// Create depth/stencil
+//	D3D11_DEPTH_STENCIL_VIEW_DESC shadowDSDesc = {};
+//	shadowDSDesc.Format = DXGI_FORMAT_D32_FLOAT;
+//	shadowDSDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+//	shadowDSDesc.Texture2D.MipSlice = 0;
+//	//device->CreateDepthStencilView(shadowTexture, &shadowDescription, &shadowDSV);
+//
+//	// Create SRV for shadow map
+//	D3D11_SHADER_RESOURCE_VIEW_DESC srvDescrition = {};
+//	srvDescrition.Format = DXGI_FORMAT_R32_FLOAT;
+//	srvDescrition.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+//	srvDescrition.Texture2D.MipLevels = 1;
+//	srvDescrition.Texture2D.MostDetailedMip = 0;
+//	device->CreateShaderResourceView(shadowTexture, &srvDescrition, &shadowSRV);
+//
+//	// Now we don't need the texture anymore
+//	shadowTexture->Release();
+//
+//	// Create the special "comparison" sampler state for our shadows
+//	D3D11_SAMPLER_DESC shadowSampDescription = {};
+//	shadowSampDescription.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR; // Could be anisotropic
+//	shadowSampDescription.ComparisonFunc = D3D11_COMPARISON_LESS;
+//	shadowSampDescription.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+//	shadowSampDescription.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+//	shadowSampDescription.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+//	shadowSampDescription.BorderColor[0] = 1.0f;
+//	shadowSampDescription.BorderColor[1] = 1.0f;
+//	shadowSampDescription.BorderColor[2] = 1.0f;
+//	shadowSampDescription.BorderColor[3] = 1.0f;
+//	device->CreateSamplerState(&shadowSampDescription, &shadowSampler);
+//
+//	// Create rasterizer state
+//	D3D11_RASTERIZER_DESC shadowRastDescription = {};
+//	shadowRastDescription.FillMode = D3D11_FILL_SOLID;
+//	shadowRastDescription.CullMode = D3D11_CULL_BACK;
+//	shadowRastDescription.DepthClipEnable = true;
+//	shadowRastDescription.DepthBias = 1000; // Multiplied by (smallest possible value > 0 in depth buffer)
+//	shadowRastDescription.DepthBiasClamp = 0.0f;
+//	shadowRastDescription.SlopeScaledDepthBias = 1.0f;
+//	device->CreateRasterizerState(&shadowRastDescription, &shadowRasterizer);
+//
+//	//Blending State
+//	//Set up the Blend Description
+//	D3D11_BLEND_DESC blendDescription;
+//	ZeroMemory(&blendDescription, sizeof(blendDescription));
+//	blendDescription.RenderTarget[0].BlendEnable = TRUE;
+//	blendDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+//	blendDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+//	blendDescription.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+//	blendDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+//	blendDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
+//	blendDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+//	blendDescription.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+//
+//	//Setting the Blend Description to FALSE (will be be used in OMBlendState in Draw function)
+//	blendDescription.RenderTarget[0].BlendEnable = FALSE;
+//	device->CreateBlendState(&blendDescription, &blendState);
+//
+//}
 
-}
+//void Engine::RenderShadowMap()
+//{
+//	// Initial setup
+//	context->OMSetRenderTargets(0, 0, shadowDSV);
+//	context->ClearDepthStencilView(shadowDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+//	context->RSSetState(shadowRasterizer);
+//
+//	// Set up shadow view port    
+//	D3D11_VIEWPORT shadowViewPort = {};
+//	shadowViewPort.TopLeftX = 0;
+//	shadowViewPort.TopLeftY = 0;
+//	shadowViewPort.Width = (float)shadowMapSize;
+//	shadowViewPort.Height = (float)shadowMapSize;
+//	shadowViewPort.MinDepth = 0.0f;
+//	shadowViewPort.MaxDepth = 1.0f;
+//	context->RSSetViewports(1, &shadowViewPort);
+//
+//	// Set up shaders for making the shadow map
+//	shadowVertexShader->SetShader();
+//	shadowVertexShader->SetMatrix4x4("view", shadowViewMatrix);
+//	shadowVertexShader->SetMatrix4x4("projection", shadowProjectionMatrix);
+//
+//	// Turn off the pixel shader, we don´t need that stuff
+//	context->PSSetShader(0, 0, 0);
+//
+//	// Actually draw our entities
+//	UINT stride = sizeof(Vertex);
+//	UINT offset = 0;
+//
+//	for (unsigned int i = 0; i < entities.size(); i++)
+//	{
+//
+//		// Grab the data from the first entity's mesh
+//		EngineEntity* entity =  entities[i];
+//		ID3D11Buffer* vertexBuffer = entity->GetMesh()->GetVertexBuffer();
+//		ID3D11Buffer* indexBuffer = entity->GetMesh()->GetIndexBuffer();
+//
+//		// Set buffers in the input assembler
+//		context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+//		context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+//
+//		shadowVertexShader->SetMatrix4x4("world", entity->GetWorldMatrix());
+//		shadowVertexShader->CopyAllBufferData();
+//
+//		// Finally do the actual drawing
+//		context->DrawIndexed(entity->GetMesh()->GetIndexCount(), 0, 0);
+//	}
+//
+//	// Revert to original targets and states
+//	//context->OMSetRenderTargets(1, &this->backBufferRTV, this->depthStencilView);
+//	context->OMSetRenderTargets(1, &this->renderTargetViewArray[BUFFER_COUNT], this->depthStencilView);
+//	shadowViewPort.Width = (float)this->width;
+//	shadowViewPort.Height = (float)this->height;
+//	context->RSSetViewports(1, &shadowViewPort);
+//	context->RSSetState(0);
+//}
 
 void Engine::Update(float deltaTime, float totalTime)
 {
@@ -492,7 +652,7 @@ void Engine::Update(float deltaTime, float totalTime)
 	if(currentScore == -1)
 	{
 		currentScore++;
-		std::cout << "Welcome to the game! Your goal is to go through the ring 10 times to win! \nYour current score is: 0" << std::endl;
+		std::cout << "Welcome to the game! Your goal is to go through the ring 10 times to win! \nYour current score is: " << currentScore << std::endl;
 	}
 	
 	// std::cout << "x: " << camera->GetPosition().x << "\ny: " << camera->GetPosition().y << "\nz: " << camera->GetPosition().z << std::endl;
@@ -535,7 +695,7 @@ void Engine::Update(float deltaTime, float totalTime)
 
 void Engine::Draw(float deltaTime, float totalTime)
 {
-	const float bgColor[4] = {0.0f, 0.0f, 0.1f, 1.0f};
+	const float bgColor[4] = {0.2f, 0.2f, 0.2f, 1.0f};
 	int i;
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
@@ -561,10 +721,25 @@ void Engine::Draw(float deltaTime, float totalTime)
 	/*backfaceGeometryShader->SetFloat3("camPos", camera->GetPosition());
 	backfaceGeometryShader->CopyAllBufferData();
 	backfaceGeometryShader->SetShader();*/
+	
+	// Shadow stuff_______________________________
+	//float blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};  // Set blend factor[inconsequential, since not using]
+	//context->OMSetBlendState(blendState, blendFactor, 0xFFFFFFFF); // Setting the blend state
+	// RenderShadowMap();
 
-	/*shadowVertexShader->SetMatrix4x4("worldViewProj", lightEntities[0]->GetWorldMatrix());
-	shadowVertexShader->CopyBufferData("worldViewProj");
-	shadowVertexShader->SetShader();*/
+	//for (unsigned int i = 0; i < entities.size(); i++)
+	//{
+	//	vertexBuffer = entities[i]->GetMesh()->GetVertexBuffer();
+	//	indexBuffer = entities[i]->GetMesh()->GetIndexBuffer();
+	//	/*renderer.SetVertexShader(vertexShader, entities[i], camera, shadowViewMatrix, shadowProjectionMatrix);
+	//	renderer.SetPixelShader(pixelShader, entities[i], camera, shadowSampler, shadowSRV);*/
+
+	//	context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+	//	context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	//	context->DrawIndexed(entities[i]->GetMesh()->GetIndexCount(), 0, 0);
+	//}
+	//_____________________
+
 
 	for (unsigned int i = 0; i < entities.size(); i++)
 	{
@@ -574,6 +749,10 @@ void Engine::Draw(float deltaTime, float totalTime)
 		deferredVertexShader->SetMatrix4x4("world", entities[i]->GetWorldMatrix());
 		deferredVertexShader->SetMatrix4x4("view", camera->GetView());
 		deferredVertexShader->SetMatrix4x4("projection", camera->GetProjection());
+
+		//shadow
+	/*	deferredVertexShader->SetMatrix4x4("shadowView", shadowViewMatrix);
+		deferredVertexShader->SetMatrix4x4("shadowProj", shadowProjectionMatrix);*/
 
 		deferredVertexShader->CopyAllBufferData();
 		deferredVertexShader->SetShader();
@@ -585,19 +764,12 @@ void Engine::Draw(float deltaTime, float totalTime)
 		deferredPixelShader->CopyAllBufferData();
 		deferredPixelShader->SetShader();
 
+
 		context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
 		context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		
 		context->DrawIndexed(entities[i]->GetMesh()->GetIndexCount(), 0, 0);
 	}
-
-	/*water->Render(context);
-	waterVertexShader->SetMatrix4x4("world", camera->);
-	waterVertexShader->SetMatrix4x4("view", camera->GetView());
-	waterVertexShader->SetMatrix4x4("projection", camera->GetProjection());
-
-	waterVertexShader->CopyAllBufferData();
-	waterVertexShader->SetShader();*/
 	
 	context->OMSetRenderTargets(1, &backBufferRTV, depthStencilView);
 	context->ClearRenderTargetView(backBufferRTV, bgColor);
@@ -608,6 +780,7 @@ void Engine::Draw(float deltaTime, float totalTime)
 	context->OMSetBlendState(blendState, blend, 0xFFFFFFFF);
 	context->OMSetDepthStencilState(depthState, 0);
 
+	
 	dirVertexShader->SetShader();
 
 	dirPixelShader->SetShaderResourceView("Position", shaderResourceViewArray[0]);
@@ -616,10 +789,26 @@ void Engine::Draw(float deltaTime, float totalTime)
 	backBufferPixelShader->SetSamplerState("Sampler", sampler);
 
 	dirPixelShader->SetFloat3("lightColor", dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
-	dirPixelShader->SetFloat3("lightDir", dx::XMFLOAT3(1.0f, 0.0f, 0.0f));
+	dirPixelShader->SetFloat3("lightDir", dx::XMFLOAT3(1.0f, -1.0f, 0.0f));
 
 	dirPixelShader->CopyAllBufferData();
 	dirPixelShader->SetShader();
+
+	/*waterVertexShader->SetMatrix4x4("world", entities[5]->GetWorldMatrix());
+	waterVertexShader->SetMatrix4x4("view", camera->GetView());
+	waterVertexShader->SetMatrix4x4("projection", camera->GetProjection());
+
+	waterVertexShader->CopyAllBufferData();
+	waterVertexShader->SetShader();
+
+	waterPixelShader->SetFloat("waterTranslation", water->GetWaterTranslation());
+	waterPixelShader->SetShaderResourceView("Texture", entities[5]->GetMaterial()->GetTextureSRV());
+	waterPixelShader->SetShaderResourceView("NormalMap", entities[5]->GetMaterial()->GetNormalMapSRV());
+	waterPixelShader->SetSamplerState("Sampler", sampler);
+
+	waterPixelShader->CopyAllBufferData();
+	waterPixelShader->SetShader();*/
+
 
 	for (int i = 0; i < lightEntities.size(); i++)
 	{

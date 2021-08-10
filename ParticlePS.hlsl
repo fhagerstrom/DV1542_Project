@@ -1,24 +1,16 @@
-Texture2D shaderTexture;
-SamplerState sampleType;
+// Textures and such.
+Texture2D particle : register(t0);
+SamplerState trilinear : register(s0);
 
-struct PixelInputType
+struct VertexToPixel
 {
-	float4 position : SV_POSITION;
-	float2 uv : TEXCOORD0;
-	float4 color : color;
+    float4 position : SV_POSITION;
+    float2 uv : TEXCOORD0;
+    float4 color : TEXCOORD1;
 };
 
-
-float4 main(PixelInputType input) : SV_TARGET
+// Entry point for this pixel shader
+float4 main(VertexToPixel input) : SV_TARGET
 {
-	float4 texturecolor;
-	float4 finalcolor;
-
-	// Sample the pixel color from the texture using the sampler at this texture coordinate location.
-	texturecolor = shaderTexture.Sample(sampleType, input.uv);
-
-	// Combine the texture color and the particle color to get the final color result.
-	finalcolor = texturecolor * input.color;
-
-	return finalcolor;
+    return particle.Sample(trilinear, input.uv) * input.color * input.color.a;
 }

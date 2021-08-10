@@ -1,22 +1,18 @@
 #include "ShadowMapping.h"
 
 // For the DirectX Math library
-using namespace DirectX;
 
-ShadowMapping::ShadowMapping(ID3D11Device* device, UINT size) :depthMapSRV(nullptr), depthMapDSV(nullptr)
+ShadowMapping::ShadowMapping()
 {
-	//fixing viewport
-	viewPort.TopLeftX = 0.0f;
-	viewPort.TopLeftY = 0.0f;
-	viewPort.Width = static_cast<float>(size);
-	viewPort.Height = static_cast<float>(size);
-	viewPort.MinDepth = 0.0f;
-	viewPort.MaxDepth = 1.0f;
 
-		// TEXTURE2D
-		// We are using typeless format since the dsv is going to interpret 
-		// bits as DXGI_FORMATD24UNORM_S8UINT where SRV is going
-		// to interpret bits as DXGI_FORMAT_R24_UNORM_X8_TYPELESS.
+}
+
+ShadowMapping::ShadowMapping(ID3D11Device* device, UINT size) : depthMapSRV(nullptr), depthMapDSV(nullptr)
+{
+	// TEXTURE2D
+	// We are using typeless format since the dsv is going to interpret 
+	// bits as DXGI_FORMATD24UNORM_S8UINT where SRV is going
+	// to interpret bits as DXGI_FORMAT_R24_UNORM_X8_TYPELESS.
 
 	D3D11_TEXTURE2D_DESC textureDesc;
 
@@ -38,7 +34,7 @@ ShadowMapping::ShadowMapping(ID3D11Device* device, UINT size) :depthMapSRV(nullp
 	if (FAILED(hr))
 	{			
 		std::cout << "FAILED TO CREATE SHADOW TEXTURE2D!" << std::endl;
-		return false;
+		return;
 	}
 
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
@@ -47,13 +43,14 @@ ShadowMapping::ShadowMapping(ID3D11Device* device, UINT size) :depthMapSRV(nullp
 	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	depthStencilViewDesc.Texture2D.MipSlice = 0;
 
-	hr = (device->CreateDepthStencilView(depthmap, &depthStencilViewDesc, &depthMapDSV));
+	hr = (device->CreateDepthStencilView(depthMap, &depthStencilViewDesc, &depthMapDSV));
 
 	if (FAILED(hr))
 	{
 		std::cout << "FAILED TO CREATE SHADOW DEPTH STENCIL VIEW" << std::endl;
-		return false;
+		return;
 	}
+
 	D3D11_SHADER_RESOURCE_VIEW_DESC shadeResourceViewDesc;
 	shadeResourceViewDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
 	shadeResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
@@ -64,9 +61,9 @@ ShadowMapping::ShadowMapping(ID3D11Device* device, UINT size) :depthMapSRV(nullp
 	if ((FAILED(hr)))
 	{
 		std::cout << "FAILED TO CREATE SHADOW SHADER RESOURCE VIEW" << std::endl;
-		return false;
+		return;
 	}
-	depthmap->Release(); //view saves reference so we dont need this anymore
+	depthMap->Release(); //view saves reference so we dont need this anymore
 }
 
 ShadowMapping::~ShadowMapping() 
@@ -75,13 +72,13 @@ ShadowMapping::~ShadowMapping()
 }
 
 
-ID3D11DepthStencilView** ShadowMapping::GetDSV() 
+ID3D11DepthStencilView** ShadowMapping::GetDSV()
 { 
 	return &this->depthMapDSV; 
 }
 
 	
-ID3D11ShaderResourceView** ShadowMapping::GetSRV() 
+ID3D11ShaderResourceView** ShadowMapping::GetSRV()
 { 
 	return &this->depthMapSRV; 
 }
@@ -93,12 +90,12 @@ void ShadowMapping::BindShadowMap(ID3D11DeviceContext* context)
 		// shader resource that depth texture will be written to
 		ID3D11ShaderResourceView* null = nullptr;
 		context->PSSetShaderResources(3, 1, &null);
-		context->RSSetViewports(1, &viewPort);
+		// context->RSSetViewports(1, &viewport);
 		// Set null render target because we  only draw to depth buffer. 
 
 		// null render target, this will disable color writes.
 		ID3D11RenderTargetView* renderTargets[1] = { 0 };
-		context->OMSetRenderTargets(1, renderTargets, depthMapDSV);
-		context->ClearDepthStencilView(depthMapDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+		// context->OMSetRenderTargets(1, renderTargets, depthMapDSV);
+		// context->ClearDepthStencilView(depthMapDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 }

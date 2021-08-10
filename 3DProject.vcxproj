@@ -153,7 +153,6 @@
     <ClInclude Include="Lights.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
-    <ClInclude Include="Particles.h" />
     <ClInclude Include="ProjectEngine.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="ShadowMapping.h" />
@@ -168,7 +167,6 @@
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="Particles.cpp" />
     <ClCompile Include="ProjectEngine.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Renderer.cpp" />

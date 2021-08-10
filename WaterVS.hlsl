@@ -38,9 +38,6 @@ VertexToPixel main(VertexShaderInput input)
 	// Get world position of vertex
     output.worldPos = mul(float4(input.position, 1.0f), world);
 
-    matrix worldReflProj = mul(mul(world, reflection), projection);
-    output.reflWorldPos = mul(float4(input.position, 1.0f), worldReflProj);
-
 	// Pass through the uv
     output.uv = input.uv;
 

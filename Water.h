@@ -36,7 +36,7 @@ public:
 
 	int GetIndexCount() { return indexCount; };
 	float GetWaterHeight() { return waterHeight; }
-	float GetSpecularShininess() { return specularShininess; }
+	float GetWaterTranslation() { return waterTranslation; }
 
 	dx::XMFLOAT2 GetNormalMapTiling() { return normalMapTiling; }
 

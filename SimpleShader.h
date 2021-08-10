@@ -42,6 +42,9 @@ struct SimpleSampler
 	unsigned int bindIndex; // The register of the Sampler
 };
 
+
+
+
 // Base abstract class for simplifying shader handling
 class SimpleShaderHandler
 {

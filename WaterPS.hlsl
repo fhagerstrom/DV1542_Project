@@ -1,12 +1,12 @@
+// External texture-related data
+Texture2D Texture : register(t0);
+Texture2D NormalMap : register(t1);
+SamplerState Sampler : register(s0);
+
 cbuffer waterData : register(b1)
 {
     float waterTranslation;
 }
-
-//External texture-related data
-Texture2D Texture : register(t0);
-Texture2D NormalMap : register(t1);
-SamplerState Sampler : register(s0);
 
 struct VertexToPixel
 {
@@ -20,7 +20,7 @@ struct VertexToPixel
 float4 main(VertexToPixel input) : SV_TARGET
 {
 	// Move the position the water normal is sampled from to simulate moving water.	
-    input.uv.x += waterTranslation;
+    input.uv.xy += waterTranslation;
 
 
     input.normal = normalize(input.normal);

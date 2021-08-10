@@ -163,6 +163,7 @@ void Water::Update()
 {
 	// Movement update to simulate motion.
 	waterTranslation += 0.01f;
+	waterTranslation = waterTranslation + 0.01f;
 	if (waterTranslation > 1.0f)
 	{
 		waterTranslation -= 1.0f;

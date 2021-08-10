@@ -23,4 +23,6 @@ void Renderer::SetLights()
 	spotLight2.SetSpotLightValues(dx::XMFLOAT3(0, 1, 0), 64.0f);
 }
 
+
+
  

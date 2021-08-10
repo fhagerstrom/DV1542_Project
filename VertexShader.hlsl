@@ -1,4 +1,3 @@
-
 cbuffer externalData : register(b0)
 {
 	matrix world;

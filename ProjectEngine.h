@@ -15,6 +15,7 @@ const int BUFFER_COUNT = 3;
 #include "Lights.h"
 #include "Water.h"
 #include "Vertex.h"
+#include "ShadowMapping.h"
 #include "WICTextureLoader.h" // DirectXTK
 
 class Engine : public DXInit
@@ -87,13 +88,16 @@ private:
 	void CreateWater();
 	void CreateBasicGeometry();
 	void LightEntityInitialize();
-	void CalculateShadows();
+	/*void CalculateShadows();
+	void CreateShadows();
+	void RenderShadowMap();*/
 
 	// Texture related schtuff.
 	ID3D11ShaderResourceView* objectTextureSRV;
 	ID3D11ShaderResourceView* objectNormalMapSRV;
 	ID3D11ShaderResourceView* planeTextureSRV;
 	ID3D11ShaderResourceView* planeNormalMapSRV;
+	ID3D11ShaderResourceView* waterSRV;
 	ID3D11ShaderResourceView* waterNormalMapSRV;
 	ID3D11ShaderResourceView* poolSRV;
 	ID3D11ShaderResourceView* poolNormalMapSRV;
@@ -124,7 +128,6 @@ private:
 	SimplePixelShader* lightPixelShader;
 	SimpleVertexShader* dirVertexShader;
 	SimplePixelShader* dirPixelShader;
-	SimpleVertexShader* shadowVertexShader;
 	SimpleVertexShader* particleVertexShader;
 	SimplePixelShader* particlePixelShader;
 	SimpleVertexShader* waterVertexShader;
@@ -132,6 +135,16 @@ private:
 	SimpleGeometryShader* backfaceGeometryShader;
 	SimpleDomainShader* displacementDomainShader;
 	SimpleHullShader* displacementHullShader;
+
+	// Shadow schtuff
+	int shadowMapSize;
+	ID3D11DepthStencilView* shadowDSV;
+	ID3D11ShaderResourceView* shadowSRV;
+	ID3D11SamplerState* shadowSampler;
+	ID3D11RasterizerState* shadowRasterizer;
+	SimpleVertexShader* shadowVertexShader;
+	DirectX::XMFLOAT4X4 shadowViewMatrix;
+	DirectX::XMFLOAT4X4 shadowProjectionMatrix;
 
 	// The matrices to go from model space to screen space
 	DirectX::XMFLOAT4X4 worldMatrix;

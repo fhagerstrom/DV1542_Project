@@ -26,7 +26,7 @@ float4 main(in VertexToPixel input) : SV_TARGET0
 
 	float3 l = lightPosition - position;
 	float distance = length(l);
-    float3 ambientColor = {0.8f, 0.8f, 0.8f};
+    // float3 ambientColor = {0.4f, 0.4f, 0.4f};
 
 	if (distance > 5.0f)
 	{
@@ -38,7 +38,7 @@ float4 main(in VertexToPixel input) : SV_TARGET0
 	float attenuation = max(0.0f, 1.0f - (distance / 5.0f));
 
 	float lightAmount = saturate(dot(l, normal));
-	float3 color = ambientColor * lightAmount * lightColor * attenuation;
+	float3 color = lightAmount * lightColor * attenuation;
 
 	// Specular calculation.
 	float3 viewVector = cameraPosition - position;
