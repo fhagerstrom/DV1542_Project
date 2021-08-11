@@ -1,48 +1,44 @@
-// External texture-related data
-Texture2D Texture		: register(t0);
-Texture2D NormalMap		: register(t1);
-SamplerState Sampler	: register(s0);
+Texture2D textureSRV : register(t0);
+Texture2D normalMapSRV : register(t1);
+
+SamplerState basicSampler : register(s0);
 
 struct VertexToPixel
 {
-	float4 position	: SV_POSITION;
-	float3 normal : NORMALWS;
-	float3 tangent : TANGENTWS;
-	float3 worldPos	: POSITIONWS;
-	float2 uv : TEXCOORD;
+    float4 position : SV_POSITION;
+    float3 normal : NORMALWS;
+    float3 tangent : TANGENTWS;
+    float3 worldPos : POSITIONWS;
+    float2 uv : TEXCOORD;
 };
 
-struct PixelShaderOutput
+struct PSOut
 {
-	float4 Normal : SV_Target0; // Normal mapping
-	float4 Diffuse	: SV_Target1; // Color
-	float4 Position	: SV_Target2;
+    float4 Position : SV_Target0;
+    float4 Normal : SV_Target1;
+    float4 Diffuse : SV_Target2;
 };
 
-PixelShaderOutput main(VertexToPixel input)
+PSOut main(in VertexToPixel input)
 {
-	PixelShaderOutput output;
+    PSOut output;
 
-	input.normal = normalize(input.normal);
-	input.tangent = normalize(input.tangent);
+    float3 diffuse = textureSRV.Sample(basicSampler, input.uv).rgb;
 
-	// Read and unpack Normal from map
-	float3 normalFromMap = NormalMap.Sample(Sampler, input.uv).xyz * 2 - 1;
+    float3 N = input.normal;
+    float3 T = normalize(input.tangent - N * dot(input.tangent, N));
+    float3 bitangent = cross(T, N);
 
-	// Transform from tangent to world space
-	float3 n = input.normal;
-	float3 t = normalize(input.tangent - n * dot(input.tangent, n));
-	float3 b = cross(t, n);
+    float3x3 tangentFrame = float3x3(normalize(input.tangent), normalize(bitangent), normalize(input.normal));
+	
+    float3 normal = normalMapSRV.Sample(basicSampler, input.uv).rgb;
+    normal = normalize(normal * 2.0f - 1.0f);
 
-	float3x3 tbn = float3x3(t, b, n);
-	input.normal = normalize(mul(normalFromMap, tbn));
+    float3 normalWS = mul(normal, tangentFrame);
 
-	// Sample the texture
-	float4 textureColor = Texture.Sample(Sampler, input.uv);
+    output.Position = float4(input.worldPos, 1.0f);
+    output.Normal = float4(normalWS, 1.0f);
+    output.Diffuse = float4(diffuse, 1.0f);
 
-	output.Normal = float4(input.normal, 1.0f);
-	output.Diffuse = textureColor;
-	output.Position = float4(input.worldPos, 1.0f);
-
-	return output;
+    return output;
 }

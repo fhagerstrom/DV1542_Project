@@ -1,5 +1,4 @@
 #pragma once
-// #define MAX_LIGHTS 2
 const int BUFFER_COUNT = 3;
 
 #include <DirectXMath.h>
@@ -27,7 +26,86 @@ private:
 	// Keep track of how many times player have flown through ring.
 	int currentScore;
 
-	// Keep track of objects and entities to clean up.
+	// Water related float variable for "translation"
+	float waterTranslation;
+	
+	// Displacement mapping.
+	float tessellationAmount;
+	float HScale;
+	float HBias;
+
+	// Initialization helper functions.
+	void SetDeferred(int textureWidth, int textureHeight);
+	void CreateMatrices();
+	void LoadShaders();
+	void LoadModels();
+	void LoadTextures();
+	void CreateMaterials();
+	void CreateWater();
+	void CreateEntities();
+	void LightEntityInitialize();
+	/*void CalculateShadows();
+	void CreateShadows();
+	void RenderShadowMap();*/
+
+	// Texture related schtuff.
+	ID3D11ShaderResourceView* objectTextureSRV;
+	ID3D11ShaderResourceView* objectNormalMapSRV;
+	ID3D11ShaderResourceView* planeTextureSRV;
+	ID3D11ShaderResourceView* planeNormalMapSRV;
+	ID3D11ShaderResourceView* waterSRV;
+	ID3D11ShaderResourceView* waterNormalMapSRV;
+	ID3D11ShaderResourceView* poolSRV;
+	ID3D11ShaderResourceView* poolNormalMapSRV;
+
+	ID3D11SamplerState* sampler;
+
+	// Deferred rendering objects and settings.
+	ID3D11RenderTargetView* renderTargetViewArray[BUFFER_COUNT];
+	ID3D11ShaderResourceView* shaderResourceViewArray[BUFFER_COUNT];
+	ID3D11Texture2D* depthStencilBuffer;
+	ID3D11DepthStencilState* depthState;
+
+	ID3D11RasterizerState* deferredRasterState;
+	ID3D11BlendState* blendState;
+	D3D11_VIEWPORT viewport;
+
+	SimpleVertexShader* deferredVertexShader;
+	SimplePixelShader* deferredPixelShader;
+	SimpleVertexShader* lightVertexShader;
+	SimplePixelShader* lightPixelShader;
+
+	SimpleVertexShader* backBufferVertexShader;
+	SimplePixelShader* backBufferPixelShader;
+
+	// Wrappers for DirectX shaders
+	SimpleVertexShader* vertexShader;
+	SimplePixelShader* pixelShader;
+	SimpleVertexShader* dirVertexShader;
+	SimplePixelShader* dirPixelShader;
+	SimpleVertexShader* particleVertexShader;
+	SimplePixelShader* particlePixelShader;
+	SimpleVertexShader* waterVertexShader;
+	SimplePixelShader* waterPixelShader;
+	SimpleGeometryShader* backfaceGeometryShader;
+	SimpleDomainShader* displacementDomainShader;
+	SimpleHullShader* displacementHullShader;
+
+	// Buffers to hold geometry data
+	ID3D11Buffer* vertexBuffer;
+	ID3D11Buffer* indexBuffer;
+
+	// Shadow schtuff
+	int shadowMapSize;
+	ID3D11DepthStencilView* shadowDSV;
+	ID3D11ShaderResourceView* shadowSRV;
+	ID3D11SamplerState* shadowSampler;
+	ID3D11RasterizerState* shadowRasterizer;
+	SimpleVertexShader* shadowVertexShader;
+	DirectX::XMFLOAT4X4 shadowViewMatrix;
+	DirectX::XMFLOAT4X4 shadowProjectionMatrix;
+
+	// Keep track of objects and entities.
 	std::vector<Mesh*> meshes;
 	std::vector<EngineEntity*> entities;
 	std::vector<EngineEntity*> lightEntities;
@@ -61,90 +139,7 @@ private:
 	Material* poolMaterial;
 	Material* waterMaterial;
 
-	// Water related float variable for "translation"
-	float waterTranslation;
-	
-	// Displacement mapping.
-	float tessellationAmount;
-	float HScale;
-	float HBias;
-
-	// Lights.
-	PointLight pointLight1;
-	PointLight pointLight2;
-	PointLight pointLight3;
-	PointLight pointLight4;
-
-	SpotLight spotLight1;
-	SpotLight spotLight2;
-
-	// Initialization helper functions.
-	void SetDeferred(int textureWidth, int textureHeight);
-	void CreateMatrices();
-	void LoadShaders();
-	void LoadMesh();
-	void LoadTextures();
-	void CreateMaterials();
-	void CreateWater();
-	void CreateBasicGeometry();
-	void LightEntityInitialize();
-	/*void CalculateShadows();
-	void CreateShadows();
-	void RenderShadowMap();*/
-
-	// Texture related schtuff.
-	ID3D11ShaderResourceView* objectTextureSRV;
-	ID3D11ShaderResourceView* objectNormalMapSRV;
-	ID3D11ShaderResourceView* planeTextureSRV;
-	ID3D11ShaderResourceView* planeNormalMapSRV;
-	ID3D11ShaderResourceView* waterSRV;
-	ID3D11ShaderResourceView* waterNormalMapSRV;
-	ID3D11ShaderResourceView* poolSRV;
-	ID3D11ShaderResourceView* poolNormalMapSRV;
-
-	ID3D11SamplerState* sampler;
-
-	// Render targets for deferred rendering.
-	ID3D11RenderTargetView* renderTargetViewArray[BUFFER_COUNT];
-	ID3D11ShaderResourceView* shaderResourceViewArray[BUFFER_COUNT];
-	ID3D11Texture2D* depthStencilBuffer;
-	ID3D11DepthStencilState* depthState;
-
-	ID3D11RasterizerState* deferredRasterState;
-	ID3D11BlendState* blendState;
-
-	// Buffers to hold geometry data
-	ID3D11Buffer* vertexBuffer;
-	ID3D11Buffer* indexBuffer;
-
-	// Wrappers for DirectX shaders
-	SimpleVertexShader* vertexShader;
-	SimplePixelShader* pixelShader;
-	SimpleVertexShader* deferredVertexShader;
-	SimplePixelShader* deferredPixelShader;
-	SimpleVertexShader* backBufferVertexShader;
-	SimplePixelShader* backBufferPixelShader;
-	SimpleVertexShader* lightVertexShader;
-	SimplePixelShader* lightPixelShader;
-	SimpleVertexShader* dirVertexShader;
-	SimplePixelShader* dirPixelShader;
-	SimpleVertexShader* particleVertexShader;
-	SimplePixelShader* particlePixelShader;
-	SimpleVertexShader* waterVertexShader;
-	SimplePixelShader* waterPixelShader;
-	SimpleGeometryShader* backfaceGeometryShader;
-	SimpleDomainShader* displacementDomainShader;
-	SimpleHullShader* displacementHullShader;
-
-	// Shadow schtuff
-	int shadowMapSize;
-	ID3D11DepthStencilView* shadowDSV;
-	ID3D11ShaderResourceView* shadowSRV;
-	ID3D11SamplerState* shadowSampler;
-	ID3D11RasterizerState* shadowRasterizer;
-	SimpleVertexShader* shadowVertexShader;
-	DirectX::XMFLOAT4X4 shadowViewMatrix;
-	DirectX::XMFLOAT4X4 shadowProjectionMatrix;
+	Renderer renderer;
 
 	// The matrices to go from model space to screen space
 	DirectX::XMFLOAT4X4 worldMatrix;
@@ -158,7 +153,7 @@ public:
 	Engine(HINSTANCE hInstance);
 	~Engine();
 
-	// Overridden setup and render loop methods, which will be called automatically.
+	// Overridden setup and Renderer loop methods, which will be called automatically.
 	void Init();
 	void Update(float deltaTime, float totalTime);
 	void Draw(float deltaTime, float totalTime);

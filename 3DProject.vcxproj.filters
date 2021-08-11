@@ -48,9 +48,6 @@
     <ClInclude Include="Input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Particles.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Water.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -87,9 +84,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Input.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Particles.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Water.cpp">
@@ -152,6 +146,9 @@
       <Filter>Resource Files</Filter>
     </FxCompile>
     <FxCompile Include="ShadowVS.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleGS.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
   </ItemGroup>

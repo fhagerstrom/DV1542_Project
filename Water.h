@@ -30,7 +30,7 @@ public:
 
 	bool Initialize(ID3D11Device* device, const WCHAR* textureFile, float waterHeight, float waterRadius);
 	void Update();
-	void Render(ID3D11DeviceContext* context);
+	void Renderer(ID3D11DeviceContext* context);
 
 	ID3D11ShaderResourceView* GetTexture() { return waterSRV; };
 

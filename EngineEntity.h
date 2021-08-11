@@ -34,7 +34,7 @@ public:
 
 	Mesh* GetMesh() { return mesh; }
 	Material* GetMaterial() { return material; }
-	dx::XMFLOAT4X4 GetWorldMatrix() { return worldMatrix; }
+	dx::XMFLOAT4X4* GetWorldMatrix() { return &worldMatrix; }
 
 	dx::XMFLOAT3 GetLightColor() { return lightColor; };
 	dx::XMFLOAT3 GetPosition() { return position; };

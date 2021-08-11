@@ -1,34 +1,44 @@
 #pragma once
-//const int BUFFER_COUNT = 3;
 
-#include "DXInit.h"
-#include "SimpleShader.h"
-#include <DirectXMath.h>
-#include "Mesh.h"
 #include "EngineEntity.h"
 #include "Camera.h"
-#include "Vertex.h"
 #include "Lights.h"
-
 
 class Renderer
 {
+public:
+	Renderer();
+	~Renderer();
+
+	void RenderProcess(EngineEntity*& EngineEntity, ID3D11Buffer*& vertexBuffer, ID3D11Buffer*& indexBuffer, SimpleVertexShader*& vertexShader, SimplePixelShader*& pixelShader, 
+		Camera*& camera, ID3D11DeviceContext*& context);
+	void RenderGBuffer(EngineEntity*& EngineEntity, ID3D11Buffer*& vertexBuffer, ID3D11Buffer*& indexBuffer, SimpleVertexShader*& vertexShader, SimplePixelShader*& pixelShader, 
+		Camera*& camera, ID3D11DeviceContext*& context);
+	void RenderLights(EngineEntity*& EngineEntity, ID3D11Buffer*& vertexBuffer, ID3D11Buffer*& indexBuffer, SimpleVertexShader*& vertexShader, SimplePixelShader*& pixelShader, 
+		Camera*& camera, ID3D11DeviceContext*& context, ID3D11SamplerState*& sampler, ID3D11ShaderResourceView*& positionGBuffer, ID3D11ShaderResourceView*& normalGBuffer, ID3D11ShaderResourceView*& diffuseGBuffer);
 private:
-	ID3D11Device* device;
+
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 
+	void SetLights();
+
+	DirectionalLight dirLight_1;
+	AmbientLight ambientLight;
 	PointLight pointLight1;
 	PointLight pointLight2;
 	PointLight pointLight3;
 	PointLight pointLight4;
 
-	SpotLight spotLight1;
-	SpotLight spotLight2;
+	PointLight outerPointLight1;
+	PointLight outerPointLight2;
+	PointLight outerPointLight3;
+	PointLight outerPointLight4;
+	PointLight outerPointLight5;
+	PointLight outerPointLight6;
+	PointLight outerPointLight7;
+	PointLight outerPointLight8;
 
-public:
-	Renderer();
-	~Renderer();
-
-	void SetLights();
+	SpotLight spotLight;
 };
+

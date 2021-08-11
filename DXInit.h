@@ -64,7 +64,7 @@ public:
 	// Internal method for message handling
 	LRESULT ProcessMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-	// Initialization and render loop related methods
+	// Initialization and Renderer loop related methods
 	HRESULT InitWindow();
 	HRESULT InitDirectX();
 	// HRESULT InitDirectInput(HINSTANCE hInstance);

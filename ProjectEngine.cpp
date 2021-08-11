@@ -102,11 +102,11 @@ void Engine::Init()
 	SetDeferred(width, height);
 	CreateMatrices();
 	LoadShaders();
-	LoadMesh();
+	LoadModels();
 	LoadTextures();	
 	CreateMaterials();
 	CreateWater();
-	CreateBasicGeometry();
+	CreateEntities();
 	LightEntityInitialize();
 	// CreateShadow();
 
@@ -120,127 +120,162 @@ void Engine::Init()
 
 void Engine::SetDeferred(int textureWidth, int textureHeight)
 {
-	// DEFERRED SETUP
-	D3D11_TEXTURE2D_DESC textureDesc;
-	ZeroMemory(&textureDesc, sizeof(textureDesc));
+	int i;
+	// Texture Discriptions
+	D3D11_TEXTURE2D_DESC textureDescPosNorm;
+	D3D11_TEXTURE2D_DESC textureDescDiffuse;
 
-	textureDesc.Width = textureWidth;
-	textureDesc.Height = textureHeight;
-	textureDesc.MipLevels = 1;
-	textureDesc.ArraySize = 1;
-	textureDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	textureDesc.SampleDesc.Count = 1;
-	textureDesc.SampleDesc.Quality = 0;
-	textureDesc.Usage = D3D11_USAGE_DEFAULT;
-	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-	textureDesc.CPUAccessFlags = 0;
-	textureDesc.MiscFlags = 0;
+	// Texture for Position and Normal are 32 bit 
+	textureDescPosNorm.Width = width;
+	textureDescPosNorm.Height = height;
+	textureDescPosNorm.MipLevels = 1;
+	textureDescPosNorm.ArraySize = 1;
+	textureDescPosNorm.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	textureDescPosNorm.SampleDesc.Count = 1;
+	textureDescPosNorm.SampleDesc.Quality = 0;
+	textureDescPosNorm.Usage = D3D11_USAGE_DEFAULT;
+	textureDescPosNorm.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	textureDescPosNorm.CPUAccessFlags = 0;
+	textureDescPosNorm.MiscFlags = 0;
 
-	ID3D11Texture2D* renderTargetTextureArray[BUFFER_COUNT];
+	//Texture for diffuse is 8 bit 
+	textureDescDiffuse.Width = width;
+	textureDescDiffuse.Height = height;
+	textureDescDiffuse.MipLevels = 1;
+	textureDescDiffuse.ArraySize = 1;
+	textureDescDiffuse.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDescDiffuse.SampleDesc.Count = 1;
+	textureDescDiffuse.SampleDesc.Quality = 0;
+	textureDescDiffuse.Usage = D3D11_USAGE_DEFAULT;
+	textureDescDiffuse.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	textureDescDiffuse.CPUAccessFlags = 0;
+	textureDescDiffuse.MiscFlags = 0;
 
-	for (int i = 0; i < BUFFER_COUNT; i++)
-	{
-		device->CreateTexture2D(&textureDesc, NULL, &renderTargetTextureArray[i]);
-	}
+	//Create renderer target array
+	ID3D11Texture2D* renderTargetTextureArray[3];
 
+	device->CreateTexture2D(&textureDescPosNorm, 0, &renderTargetTextureArray[0]);
+	device->CreateTexture2D(&textureDescPosNorm, 0, &renderTargetTextureArray[1]);
+	device->CreateTexture2D(&textureDescPosNorm, 0, &renderTargetTextureArray[2]);
+
+	// renderer target desc for 32bit
 	D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc32;
 	ZeroMemory(&renderTargetViewDesc32, sizeof(renderTargetViewDesc32));
-	renderTargetViewDesc32.Format = textureDesc.Format;
+	renderTargetViewDesc32.Format = textureDescPosNorm.Format;
 	renderTargetViewDesc32.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	renderTargetViewDesc32.Texture2D.MipSlice = 0;
 
+	// renderer target desc for 8bit
 	D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc8;
 	ZeroMemory(&renderTargetViewDesc8, sizeof(renderTargetViewDesc8));
-	renderTargetViewDesc8.Format = textureDesc.Format;
+	renderTargetViewDesc8.Format = textureDescPosNorm.Format;
 	renderTargetViewDesc8.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	renderTargetViewDesc8.Texture2D.MipSlice = 0;
 
-	// Create Render target view
+	//Create the renderer target arrays
 	device->CreateRenderTargetView(renderTargetTextureArray[0], &renderTargetViewDesc32, &renderTargetViewArray[0]);
 	device->CreateRenderTargetView(renderTargetTextureArray[1], &renderTargetViewDesc32, &renderTargetViewArray[1]);
 	device->CreateRenderTargetView(renderTargetTextureArray[2], &renderTargetViewDesc8, &renderTargetViewArray[2]);
 
-	// Shader Resource View Description
-	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-	ZeroMemory(&srvDesc, sizeof(srvDesc));
-	srvDesc.Format = textureDesc.Format;
-	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MostDetailedMip = 0;
-	srvDesc.Texture2D.MipLevels = 1;
+	//Creste SRV desc
+	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDescDR;
+	ZeroMemory(&shaderResourceViewDescDR, sizeof(shaderResourceViewDescDR));
+	shaderResourceViewDescDR.Format = textureDescPosNorm.Format;
+	shaderResourceViewDescDR.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	shaderResourceViewDescDR.Texture2D.MostDetailedMip = 0;
+	shaderResourceViewDescDR.Texture2D.MipLevels = 1;
 
-	for (int j = 0; j < BUFFER_COUNT; j++)
+	//Create SRV's
+	for (i = 0; i < 3; i++)
 	{
-		device->CreateShaderResourceView(renderTargetTextureArray[j], &srvDesc, &shaderResourceViewArray[j]);
+		device->CreateShaderResourceView(renderTargetTextureArray[i], &shaderResourceViewDescDR, &shaderResourceViewArray[i]);
+
 	}
 
-	// Release render target texture array
-	for (int k= 0; k < BUFFER_COUNT; k++)
+	//Release renderer target texture array
+	for (i = 0; i < 3; i++)
 	{
-		renderTargetTextureArray[k]->Release();
+		renderTargetTextureArray[i]->Release();
 	}
 
-	// Depth Buffer Description
-	D3D11_TEXTURE2D_DESC depthBufferDesc;
-	ZeroMemory(&depthBufferDesc, sizeof(depthBufferDesc));
-	depthBufferDesc.Width = textureWidth;
-	depthBufferDesc.Height = textureHeight;
-	depthBufferDesc.MipLevels = 1;
-	depthBufferDesc.ArraySize = 1;
-	depthBufferDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
-	depthBufferDesc.SampleDesc.Count = 1;
-	depthBufferDesc.SampleDesc.Quality = 0;
-	depthBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	depthBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
-	depthBufferDesc.CPUAccessFlags = 0;
-	depthBufferDesc.MiscFlags = 0;
+	//Create depth buffer desc
+	D3D11_TEXTURE2D_DESC depthBufferDescDR;
+	ZeroMemory(&depthBufferDescDR, sizeof(depthBufferDescDR));
+	depthBufferDescDR.Width = width;
+	depthBufferDescDR.Height = height;
+	depthBufferDescDR.MipLevels = 1;
+	depthBufferDescDR.ArraySize = 1;
+	//depthBufferDescDR.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthBufferDescDR.Format = DXGI_FORMAT_R24G8_TYPELESS;
+	depthBufferDescDR.SampleDesc.Count = 1;
+	depthBufferDescDR.SampleDesc.Quality = 0;
+	depthBufferDescDR.Usage = D3D11_USAGE_DEFAULT;
+	depthBufferDescDR.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	depthBufferDescDR.CPUAccessFlags = 0;
+	depthBufferDescDR.MiscFlags = 0;
 
-	device->CreateTexture2D(&depthBufferDesc, NULL, &depthStencilBuffer);
+	device->CreateTexture2D(&depthBufferDescDR, 0, &depthStencilBuffer);
 
-	// Depth Stencil Description
-	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
-	ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
-	depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	depthStencilViewDesc.Texture2D.MipSlice = 0;
+	//Create depth stencil desc
+	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDescDR;
+	ZeroMemory(&depthStencilViewDescDR, sizeof(depthStencilViewDescDR));
+	depthStencilViewDescDR.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthStencilViewDescDR.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	depthStencilViewDescDR.Texture2D.MipSlice = 0;
 
-	device->CreateDepthStencilView(depthStencilBuffer, &depthStencilViewDesc, &depthStencilView);
+	//Create depth stencil view
+	device->CreateDepthStencilView(depthStencilBuffer, &depthStencilViewDescDR, &depthStencilView);
 
-	// Rasterizer setup
-	D3D11_RASTERIZER_DESC rasterizerDesc;
-	ZeroMemory(&rasterizerDesc, sizeof(rasterizerDesc));
-	rasterizerDesc.CullMode = D3D11_CULL_NONE;
-	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-	rasterizerDesc.DepthClipEnable = false;
 
-	device->CreateRasterizerState(&rasterizerDesc, &deferredRasterState);
+	//Setup the viewport for rendering.
+	viewport.Width = width;
+	viewport.Height = height;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftY = 0.0f;
 
-	// Blend state setup
-	D3D11_BLEND_DESC blendDesc;
-	ZeroMemory(&blendDesc, sizeof(blendDesc));
-	blendDesc.AlphaToCoverageEnable = false;
-	blendDesc.IndependentBlendEnable = false;
-	blendDesc.RenderTarget[0].BlendEnable = true;
-	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
-	blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-	blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
-	blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	//context->OMSetRenderTargets(3, renderTargetViewArray, depthStencilViewDR);
 
-	device->CreateBlendState(&blendDesc, &blendState);
+	//Setup rasterizer state 
+	D3D11_RASTERIZER_DESC rasterizerDescDR;
+	ZeroMemory(&rasterizerDescDR, sizeof(rasterizerDescDR));
+	rasterizerDescDR.CullMode = D3D11_CULL_NONE;
+	rasterizerDescDR.FillMode = D3D11_FILL_SOLID;
+	rasterizerDescDR.DepthClipEnable = false;
 
-	D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
-	depthStencilDesc.DepthEnable = true;
-	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+	device->CreateRasterizerState(&rasterizerDescDR, &deferredRasterState);
 
-	device->CreateDepthStencilState(&depthStencilDesc, &depthState);
+	//Setup blend state 
+	D3D11_BLEND_DESC blendDescDR;
+	ZeroMemory(&blendDescDR, sizeof(blendDescDR));
+	blendDescDR.AlphaToCoverageEnable = false;
+	blendDescDR.IndependentBlendEnable = false;
+	blendDescDR.RenderTarget[0].BlendEnable = true;
+	blendDescDR.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+	blendDescDR.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	blendDescDR.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blendDescDR.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blendDescDR.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+	blendDescDR.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blendDescDR.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	device->CreateBlendState(&blendDescDR, &blendState);
+
+	//TODO : DEPTH STENCIL STATE
+	//TODO : Set the OMdepthstate also change depth target in Set renderer target
+
+	D3D11_DEPTH_STENCIL_DESC depthStencilDescDR = {};
+	depthStencilDescDR.DepthEnable = true;
+	depthStencilDescDR.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	depthStencilDescDR.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+	device->CreateDepthStencilState(&depthStencilDescDR, &depthState);
 }
 
 void Engine::CreateMatrices()
 {
-	camera = new Camera(0, 0, -10);
+	// Camera
+	camera = new Camera(0, 1, -10);
 	camera->UpdateProjectionMatrix((float)width / height);
 
 	// Shadow view matrix (basicly the light's perspective)
@@ -334,7 +369,7 @@ void Engine::LoadShaders()
 		displacementHullShader->LoadShaderFile(L"DisplacementHS.cso");
 }
 
-void Engine::LoadMesh()
+void Engine::LoadModels()
 {
 	objectMesh = new Mesh(device, "Debug/Models/monkey.obj");
 	ringMesh = new Mesh(device, "Debug/Models/torusRing.obj");
@@ -356,7 +391,7 @@ void Engine::LoadTextures()
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/seamlessSnow.jpg", 0, &planeTextureSRV);
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/NormalMaps/snowNormals.jpg", 0, &planeNormalMapSRV);
 
-	// POOL AND WATER (WIP)
+	// POOL AND WATER
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/bathTiles.jpg", 0, &poolSRV);
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/NormalMaps/triangleTileNormals.jpg", 0, &poolNormalMapSRV);
 	dx::CreateWICTextureFromFile(device, context, L"Debug/Textures/seamlessWater.png", 0, &waterSRV);
@@ -389,7 +424,7 @@ void Engine::CreateWater()
 	water->Initialize(device, L"Debug/Textures/seamlessWater.png", 2.75f, 1.0f);
 }
 
-void Engine::CreateBasicGeometry()
+void Engine::CreateEntities()
 {
 	// Create a plane (ground).
 	EngineEntity* ground = new EngineEntity(planeMesh, planeMaterial);
@@ -429,7 +464,7 @@ void Engine::CreateBasicGeometry()
 
 	ring->SetScale(1.0f, 1.0f, 1.0f);
 	ring->SetPosition(0.0f, 3.5f, 0.0f);
-	ring->SetRotation(80.0f, 0.0f, 0.0f);
+	ring->SetRotation(1.0f, 0.0f, 0.0f);
 	
 	// Bottom
 	ground->SetScale(10.0f, 0.025f, 10.0f);
@@ -440,24 +475,22 @@ void Engine::CreateBasicGeometry()
 
 	water->SetScale(3.0f, 0.05f, 1.8f);
 	water->SetPosition(0.0f, -1.8f, 0.0f);
-
-	currentEntity = 0;
 }
 
 void Engine::LightEntityInitialize()
 {
 	// TODO: Make the scene brighter.
-	lightEntity1 = new EngineEntity(lightMesh, dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
-	lightEntity1->SetPosition(0, 0, -3);
-	lightEntity1->SetScale(5, 5, 5);
+	lightEntity1 = new EngineEntity(lightMesh, dx::XMFLOAT3(1.0f, 0.0f, 0.0f));
+	lightEntity1->SetPosition(-4, 1, 0);
+	lightEntity1->SetScale(10, 10, 10);
 
-	lightEntity2 = new EngineEntity(lightMesh, dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
-	lightEntity2->SetPosition(0, 0, 3);
-	lightEntity2->SetScale(5, 5, 5);
+	lightEntity2 = new EngineEntity(lightMesh, dx::XMFLOAT3(0.0f, 1.0f, 0.0f));
+	lightEntity2->SetPosition(0, 1, 0);
+	lightEntity2->SetScale(10, 10, 10);
 
-	lightEntity3 = new EngineEntity(lightMesh, dx::XMFLOAT3(1.0f, 0.6f, 0.2f));
-	lightEntity3->SetPosition(3, 0, 2);
-	lightEntity3->SetScale(5, 5, 5);
+	lightEntity3 = new EngineEntity(lightMesh, dx::XMFLOAT3(0.0f, 0.0f, 1.0f));
+	lightEntity3->SetPosition(4, 1, 0);
+	lightEntity3->SetScale(10, 10, 10);
 
 	lightEntity4 = new EngineEntity(lightMesh, dx::XMFLOAT3(1.0f, 0.6f, 0.2f));
 	lightEntity4->SetPosition(-3, 0, 2);
@@ -632,7 +665,7 @@ void Engine::Update(float deltaTime, float totalTime)
 		Quit();
 
 	camera->Update(deltaTime);
-	water->Update();
+	// water->Update();
 
 	for (unsigned int i = 0; i < entities.size(); i++)
 	{
@@ -655,6 +688,7 @@ void Engine::Update(float deltaTime, float totalTime)
 		std::cout << "Welcome to the game! Your goal is to go through the ring 10 times to win! \nYour current score is: " << currentScore << std::endl;
 	}
 	
+	// Print camera position.
 	// std::cout << "x: " << camera->GetPosition().x << "\ny: " << camera->GetPosition().y << "\nz: " << camera->GetPosition().z << std::endl;
 
 	// Access ring's position. Has index 4 in entities vector.
@@ -695,157 +729,120 @@ void Engine::Update(float deltaTime, float totalTime)
 
 void Engine::Draw(float deltaTime, float totalTime)
 {
-	const float bgColor[4] = {0.2f, 0.2f, 0.2f, 1.0f};
-	int i;
+	// Background color for clearing
+	const float color[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 
-	// Bind render target view array and depth stencil buffer to output render pipeline
-	context->OMSetRenderTargets(BUFFER_COUNT, renderTargetViewArray, depthStencilView);
+	context->OMSetRenderTargets(3, renderTargetViewArray, depthStencilView);
+	context->RSSetViewports(1, &viewport);
 
-	// Clear the render target buffers
-	for (i = 0; i < BUFFER_COUNT; i++)
+	for (int i = 0; i < BUFFER_COUNT; i++)
 	{
-		context->ClearRenderTargetView(renderTargetViewArray[i], bgColor);
+		context->ClearRenderTargetView(renderTargetViewArray[i], color);
 	}
 
-	// TODO: FIXA BACKFACE CULLINGEN - VART I HELSKOTTA LÄGGER VI DET??????
-	/*backfaceGeometryShader->SetFloat3("camPos", camera->GetPosition());
-	backfaceGeometryShader->CopyAllBufferData();
-	backfaceGeometryShader->SetShader();*/
-
-	// Clear the depth buffer
 	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-	// TODO: FIXA BACKFACE CULLINGEN - VART I HELSKOTTA LÄGGER VI DET??????
-	/*backfaceGeometryShader->SetFloat3("camPos", camera->GetPosition());
-	backfaceGeometryShader->CopyAllBufferData();
-	backfaceGeometryShader->SetShader();*/
-	
-	// Shadow stuff_______________________________
-	//float blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};  // Set blend factor[inconsequential, since not using]
-	//context->OMSetBlendState(blendState, blendFactor, 0xFFFFFFFF); // Setting the blend state
-	// RenderShadowMap();
-
-	//for (unsigned int i = 0; i < entities.size(); i++)
-	//{
-	//	vertexBuffer = entities[i]->GetMesh()->GetVertexBuffer();
-	//	indexBuffer = entities[i]->GetMesh()->GetIndexBuffer();
-	//	/*renderer.SetVertexShader(vertexShader, entities[i], camera, shadowViewMatrix, shadowProjectionMatrix);
-	//	renderer.SetPixelShader(pixelShader, entities[i], camera, shadowSampler, shadowSRV);*/
-
-	//	context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-	//	context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-	//	context->DrawIndexed(entities[i]->GetMesh()->GetIndexCount(), 0, 0);
-	//}
-	//_____________________
-
-
-	for (unsigned int i = 0; i < entities.size(); i++)
+	for (int i = 0; i < entities.size(); i++)
 	{
-		vertexBuffer = entities[i]->GetMesh()->GetVertexBuffer();
-		indexBuffer = entities[i]->GetMesh()->GetIndexBuffer();
-
-		deferredVertexShader->SetMatrix4x4("world", entities[i]->GetWorldMatrix());
-		deferredVertexShader->SetMatrix4x4("view", camera->GetView());
-		deferredVertexShader->SetMatrix4x4("projection", camera->GetProjection());
-
-		//shadow
-	/*	deferredVertexShader->SetMatrix4x4("shadowView", shadowViewMatrix);
-		deferredVertexShader->SetMatrix4x4("shadowProj", shadowProjectionMatrix);*/
-
-		deferredVertexShader->CopyAllBufferData();
-		deferredVertexShader->SetShader();
-
-		deferredPixelShader->SetSamplerState("Sampler", entities[i]->GetMaterial()->GetSamplerState());
-		deferredPixelShader->SetShaderResourceView("Texture", entities[i]->GetMaterial()->GetTextureSRV());
-		deferredPixelShader->SetShaderResourceView("NormalMap", entities[i]->GetMaterial()->GetNormalMapSRV());
-
-		deferredPixelShader->CopyAllBufferData();
-		deferredPixelShader->SetShader();
-
-
-		context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-		context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-		
-		context->DrawIndexed(entities[i]->GetMesh()->GetIndexCount(), 0, 0);
+		renderer.RenderGBuffer(entities[i], vertexBuffer, indexBuffer, deferredVertexShader, deferredPixelShader, camera, context);
 	}
-	
+
+	//-----------------------------
+	/*
+		context->OMSetRenderTargets(1, &backBufferRTV, 0);
+		context->RSSetViewports(1, &viewport);
+
+		context->ClearRenderTargetView(backBufferRTV, color);
+		context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+		displayVertexShader->SetShader();
+
+		switch (switcher)
+		{
+		case 1:
+			displayPixelShader->SetShaderResourceView("Texture", shaderResourceViewArray[0]);
+			break;
+		case 2:
+			displayPixelShader->SetShaderResourceView("Texture", shaderResourceViewArray[1]);
+			break;
+		case 3:
+			displayPixelShader->SetShaderResourceView("Texture", shaderResourceViewArray[2]);
+			break;
+		//case 4:
+			//displayPixelShader->SetShaderResourceView("Texture", depthSRV);
+			//break;
+		default:
+			break;
+		}
+
+		ID3D11Buffer* nothing = 0;
+		context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
+		context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+
+		// Actually draw exactly 3 vertices
+		context->Draw(3, 0);
+		displayPixelShader->SetShaderResourceView("Texture", 0);
+		/**/
+		//-------------------	
+
 	context->OMSetRenderTargets(1, &backBufferRTV, depthStencilView);
-	context->ClearRenderTargetView(backBufferRTV, bgColor);
+	context->RSSetViewports(1, &viewport);
+
+	context->ClearRenderTargetView(backBufferRTV, color);
 	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	context->RSSetState(deferredRasterState);
-	float blend[4] = { 1, 1, 1, 1 };
+	float blend[4] = { 1,1,1,1 };
 	context->OMSetBlendState(blendState, blend, 0xFFFFFFFF);
 	context->OMSetDepthStencilState(depthState, 0);
 
-	
+	//----------------DirLightPassTry
+
 	dirVertexShader->SetShader();
 
-	dirPixelShader->SetShaderResourceView("Position", shaderResourceViewArray[0]);
-	dirPixelShader->SetShaderResourceView("NormalMap", shaderResourceViewArray[1]);
-	dirPixelShader->SetShaderResourceView("Texture", shaderResourceViewArray[2]);
+	dirPixelShader->SetShaderResourceView("positionGB", shaderResourceViewArray[0]);
+	dirPixelShader->SetShaderResourceView("normalGB", shaderResourceViewArray[1]);
+	dirPixelShader->SetShaderResourceView("diffuseGB", shaderResourceViewArray[2]);
 	backBufferPixelShader->SetSamplerState("Sampler", sampler);
 
-	dirPixelShader->SetFloat3("lightColor", dx::XMFLOAT3(1.0f, 1.0f, 1.0f));
-	dirPixelShader->SetFloat3("lightDir", dx::XMFLOAT3(1.0f, -1.0f, 0.0f));
+	dirPixelShader->SetFloat3("lightColor", XMFLOAT3(0.1f, 0.5f, 0.7f));
+	dirPixelShader->SetFloat3("lightDir", XMFLOAT3(0.0f, -1.0f, 0.0f));
 
 	dirPixelShader->CopyAllBufferData();
 	dirPixelShader->SetShader();
 
-	/*waterVertexShader->SetMatrix4x4("world", entities[5]->GetWorldMatrix());
-	waterVertexShader->SetMatrix4x4("view", camera->GetView());
-	waterVertexShader->SetMatrix4x4("projection", camera->GetProjection());
+	ID3D11Buffer* nothing = 0;
+	context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
+	context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
 
-	waterVertexShader->CopyAllBufferData();
-	waterVertexShader->SetShader();
-
-	waterPixelShader->SetFloat("waterTranslation", water->GetWaterTranslation());
-	waterPixelShader->SetShaderResourceView("Texture", entities[5]->GetMaterial()->GetTextureSRV());
-	waterPixelShader->SetShaderResourceView("NormalMap", entities[5]->GetMaterial()->GetNormalMapSRV());
-	waterPixelShader->SetSamplerState("Sampler", sampler);
-
-	waterPixelShader->CopyAllBufferData();
-	waterPixelShader->SetShader();*/
+	context->Draw(3, 0);
+	//-----------------
 
 
-	for (int i = 0; i < lightEntities.size(); i++)
-	{
-		ID3D11Buffer* vBufferLight = lightEntities[i]->GetMesh()->GetVertexBuffer();
-		ID3D11Buffer* iBufferLight = lightEntities[i]->GetMesh()->GetIndexBuffer();
+	renderer.RenderLights(lightEntity1, vertexBuffer, indexBuffer, lightVertexShader, lightPixelShader, camera, context, sampler, shaderResourceViewArray[0], shaderResourceViewArray[1], shaderResourceViewArray[2]);
 
-		context->IASetVertexBuffers(0, 1, &vBufferLight, &stride, &offset);
-		context->IASetIndexBuffer(iBufferLight, DXGI_FORMAT_R32_UINT, 0);
+	renderer.RenderLights(lightEntity2, vertexBuffer, indexBuffer, lightVertexShader, lightPixelShader, camera, context, sampler, shaderResourceViewArray[0], shaderResourceViewArray[1], shaderResourceViewArray[2]);
 
-		lightVertexShader->SetMatrix4x4("world", lightEntities[i]->GetWorldMatrix());
-		lightVertexShader->SetMatrix4x4("view", camera->GetView());
-		lightVertexShader->SetMatrix4x4("projection", camera->GetProjection());
+	renderer.RenderLights(lightEntity3, vertexBuffer, indexBuffer, lightVertexShader, lightPixelShader, camera, context, sampler, shaderResourceViewArray[0], shaderResourceViewArray[1], shaderResourceViewArray[2]);
 
-		lightVertexShader->CopyAllBufferData();
-		lightVertexShader->SetShader();
+	renderer.RenderLights(lightEntity4, vertexBuffer, indexBuffer, lightVertexShader, lightPixelShader, camera, context, sampler, shaderResourceViewArray[0], shaderResourceViewArray[1], shaderResourceViewArray[2]);
 
-		lightPixelShader->SetShaderResourceView("NormalMap", shaderResourceViewArray[0]);
-		lightPixelShader->SetShaderResourceView("Texture", shaderResourceViewArray[1]);
-		lightPixelShader->SetShaderResourceView("PositionTexture", shaderResourceViewArray[2]);
+	renderer.RenderLights(lightEntity5, vertexBuffer, indexBuffer, lightVertexShader, lightPixelShader, camera, context, sampler, shaderResourceViewArray[0], shaderResourceViewArray[1], shaderResourceViewArray[2]);
 
-		lightPixelShader->SetSamplerState("basicSampler", sampler);
+	renderer.RenderLights(lightEntity6, vertexBuffer, indexBuffer, lightVertexShader, lightPixelShader, camera, context, sampler, shaderResourceViewArray[0], shaderResourceViewArray[1], shaderResourceViewArray[2]);
 
-		lightPixelShader->SetFloat3("cameraPosition", camera->GetPosition());
+	renderer.RenderLights(lightEntity7, vertexBuffer, indexBuffer, lightVertexShader, lightPixelShader, camera, context, sampler, shaderResourceViewArray[0], shaderResourceViewArray[1], shaderResourceViewArray[2]);
 
-		lightPixelShader->SetFloat3("lightColor", lightEntities[i]->GetLightColor());
-		lightPixelShader->SetFloat3("lightPosition", lightEntities[i]->GetPosition());
-		lightPixelShader->CopyAllBufferData();
-		lightPixelShader->SetShader();
+	renderer.RenderLights(lightEntity8, vertexBuffer, indexBuffer, lightVertexShader, lightPixelShader, camera, context, sampler, shaderResourceViewArray[0], shaderResourceViewArray[1], shaderResourceViewArray[2]);
 
-		context->DrawIndexed(lightEntities[i]->GetMesh()->GetIndexCount(), 0, 0);
-	}
-	
-	// Reset the render state.
+
+	//---------------
 	context->RSSetState(NULL);
 	context->OMSetBlendState(NULL, blend, 0xFFFFFFFF);
 	context->OMSetDepthStencilState(NULL, 0);
-
+	//--------------------------	
 	swapChain->Present(0, 0);
 }
 

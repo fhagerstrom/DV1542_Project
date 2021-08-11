@@ -91,9 +91,9 @@ void ShadowMapping::BindShadowMap(ID3D11DeviceContext* context)
 		ID3D11ShaderResourceView* null = nullptr;
 		context->PSSetShaderResources(3, 1, &null);
 		// context->RSSetViewports(1, &viewport);
-		// Set null render target because we  only draw to depth buffer. 
+		// Set null Renderer target because we  only draw to depth buffer. 
 
-		// null render target, this will disable color writes.
+		// null Renderer target, this will disable color writes.
 		ID3D11RenderTargetView* renderTargets[1] = { 0 };
 		// context->OMSetRenderTargets(1, renderTargets, depthMapDSV);
 		// context->ClearDepthStencilView(depthMapDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);

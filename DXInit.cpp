@@ -206,7 +206,7 @@ HRESULT DXInit::Run()
 			if(titleStats)
 				UpdateTitleStats();
 
-			// The render loop.
+			// The Renderer loop.
 			Update(deltaTime, totalTime);
 			Draw(deltaTime, totalTime);
 		}

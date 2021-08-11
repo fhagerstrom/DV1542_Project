@@ -1,16 +1,20 @@
-// Textures and such.
-Texture2D particle : register(t0);
-SamplerState trilinear : register(s0);
-
-struct VertexToPixel
+struct GSOutput
 {
-    float4 position : SV_POSITION;
-    float2 uv : TEXCOORD0;
-    float4 color : TEXCOORD1;
+    float4 pos : SV_POSITION;
 };
 
-// Entry point for this pixel shader
-float4 main(VertexToPixel input) : SV_TARGET
+struct GeoemtryToPixel
 {
-    return particle.Sample(trilinear, input.uv) * input.color * input.color.a;
+    float4 position : SV_TARGET0;
+    float4 diffuse : SV_TARGET1;
+};
+
+GeoemtryToPixel main(GSOutput input)
+{
+    GeoemtryToPixel output;
+    
+    output.position = input.pos;
+    output.diffuse = float4(68.0f / 255.0f, 85.0f / 255.0f, 90.0f / 255.0f, 1.0f);
+    
+    return output;
 }

@@ -172,7 +172,7 @@ void Water::Update()
 	return;
 }
 
-void Water::Render(ID3D11DeviceContext* context)
+void Water::Renderer(ID3D11DeviceContext* context)
 {
 	RenderBuffers(context);
 }
