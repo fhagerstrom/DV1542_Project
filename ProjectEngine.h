@@ -26,6 +26,9 @@ private:
 	// Keep track of how many times player have flown through ring.
 	int currentScore;
 
+	// switch counter for changing buffer views for deferred
+	int switcher;
+
 	// Water related float variable for "translation"
 	float waterTranslation;
 	
@@ -44,9 +47,8 @@ private:
 	void CreateWater();
 	void CreateEntities();
 	void LightEntityInitialize();
-	/*void CalculateShadows();
 	void CreateShadows();
-	void RenderShadowMap();*/
+	void RenderShadowMap();
 
 	// Texture related schtuff.
 	ID3D11ShaderResourceView* objectTextureSRV;
@@ -120,7 +122,6 @@ private:
 	EngineEntity* lightEntity6;
 	EngineEntity* lightEntity7;
 	EngineEntity* lightEntity8;
-	EngineEntity* lightEntity9;
 
 	// Mesh objects.
 	Mesh* objectMesh;

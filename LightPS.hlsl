@@ -29,25 +29,25 @@ float4 main(in VertexToPixel input) : SV_TARGET
     float3 L = lightPos - position;
     float dist = length(L);
 
-    if (dist > 4.0f)
+    if (dist > 2.0f)
     {
         return float4(0.0f, 0.0f, 0.0f, 0.0f);
     }
 
     L /= dist;
 
-    float attenuation = max(0.0f, 1.0f - (dist / 4.0f));
+    float att = max(0.0f, 1.0f - (dist / 2.0f));
 
     float lightAmount = saturate(dot(normal, L));
-    float3 color = lightAmount * lightColor * attenuation;
+    float3 color = lightAmount * lightColor * att;
 
 	// Specular calculation
     float3 V = cameraPosition - position;
     float3 H = normalize(L + V);
-    float specular = pow(saturate(dot(normal, H)), 10) * attenuation;
+    float specular = pow(saturate(dot(normal, H)), 10) * att;
 
     float3 finalDiffuse = color * diffuse;
-    float3 finalSpecular = specular * diffuse * attenuation;
+    float3 finalSpecular = specular * diffuse * att;
 
     float4 totalColor = float4(finalDiffuse + finalSpecular, 1.0f);
     return totalColor;

@@ -3,6 +3,7 @@
 #include "EngineEntity.h"
 #include "Camera.h"
 #include "Lights.h"
+#include "Water.h"
 
 class Renderer
 {
@@ -10,11 +11,13 @@ public:
 	Renderer();
 	~Renderer();
 
-	void RenderProcess(EngineEntity*& EngineEntity, ID3D11Buffer*& vertexBuffer, ID3D11Buffer*& indexBuffer, SimpleVertexShader*& vertexShader, SimplePixelShader*& pixelShader, 
+	void RenderProcess(EngineEntity*& entity, ID3D11Buffer*& vertexBuffer, ID3D11Buffer*& indexBuffer, SimpleVertexShader*& vertexShader, SimplePixelShader*& pixelShader, 
+		Camera*& camera, ID3D11DeviceContext*& context,  XMFLOAT4X4& shadowViewMatrix, XMFLOAT4X4& shadowProjectionMatrix, ID3D11SamplerState*& shadowSampler, ID3D11ShaderResourceView*& shadowSRV);
+	void RenderGBuffer(EngineEntity*& entity, ID3D11Buffer*& vertexBuffer, ID3D11Buffer*& indexBuffer, SimpleVertexShader*& vertexShader, SimplePixelShader*& pixelShader, 
+		Camera*& camera, ID3D11DeviceContext*& context, XMFLOAT4X4 &shadowViewMatrix, XMFLOAT4X4 &shadowProjectionMatrix, ID3D11SamplerState* &shadowSampler, ID3D11ShaderResourceView* &shadowSRV);
+	void RenderWater(EngineEntity*& entity, ID3D11Buffer*& vertexBuffer, ID3D11Buffer*& indexBuffer, SimpleVertexShader*& vertexShader, SimplePixelShader*& pixelShader,
 		Camera*& camera, ID3D11DeviceContext*& context);
-	void RenderGBuffer(EngineEntity*& EngineEntity, ID3D11Buffer*& vertexBuffer, ID3D11Buffer*& indexBuffer, SimpleVertexShader*& vertexShader, SimplePixelShader*& pixelShader, 
-		Camera*& camera, ID3D11DeviceContext*& context);
-	void RenderLights(EngineEntity*& EngineEntity, ID3D11Buffer*& vertexBuffer, ID3D11Buffer*& indexBuffer, SimpleVertexShader*& vertexShader, SimplePixelShader*& pixelShader, 
+	void RenderLights(EngineEntity*& entity, ID3D11Buffer*& vertexBuffer, ID3D11Buffer*& indexBuffer, SimpleVertexShader*& vertexShader, SimplePixelShader*& pixelShader, 
 		Camera*& camera, ID3D11DeviceContext*& context, ID3D11SamplerState*& sampler, ID3D11ShaderResourceView*& positionGBuffer, ID3D11ShaderResourceView*& normalGBuffer, ID3D11ShaderResourceView*& diffuseGBuffer);
 private:
 
@@ -40,5 +43,7 @@ private:
 	PointLight outerPointLight8;
 
 	SpotLight spotLight;
+
+	Water* water;
 };
 

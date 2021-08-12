@@ -3,9 +3,9 @@ Texture2D Texture : register(t0);
 Texture2D NormalMap : register(t1);
 SamplerState Sampler : register(s0);
 
-cbuffer waterData : register(b1)
+cbuffer externalData : register(b0)
 {
-    float waterTranslation;
+    float3 cameraPosition;
 }
 
 struct VertexToPixel
@@ -20,8 +20,7 @@ struct VertexToPixel
 float4 main(VertexToPixel input) : SV_TARGET
 {
 	// Move the position the water normal is sampled from to simulate moving water.	
-    input.uv.xy += waterTranslation;
-
+    input.uv.x = cameraPosition.x;
 
     input.normal = normalize(input.normal);
     input.tangent = normalize(input.tangent);
@@ -29,7 +28,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// Normal Mapping
     float3 normalFromMap = NormalMap.Sample(Sampler, input.uv).rgb * 2 - 1;
 
-	// Calculate my TBN matrix to get the normal into world space
+	// Calculate the TBN matrix to get the normal into world space
     float3 n = input.normal;
     float3 t = normalize(input.tangent - n * dot(input.tangent, n));
     float3 b = cross(t, n);

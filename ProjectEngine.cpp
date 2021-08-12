@@ -62,7 +62,7 @@ Engine::~Engine()
 	delete backBufferVertexShader;
 	delete lightPixelShader;
 	delete lightVertexShader;
-	delete shadowVertexShader;
+
 	delete dirPixelShader;
 	delete dirVertexShader;
 	delete particleVertexShader;
@@ -75,6 +75,7 @@ Engine::~Engine()
 	shadowRasterizer->Release();
 	shadowSampler->Release();
 	sampler->Release();
+	delete shadowVertexShader;
 
 	objectTextureSRV->Release();
 	objectNormalMapSRV->Release();
@@ -108,7 +109,7 @@ void Engine::Init()
 	CreateWater();
 	CreateEntities();
 	LightEntityInitialize();
-	// CreateShadow();
+	// CreateShadows();
 
 	// Tessellation - Displacement mapping
 	tessellationAmount = 10.0f;
@@ -121,7 +122,7 @@ void Engine::Init()
 void Engine::SetDeferred(int textureWidth, int textureHeight)
 {
 	int i;
-	// Texture Discriptions
+	// Texture Descriptions
 	D3D11_TEXTURE2D_DESC textureDescPosNorm;
 	D3D11_TEXTURE2D_DESC textureDescDiffuse;
 
@@ -151,28 +152,28 @@ void Engine::SetDeferred(int textureWidth, int textureHeight)
 	textureDescDiffuse.CPUAccessFlags = 0;
 	textureDescDiffuse.MiscFlags = 0;
 
-	//Create renderer target array
+	// Create render target array
 	ID3D11Texture2D* renderTargetTextureArray[3];
 
 	device->CreateTexture2D(&textureDescPosNorm, 0, &renderTargetTextureArray[0]);
 	device->CreateTexture2D(&textureDescPosNorm, 0, &renderTargetTextureArray[1]);
 	device->CreateTexture2D(&textureDescPosNorm, 0, &renderTargetTextureArray[2]);
 
-	// renderer target desc for 32bit
+	// render target desc for 32bit
 	D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc32;
 	ZeroMemory(&renderTargetViewDesc32, sizeof(renderTargetViewDesc32));
 	renderTargetViewDesc32.Format = textureDescPosNorm.Format;
 	renderTargetViewDesc32.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	renderTargetViewDesc32.Texture2D.MipSlice = 0;
 
-	// renderer target desc for 8bit
+	// render target desc for 8bit
 	D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc8;
 	ZeroMemory(&renderTargetViewDesc8, sizeof(renderTargetViewDesc8));
 	renderTargetViewDesc8.Format = textureDescPosNorm.Format;
 	renderTargetViewDesc8.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	renderTargetViewDesc8.Texture2D.MipSlice = 0;
 
-	//Create the renderer target arrays
+	//Create the render target arrays
 	device->CreateRenderTargetView(renderTargetTextureArray[0], &renderTargetViewDesc32, &renderTargetViewArray[0]);
 	device->CreateRenderTargetView(renderTargetTextureArray[1], &renderTargetViewDesc32, &renderTargetViewArray[1]);
 	device->CreateRenderTargetView(renderTargetTextureArray[2], &renderTargetViewDesc8, &renderTargetViewArray[2]);
@@ -373,10 +374,10 @@ void Engine::LoadModels()
 {
 	objectMesh = new Mesh(device, "Debug/Models/monkey.obj");
 	ringMesh = new Mesh(device, "Debug/Models/torusRing.obj");
-	planeMesh = new Mesh(device, "Debug/Models/cube.obj");
+	planeMesh = new Mesh(device, "Debug/Models/plane.obj");
 	lightMesh = new Mesh(device, "Debug/Models/sphere.obj");
 	poolMesh = new Mesh(device, "Debug/Models/pool.obj");
-	waterMesh = new Mesh(device, "Debug/Models/cube.obj");
+	waterMesh = new Mesh(device, "Debug/Models/plane.obj");
 }
 
 void Engine::LoadTextures()
@@ -414,7 +415,7 @@ void Engine::CreateMaterials()
 	ringMaterial = new Material(vertexShader, pixelShader, objectTextureSRV, objectNormalMapSRV, sampler);
 	planeMaterial = new Material(vertexShader, pixelShader, planeTextureSRV, planeNormalMapSRV, sampler);
 	poolMaterial = new Material(vertexShader, pixelShader, poolSRV, poolNormalMapSRV, sampler);
-	waterMaterial = new Material(waterVertexShader, waterPixelShader, waterSRV, waterNormalMapSRV, sampler);
+	waterMaterial = new Material(vertexShader, waterPixelShader, waterSRV, waterNormalMapSRV, sampler);
 }
 
 void Engine::CreateWater()
@@ -464,53 +465,52 @@ void Engine::CreateEntities()
 
 	ring->SetScale(1.0f, 1.0f, 1.0f);
 	ring->SetPosition(0.0f, 3.5f, 0.0f);
-	ring->SetRotation(1.0f, 0.0f, 0.0f);
+	ring->SetRotation(1.5f, 0.0f, 0.0f);
 	
 	// Bottom
-	ground->SetScale(10.0f, 0.025f, 10.0f);
+	ground->SetScale(15.0f, 1.0f, 15.0f);
 	ground->SetPosition(0.0f, -2.0f, 0.0f);
 
-	pool->SetScale(1.0f, 1.0f, 1.0f);
+	pool->SetScale(2.0f, 2.0f, 2.0f);
 	pool->SetPosition(0.0f, -1.9f, 0.0f);
 
-	water->SetScale(3.0f, 0.05f, 1.8f);
+	water->SetScale(6.0f, 1.0f, 3.5f);
 	water->SetPosition(0.0f, -1.8f, 0.0f);
 }
 
 void Engine::LightEntityInitialize()
 {
-	// TODO: Make the scene brighter.
 	lightEntity1 = new EngineEntity(lightMesh, dx::XMFLOAT3(1.0f, 0.0f, 0.0f));
 	lightEntity1->SetPosition(-4, 1, 0);
-	lightEntity1->SetScale(10, 10, 10);
+	lightEntity1->SetScale(3, 3, 3);
 
 	lightEntity2 = new EngineEntity(lightMesh, dx::XMFLOAT3(0.0f, 1.0f, 0.0f));
 	lightEntity2->SetPosition(0, 1, 0);
-	lightEntity2->SetScale(10, 10, 10);
+	lightEntity2->SetScale(3, 3, 3);
 
 	lightEntity3 = new EngineEntity(lightMesh, dx::XMFLOAT3(0.0f, 0.0f, 1.0f));
 	lightEntity3->SetPosition(4, 1, 0);
-	lightEntity3->SetScale(10, 10, 10);
+	lightEntity3->SetScale(3, 3, 3);
 
 	lightEntity4 = new EngineEntity(lightMesh, dx::XMFLOAT3(1.0f, 0.6f, 0.2f));
 	lightEntity4->SetPosition(-3, 0, 2);
-	lightEntity4->SetScale(5, 5, 5);
+	lightEntity4->SetScale(3, 3, 3);
 
 	lightEntity5 = new EngineEntity(lightMesh, dx::XMFLOAT3(0.2f, 0.6f, 0.8f));
 	lightEntity5->SetPosition(3, 0, -2);
-	lightEntity5->SetScale(5, 5, 5);
+	lightEntity5->SetScale(3, 3, 3);
 
 	lightEntity6 = new EngineEntity(lightMesh, dx::XMFLOAT3(0.2f, 0.6f, 0.8f));
 	lightEntity6->SetPosition(-3, 0, -2);
-	lightEntity6->SetScale(5, 5, 5);
+	lightEntity6->SetScale(3, 3, 3);
 
 	lightEntity7 = new EngineEntity(lightMesh, dx::XMFLOAT3(0.2f, 0.8f, 0.2f));
 	lightEntity7->SetPosition(3, 0, 1);
-	lightEntity7->SetScale(5, 5, 5);
+	lightEntity7->SetScale(3, 3, 3);
 
 	lightEntity8 = new EngineEntity(lightMesh, dx::XMFLOAT3(0.2f, 0.8f, 0.2f));
 	lightEntity8->SetPosition(-3, 0, 1);
-	lightEntity8->SetScale(5, 5, 5);
+	lightEntity8->SetScale(3, 3, 3);
 
 	lightEntities.push_back(lightEntity1);
 	lightEntities.push_back(lightEntity2);
@@ -522,142 +522,145 @@ void Engine::LightEntityInitialize()
 	lightEntities.push_back(lightEntity8);
 }
 
-//void Engine::CreateShadows()
-//{
-//	shadowMapSize = 2048;  //correct value?
-//
-//	// Create the texture that will be used as shadow map
-//	D3D11_TEXTURE2D_DESC shadowDescription = {};
-//	shadowDescription.Width = shadowMapSize;
-//	shadowDescription.Height = shadowMapSize;
-//	shadowDescription.ArraySize = 1;
-//	shadowDescription.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
-//	shadowDescription.CPUAccessFlags = 0;
-//	shadowDescription.Format = DXGI_FORMAT_R32_TYPELESS;
-//	shadowDescription.MipLevels = 1;
-//	shadowDescription.MiscFlags = 0;
-//	shadowDescription.SampleDesc.Count = 1;
-//	shadowDescription.SampleDesc.Quality = 0;
-//	shadowDescription.Usage = D3D11_USAGE_DEFAULT;
-//	ID3D11Texture2D* shadowTexture;
-//	device->CreateTexture2D(&shadowDescription, 0, &shadowTexture);
-//
-//	// Create depth/stencil
-//	D3D11_DEPTH_STENCIL_VIEW_DESC shadowDSDesc = {};
-//	shadowDSDesc.Format = DXGI_FORMAT_D32_FLOAT;
-//	shadowDSDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-//	shadowDSDesc.Texture2D.MipSlice = 0;
-//	//device->CreateDepthStencilView(shadowTexture, &shadowDescription, &shadowDSV);
-//
-//	// Create SRV for shadow map
-//	D3D11_SHADER_RESOURCE_VIEW_DESC srvDescrition = {};
-//	srvDescrition.Format = DXGI_FORMAT_R32_FLOAT;
-//	srvDescrition.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-//	srvDescrition.Texture2D.MipLevels = 1;
-//	srvDescrition.Texture2D.MostDetailedMip = 0;
-//	device->CreateShaderResourceView(shadowTexture, &srvDescrition, &shadowSRV);
-//
-//	// Now we don't need the texture anymore
-//	shadowTexture->Release();
-//
-//	// Create the special "comparison" sampler state for our shadows
-//	D3D11_SAMPLER_DESC shadowSampDescription = {};
-//	shadowSampDescription.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR; // Could be anisotropic
-//	shadowSampDescription.ComparisonFunc = D3D11_COMPARISON_LESS;
-//	shadowSampDescription.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-//	shadowSampDescription.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-//	shadowSampDescription.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
-//	shadowSampDescription.BorderColor[0] = 1.0f;
-//	shadowSampDescription.BorderColor[1] = 1.0f;
-//	shadowSampDescription.BorderColor[2] = 1.0f;
-//	shadowSampDescription.BorderColor[3] = 1.0f;
-//	device->CreateSamplerState(&shadowSampDescription, &shadowSampler);
-//
-//	// Create rasterizer state
-//	D3D11_RASTERIZER_DESC shadowRastDescription = {};
-//	shadowRastDescription.FillMode = D3D11_FILL_SOLID;
-//	shadowRastDescription.CullMode = D3D11_CULL_BACK;
-//	shadowRastDescription.DepthClipEnable = true;
-//	shadowRastDescription.DepthBias = 1000; // Multiplied by (smallest possible value > 0 in depth buffer)
-//	shadowRastDescription.DepthBiasClamp = 0.0f;
-//	shadowRastDescription.SlopeScaledDepthBias = 1.0f;
-//	device->CreateRasterizerState(&shadowRastDescription, &shadowRasterizer);
-//
-//	//Blending State
-//	//Set up the Blend Description
-//	D3D11_BLEND_DESC blendDescription;
-//	ZeroMemory(&blendDescription, sizeof(blendDescription));
-//	blendDescription.RenderTarget[0].BlendEnable = TRUE;
-//	blendDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-//	blendDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-//	blendDescription.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
-//	blendDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-//	blendDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
-//	blendDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-//	blendDescription.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-//
-//	//Setting the Blend Description to FALSE (will be be used in OMBlendState in Draw function)
-//	blendDescription.RenderTarget[0].BlendEnable = FALSE;
-//	device->CreateBlendState(&blendDescription, &blendState);
-//
-//}
+void Engine::CreateShadows()
+{
+	shadowMapSize = 2048;  // Correct value?
 
-//void Engine::RenderShadowMap()
-//{
-//	// Initial setup
-//	context->OMSetRenderTargets(0, 0, shadowDSV);
-//	context->ClearDepthStencilView(shadowDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
-//	context->RSSetState(shadowRasterizer);
-//
-//	// Set up shadow view port    
-//	D3D11_VIEWPORT shadowViewPort = {};
-//	shadowViewPort.TopLeftX = 0;
-//	shadowViewPort.TopLeftY = 0;
-//	shadowViewPort.Width = (float)shadowMapSize;
-//	shadowViewPort.Height = (float)shadowMapSize;
-//	shadowViewPort.MinDepth = 0.0f;
-//	shadowViewPort.MaxDepth = 1.0f;
-//	context->RSSetViewports(1, &shadowViewPort);
-//
-//	// Set up shaders for making the shadow map
-//	shadowVertexShader->SetShader();
-//	shadowVertexShader->SetMatrix4x4("view", shadowViewMatrix);
-//	shadowVertexShader->SetMatrix4x4("projection", shadowProjectionMatrix);
-//
-//	// Turn off the pixel shader, we don´t need that stuff
-//	context->PSSetShader(0, 0, 0);
-//
-//	// Actually draw our entities
-//	UINT stride = sizeof(Vertex);
-//	UINT offset = 0;
-//
-//	for (unsigned int i = 0; i < entities.size(); i++)
-//	{
-//
-//		// Grab the data from the first entity's mesh
-//		EngineEntity* entity =  entities[i];
-//		ID3D11Buffer* vertexBuffer = entity->GetMesh()->GetVertexBuffer();
-//		ID3D11Buffer* indexBuffer = entity->GetMesh()->GetIndexBuffer();
-//
-//		// Set buffers in the input assembler
-//		context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-//		context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-//
-//		shadowVertexShader->SetMatrix4x4("world", entity->GetWorldMatrix());
-//		shadowVertexShader->CopyAllBufferData();
-//
-//		// Finally do the actual drawing
-//		context->DrawIndexed(entity->GetMesh()->GetIndexCount(), 0, 0);
-//	}
-//
-//	// Revert to original targets and states
-//	//context->OMSetRenderTargets(1, &this->backBufferRTV, this->depthStencilView);
-//	context->OMSetRenderTargets(1, &this->renderTargetViewArray[BUFFER_COUNT], this->depthStencilView);
-//	shadowViewPort.Width = (float)this->width;
-//	shadowViewPort.Height = (float)this->height;
-//	context->RSSetViewports(1, &shadowViewPort);
-//	context->RSSetState(0);
-//}
+	// Create the texture that will be used as shadow map
+	D3D11_TEXTURE2D_DESC shadowDescription = {};
+	shadowDescription.Width = shadowMapSize;
+	shadowDescription.Height = shadowMapSize;
+	shadowDescription.ArraySize = 1;
+	shadowDescription.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	shadowDescription.CPUAccessFlags = 0;
+	shadowDescription.Format = DXGI_FORMAT_R32_TYPELESS;
+	shadowDescription.MipLevels = 1;
+	shadowDescription.MiscFlags = 0;
+	shadowDescription.SampleDesc.Count = 1;
+	shadowDescription.SampleDesc.Quality = 0;
+	shadowDescription.Usage = D3D11_USAGE_DEFAULT;
+	ID3D11Texture2D* shadowTexture;
+	device->CreateTexture2D(&shadowDescription, 0, &shadowTexture);
+
+	// Create depth/stencil
+	D3D11_DEPTH_STENCIL_VIEW_DESC shadowDSDesc = {};
+	shadowDSDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	shadowDSDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	shadowDSDesc.Texture2D.MipSlice = 0;
+	device->CreateDepthStencilView(shadowTexture, &shadowDSDesc, &shadowDSV);
+
+	// Create SRV for shadow map
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDescrition = {};
+	srvDescrition.Format = DXGI_FORMAT_R32_FLOAT;
+	srvDescrition.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	srvDescrition.Texture2D.MipLevels = 1;
+	srvDescrition.Texture2D.MostDetailedMip = 0;
+	device->CreateShaderResourceView(shadowTexture, &srvDescrition, &shadowSRV);
+
+	// Now we don't need the texture anymore
+	shadowTexture->Release();
+
+	// Create the special "comparison" sampler state for our shadows
+	D3D11_SAMPLER_DESC shadowSampDescription = {};
+	shadowSampDescription.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR; // Could be anisotropic
+	shadowSampDescription.ComparisonFunc = D3D11_COMPARISON_LESS;
+	shadowSampDescription.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDescription.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDescription.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDescription.BorderColor[0] = 1.0f;
+	shadowSampDescription.BorderColor[1] = 1.0f;
+	shadowSampDescription.BorderColor[2] = 1.0f;
+	shadowSampDescription.BorderColor[3] = 1.0f;
+	device->CreateSamplerState(&shadowSampDescription, &shadowSampler);
+
+	// Create rasterizer state
+	D3D11_RASTERIZER_DESC shadowRastDescription = {};
+	shadowRastDescription.FillMode = D3D11_FILL_SOLID;
+	shadowRastDescription.CullMode = D3D11_CULL_NONE;
+	shadowRastDescription.DepthClipEnable = true;
+	shadowRastDescription.DepthBias = 1000; // Multiplied by (smallest possible value > 0 in depth buffer)
+	shadowRastDescription.DepthBiasClamp = 0.0f;
+	shadowRastDescription.SlopeScaledDepthBias = 1.0f;
+	device->CreateRasterizerState(&shadowRastDescription, &shadowRasterizer);
+
+	//Blending State
+	//Set up the Blend Description
+	D3D11_BLEND_DESC blendDescription;
+	ZeroMemory(&blendDescription, sizeof(blendDescription));
+	blendDescription.RenderTarget[0].BlendEnable = TRUE;
+	blendDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blendDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	blendDescription.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	blendDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blendDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
+	blendDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	blendDescription.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	//Setting the Blend Description to FALSE (will be be used in OMBlendState in Draw function)
+	blendDescription.RenderTarget[0].BlendEnable = FALSE;
+	device->CreateBlendState(&blendDescription, &blendState);
+
+}
+
+void Engine::RenderShadowMap()
+{
+	// Initial setup
+	context->OMSetRenderTargets(0, 0, shadowDSV);
+	context->ClearDepthStencilView(shadowDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	context->RSSetState(shadowRasterizer);
+
+	// Set up shadow view port    
+	D3D11_VIEWPORT shadowViewPort = {};
+	shadowViewPort.TopLeftX = 0;
+	shadowViewPort.TopLeftY = 0;
+	shadowViewPort.Width = (float)shadowMapSize;
+	shadowViewPort.Height = (float)shadowMapSize;
+	shadowViewPort.MinDepth = 0.0f;
+	shadowViewPort.MaxDepth = 1.0f;
+	context->RSSetViewports(1, &shadowViewPort);
+
+	// Set up shaders for making the shadow map
+	shadowVertexShader->SetShader();
+	shadowVertexShader->SetMatrix4x4("view", shadowViewMatrix);
+	shadowVertexShader->SetMatrix4x4("projection", shadowProjectionMatrix);
+
+	vertexShader->SetMatrix4x4("shadowView", shadowViewMatrix);
+	vertexShader->SetMatrix4x4("shadowProj", shadowProjectionMatrix);
+	// Turn off the pixel shader, we don´t need that stuff
+	context->PSSetShader(0, 0, 0);
+
+	// Actually draw our entities
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+	
+	for (unsigned int i = 0; i < entities.size() - 1; i++)
+	{
+
+		// Grab the data from the first entity's mesh
+		EngineEntity* entity =  entities[i];
+		ID3D11Buffer* vertexBuffer = entity->GetMesh()->GetVertexBuffer();
+		ID3D11Buffer* indexBuffer = entity->GetMesh()->GetIndexBuffer();
+
+		// Set buffers in the input assembler
+		context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+		context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+		shadowVertexShader->SetData("world", entity->GetWorldMatrix(), sizeof(float) * 16);
+		shadowVertexShader->CopyAllBufferData();
+
+		// Finally do the actual drawing
+		context->DrawIndexed(entity->GetMesh()->GetIndexCount(), 0, 0);
+	}
+
+	// Revert to original targets and states
+	context->OMSetRenderTargets(1, &this->backBufferRTV, this->depthStencilView);
+	context->OMSetRenderTargets(3, renderTargetViewArray, this->depthStencilView);
+
+	shadowViewPort.Width = (float)this->width;
+	shadowViewPort.Height = (float)this->height;
+	context->RSSetViewports(1, &shadowViewPort);
+	context->RSSetState(0);
+}
 
 void Engine::Update(float deltaTime, float totalTime)
 {
@@ -665,7 +668,7 @@ void Engine::Update(float deltaTime, float totalTime)
 		Quit();
 
 	camera->Update(deltaTime);
-	// water->Update();
+	water->Update();
 
 	for (unsigned int i = 0; i < entities.size(); i++)
 	{
@@ -677,11 +680,16 @@ void Engine::Update(float deltaTime, float totalTime)
 		lightEntities[j]->UpdateWorldMatrix();
 	}
 
+	// Controls for switching deferred buffer views.
+	/*if (GetAsyncKeyState('1') & 0x8000) switcher = 1;
+	if (GetAsyncKeyState('2') & 0x8000) switcher = 2;
+	if (GetAsyncKeyState('3') & 0x8000) switcher = 3;*/
+	// if (GetAsyncKeyState('4') & 0x8000) switcher = 4;
 
 	// Logic for flying through the torus ring object as a checkpoint. The checkpoint gives a point
 	// every time the player flies through it.
 	
-	// Check if player went through ring
+	// Check if player went through ring.
 	if(currentScore == -1)
 	{
 		currentScore++;
@@ -694,7 +702,7 @@ void Engine::Update(float deltaTime, float totalTime)
 	// Access ring's position. Has index 4 in entities vector.
 	if(camera->GetPosition().x > (entities[4]->GetPosition().x - 0.5f) && camera->GetPosition().x < (entities[4]->GetPosition().x + 0.5f))
 	{
-		if(camera->GetPosition().y > (entities[4]->GetPosition().y - 1.0f) && camera->GetPosition().y < entities[4]->GetPosition().y + 0.5f)
+		if(camera->GetPosition().y > (entities[4]->GetPosition().y - 1.0f) && camera->GetPosition().y < entities[4]->GetPosition().y + 1.0f)
 		{
 			if (camera->GetPosition().z > entities[4]->GetPosition().z - 0.5f && camera->GetPosition().z < entities[4]->GetPosition().z + 0.5f )
 			{
@@ -730,11 +738,11 @@ void Engine::Update(float deltaTime, float totalTime)
 void Engine::Draw(float deltaTime, float totalTime)
 {
 	// Background color for clearing
-	const float color[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
+	const float color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 
-	context->OMSetRenderTargets(3, renderTargetViewArray, depthStencilView);
+	
 	context->RSSetViewports(1, &viewport);
 
 	for (int i = 0; i < BUFFER_COUNT; i++)
@@ -742,50 +750,54 @@ void Engine::Draw(float deltaTime, float totalTime)
 		context->ClearRenderTargetView(renderTargetViewArray[i], color);
 	}
 
+	context->OMSetRenderTargets(3, renderTargetViewArray, depthStencilView);
+
 	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	// RenderShadowMap();
 
 	for (int i = 0; i < entities.size(); i++)
 	{
-		renderer.RenderGBuffer(entities[i], vertexBuffer, indexBuffer, deferredVertexShader, deferredPixelShader, camera, context);
+		renderer.RenderGBuffer(entities[i], vertexBuffer, indexBuffer, deferredVertexShader, deferredPixelShader, camera, context, shadowViewMatrix, shadowProjectionMatrix,  shadowSampler, shadowSRV);
 	}
 
+	// pixelShader->SetShaderResourceView("ShadowMap", 0);
+
+	renderer.RenderWater(entities[6], vertexBuffer, indexBuffer, waterVertexShader, waterPixelShader, camera, context);
+
 	//-----------------------------
-	/*
-		context->OMSetRenderTargets(1, &backBufferRTV, 0);
-		context->RSSetViewports(1, &viewport);
+	
+	context->OMSetRenderTargets(1, &backBufferRTV, 0);
+	context->RSSetViewports(1, &viewport);
 
-		context->ClearRenderTargetView(backBufferRTV, color);
-		context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	context->ClearRenderTargetView(backBufferRTV, color);
+	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-		displayVertexShader->SetShader();
+	backBufferVertexShader->SetShader();
 
-		switch (switcher)
-		{
-		case 1:
-			displayPixelShader->SetShaderResourceView("Texture", shaderResourceViewArray[0]);
-			break;
-		case 2:
-			displayPixelShader->SetShaderResourceView("Texture", shaderResourceViewArray[1]);
-			break;
-		case 3:
-			displayPixelShader->SetShaderResourceView("Texture", shaderResourceViewArray[2]);
-			break;
-		//case 4:
-			//displayPixelShader->SetShaderResourceView("Texture", depthSRV);
-			//break;
-		default:
-			break;
-		}
+	//switch (switcher)
+	//{
+	//case 1:
+	//	backBufferPixelShader->SetShaderResourceView("Texture", shaderResourceViewArray[0]);
+	//	break;
+	//case 2:
+	//	backBufferPixelShader->SetShaderResourceView("Texture", shaderResourceViewArray[1]);
+	//	break;
+	//case 3:
+	//	backBufferPixelShader->SetShaderResourceView("Texture", shaderResourceViewArray[2]);
+	//	break;
+	///*case 4:
+	//	backBufferPixelShader->SetShaderResourceView("Texture", depthSRV);
+	//	break;*/
+	//default:
+	//	break;
+	//}
 
-		ID3D11Buffer* nothing = 0;
-		context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
-		context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
-
-		// Actually draw exactly 3 vertices
-		context->Draw(3, 0);
-		displayPixelShader->SetShaderResourceView("Texture", 0);
-		/**/
-		//-------------------	
+	//ID3D11Buffer* nothing = 0;
+	//context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
+	//context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+	
+	//-------------------	
 
 	context->OMSetRenderTargets(1, &backBufferRTV, depthStencilView);
 	context->RSSetViewports(1, &viewport);
@@ -798,7 +810,7 @@ void Engine::Draw(float deltaTime, float totalTime)
 	context->OMSetBlendState(blendState, blend, 0xFFFFFFFF);
 	context->OMSetDepthStencilState(depthState, 0);
 
-	//----------------DirLightPassTry
+	//---------------- Directional light pass ----------------
 
 	dirVertexShader->SetShader();
 
@@ -807,7 +819,7 @@ void Engine::Draw(float deltaTime, float totalTime)
 	dirPixelShader->SetShaderResourceView("diffuseGB", shaderResourceViewArray[2]);
 	backBufferPixelShader->SetSamplerState("Sampler", sampler);
 
-	dirPixelShader->SetFloat3("lightColor", XMFLOAT3(0.1f, 0.5f, 0.7f));
+	dirPixelShader->SetFloat3("lightColor", XMFLOAT3(0.7f, 0.7f, 0.7f));
 	dirPixelShader->SetFloat3("lightDir", XMFLOAT3(0.0f, -1.0f, 0.0f));
 
 	dirPixelShader->CopyAllBufferData();
@@ -820,23 +832,10 @@ void Engine::Draw(float deltaTime, float totalTime)
 	context->Draw(3, 0);
 	//-----------------
 
-
-	renderer.RenderLights(lightEntity1, vertexBuffer, indexBuffer, lightVertexShader, lightPixelShader, camera, context, sampler, shaderResourceViewArray[0], shaderResourceViewArray[1], shaderResourceViewArray[2]);
-
-	renderer.RenderLights(lightEntity2, vertexBuffer, indexBuffer, lightVertexShader, lightPixelShader, camera, context, sampler, shaderResourceViewArray[0], shaderResourceViewArray[1], shaderResourceViewArray[2]);
-
-	renderer.RenderLights(lightEntity3, vertexBuffer, indexBuffer, lightVertexShader, lightPixelShader, camera, context, sampler, shaderResourceViewArray[0], shaderResourceViewArray[1], shaderResourceViewArray[2]);
-
-	renderer.RenderLights(lightEntity4, vertexBuffer, indexBuffer, lightVertexShader, lightPixelShader, camera, context, sampler, shaderResourceViewArray[0], shaderResourceViewArray[1], shaderResourceViewArray[2]);
-
-	renderer.RenderLights(lightEntity5, vertexBuffer, indexBuffer, lightVertexShader, lightPixelShader, camera, context, sampler, shaderResourceViewArray[0], shaderResourceViewArray[1], shaderResourceViewArray[2]);
-
-	renderer.RenderLights(lightEntity6, vertexBuffer, indexBuffer, lightVertexShader, lightPixelShader, camera, context, sampler, shaderResourceViewArray[0], shaderResourceViewArray[1], shaderResourceViewArray[2]);
-
-	renderer.RenderLights(lightEntity7, vertexBuffer, indexBuffer, lightVertexShader, lightPixelShader, camera, context, sampler, shaderResourceViewArray[0], shaderResourceViewArray[1], shaderResourceViewArray[2]);
-
-	renderer.RenderLights(lightEntity8, vertexBuffer, indexBuffer, lightVertexShader, lightPixelShader, camera, context, sampler, shaderResourceViewArray[0], shaderResourceViewArray[1], shaderResourceViewArray[2]);
-
+	for (int i = 0; i < lightEntities.size(); i++)
+	{
+		renderer.RenderLights(lightEntities[i], vertexBuffer, indexBuffer, lightVertexShader, lightPixelShader, camera, context, sampler, shaderResourceViewArray[0], shaderResourceViewArray[1], shaderResourceViewArray[2]);
+	}
 
 	//---------------
 	context->RSSetState(NULL);

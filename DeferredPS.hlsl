@@ -17,6 +17,7 @@ struct PSOut
     float4 Position : SV_Target0;
     float4 Normal : SV_Target1;
     float4 Diffuse : SV_Target2;
+    float4 Shadow : SV_Target3;
 };
 
 PSOut main(in VertexToPixel input)
@@ -39,6 +40,7 @@ PSOut main(in VertexToPixel input)
     output.Position = float4(input.worldPos, 1.0f);
     output.Normal = float4(normalWS, 1.0f);
     output.Diffuse = float4(diffuse, 1.0f);
+    // output.Shadow = float4(diffuse, 1.0f);
 
     return output;
 }
