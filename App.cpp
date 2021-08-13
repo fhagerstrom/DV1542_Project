@@ -57,7 +57,7 @@ bool App::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Initialize the model object.
-	result = m_Model->Initialize(m_Direct3D->GetDevice());
+	result = m_Model->Initialize(m_Direct3D->GetDevice(), "Models/monkey.txt", L"Textures/gold.jpg", 1.0f);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
@@ -143,7 +143,7 @@ bool App::Render()
 
 
 	// Clear the buffers to begin the scene.
-	m_Direct3D->BeginScene(0.1f, 0.1f, 0.1f, 1.0f);
+	m_Direct3D->BeginScene(0.0f, 0.0f, 0.1f, 1.0f);
 
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
@@ -155,6 +155,7 @@ bool App::Render()
 
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	m_Model->Render(m_Direct3D->GetDeviceContext());
+	// m_Model->SetRotation();
 
 	// Render the model using the color shader.
 	result = m_ColorShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix);

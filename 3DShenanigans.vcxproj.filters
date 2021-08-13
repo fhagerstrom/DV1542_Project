@@ -42,13 +42,16 @@
     <ClInclude Include="Vertex.h">
       <Filter>Header Files\Structs</Filter>
     </ClInclude>
-    <ClInclude Include="Lights.h">
-      <Filter>Header Files\Structs</Filter>
-    </ClInclude>
     <ClInclude Include="DeferredBuffers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DeferredShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjConverter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -83,6 +86,12 @@
     <ClCompile Include="DeferredShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjConverter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="colorPS.hlsl">
@@ -92,5 +101,14 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="packages.config" />
+    <None Include="DeferredVS.hlsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="LightPS.hlsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="LightVS.hlsl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
