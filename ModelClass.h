@@ -1,54 +1,35 @@
+#pragma once
+
 #include <d3d11.h>
-#include <DirectXMath.h>
-#include <fstream>
-
-#include "Texture.h"
-
-namespace dx = DirectX;
-
+#include <directxmath.h>
+using namespace DirectX;
 
 class ModelClass
 {
 private:
-	struct VertexType
+	struct Vertex
 	{
-		dx::XMFLOAT3 position;
-		dx::XMFLOAT2 texture;
-		dx::XMFLOAT3 normal;
+		XMFLOAT3 position;
+		XMFLOAT4 color;
 	};
-
-	struct ModelType
-	{
-		float x, y, z;
-		float tu, tv;
-		float nx, ny, nz;
-	};
-
-	ID3D11Buffer* vertexBuffer, *indexBuffer;
-	int vertexCount, indexCount;
-	Texture* texture;
-	ModelType* model;
-
-	bool InitializeBuffers(ID3D11Device*);
-	void RenderBuffers(ID3D11DeviceContext*);
-
-	bool LoadTexture(ID3D11Device*, const WCHAR*);
-	bool LoadModel(const char*);
-
-	void ShutdownBuffers();
-	void ReleaseModel();
-	void ReleaseTexture();
 
 public:
 	ModelClass();
 	ModelClass(const ModelClass&);
 	~ModelClass();
 
-	bool Initialize(ID3D11Device*, const char*, const WCHAR*);
+	bool Initialize(ID3D11Device*);
 	void Shutdown();
 	void Render(ID3D11DeviceContext*);
 
 	int GetIndexCount();
-	ID3D11ShaderResourceView* GetTexture();
-};
 
+private:
+	bool InitializeBuffers(ID3D11Device*);
+	void ShutdownBuffers();
+	void RenderBuffers(ID3D11DeviceContext*);
+
+private:
+	ID3D11Buffer *m_vertexBuffer, *m_indexBuffer;
+	int m_vertexCount, m_indexCount;
+};
