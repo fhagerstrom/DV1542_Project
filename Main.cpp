@@ -1,30 +1,33 @@
-#include "WindowSetup.h"
+////////////////////////////////////////////////////////////////////////////////
+// Filename: main.cpp
+////////////////////////////////////////////////////////////////////////////////
+#include "systemclass.h"
+
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
 {
-	WindowSetup* window;
+	SystemClass* System;
 	bool result;
-
-	// Create window object
-	window = new WindowSetup;
-	if (!window)
+	
+	
+	// Create the system object.
+	System = new SystemClass;
+	if(!System)
 	{
-		std::cerr << "Window object not created!" << std::endl;
-		return -1;
+		return 0;
 	}
 
-	// Initalize and run
-	result = window->Initialize();
-	if (result)
+	// Initialize and run the system object.
+	result = System->Initialize();
+	if(result)
 	{
-		window->Run();
+		System->Run();
 	}
 
-	// Release objects
-	window->ReleaseObjects();
-	delete window;
+	// Shutdown and release the system object.
+	System->Shutdown();
+	delete System;
+	System = 0;
 
 	return 0;
 }
-
-

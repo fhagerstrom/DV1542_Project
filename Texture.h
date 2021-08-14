@@ -1,26 +1,25 @@
 #pragma once
+
 #include <d3d11.h>
-#include <DirectXMath.h>
 #include <WICTextureLoader.h>
-#include <iostream>
+#include <fstream>
+using namespace DirectX;
 
-namespace dx = DirectX;
-
-class Texture
+class TextureClass
 {
-private:
-	ID3D11Resource* resource;
-	ID3D11ShaderResourceView* textureSRV;
 
 public:
-	Texture();
-	Texture(const Texture&);
-	~Texture();
+	TextureClass();
+	TextureClass(const TextureClass&);
+	~TextureClass();
 
-// The first two functions will load a texture from a given file name and unload that texture when it is no longer needed.
 	bool Initialize(ID3D11Device*, const WCHAR*);
-	void ReleaseTexture();
+	void Shutdown();
 
-// The GetTexture function returns a pointer to the texture resource so that it can be used for rendering by shaders.
 	ID3D11ShaderResourceView* GetTexture();
+
+private:
+	ID3D11Texture2D* m_texture;
+	ID3D11ShaderResourceView* m_textureView;
+
 };

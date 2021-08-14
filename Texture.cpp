@@ -1,61 +1,52 @@
 #include "Texture.h"
 
-Texture::Texture()
+
+TextureClass::TextureClass()
 {
-	resource = nullptr;
-	textureSRV = nullptr;
+	m_texture = 0;
 }
 
 
-Texture::Texture(const Texture& other)
+TextureClass::TextureClass(const TextureClass& other)
 {
-
 }
 
 
-Texture::~Texture()
+TextureClass::~TextureClass()
 {
-
 }
 
-bool Texture::Initialize(ID3D11Device* device, const WCHAR* filename)
+
+bool TextureClass::Initialize(ID3D11Device* device, const WCHAR* filename)
 {
-    HRESULT hr;
+	HRESULT result;
 
-	hr = dx::CreateWICTextureFromFile(device, filename, &resource, &textureSRV);
 
-	if (resource != nullptr)
+	// Load the texture in.
+	result = CreateWICTextureFromFile(device, filename, NULL, &m_textureView, NULL);
+	if (FAILED(result))
 	{
-		std::cout << filename << " created successfully!" << std::endl;
-	}
-
-	else
-	{
-		std::cerr << filename << " failed!" << std::endl;
-	}
-
-	if (FAILED(hr))
-	{
-		std::cerr << "Cannot create WIC Texture" << std::endl;
 		return false;
 	}
-	
+
 	return true;
 }
 
-ID3D11ShaderResourceView* Texture::GetTexture()
-{
-	return textureSRV;
-}
 
-void Texture::ReleaseTexture()
+void TextureClass::Shutdown()
 {
-	// Release the texture resource
-	if (textureSRV)
+	// Release the texture resource.
+	if (m_texture)
 	{
-		textureSRV->Release();
+		m_texture->Release();
+		m_texture = 0;
 	}
 
 	return;
 }
 
+
+ID3D11ShaderResourceView* TextureClass::GetTexture()
+{
+	return m_textureView;
+}
