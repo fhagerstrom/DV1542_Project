@@ -14,8 +14,6 @@ private:
 	ID3D11Buffer* vBuffer, *iBuffer;
 	ID3D11ShaderResourceView* waterSRV;
 
-	dx::XMFLOAT2 normalMapTiling;
-
 	int vertexCount, indexCount;
 	float waterHeight;
 	float waterTranslation;
@@ -30,14 +28,12 @@ public:
 
 	bool Initialize(ID3D11Device* device, const WCHAR* textureFile, float waterHeight, float waterRadius);
 	void Update();
-	void Renderer(ID3D11DeviceContext* context);
+	void Render(ID3D11DeviceContext* context);
 
 	ID3D11ShaderResourceView* GetTexture() { return waterSRV; };
 
 	int GetIndexCount() { return indexCount; };
 	float GetWaterHeight() { return waterHeight; }
 	float GetWaterTranslation() { return waterTranslation; }
-
-	dx::XMFLOAT2 GetNormalMapTiling() { return normalMapTiling; }
 
 };

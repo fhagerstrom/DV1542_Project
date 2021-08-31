@@ -7,24 +7,9 @@
 
 class Renderer
 {
-public:
-	Renderer();
-	~Renderer();
-
-	void RenderProcess(EngineEntity*& entity, ID3D11Buffer*& vertexBuffer, ID3D11Buffer*& indexBuffer, SimpleVertexShader*& vertexShader, SimplePixelShader*& pixelShader, 
-		Camera*& camera, ID3D11DeviceContext*& context,  XMFLOAT4X4& shadowViewMatrix, XMFLOAT4X4& shadowProjectionMatrix, ID3D11SamplerState*& shadowSampler, ID3D11ShaderResourceView*& shadowSRV);
-	void RenderGBuffer(EngineEntity*& entity, ID3D11Buffer*& vertexBuffer, ID3D11Buffer*& indexBuffer, SimpleVertexShader*& vertexShader, SimplePixelShader*& pixelShader, 
-		Camera*& camera, ID3D11DeviceContext*& context, XMFLOAT4X4 &shadowViewMatrix, XMFLOAT4X4 &shadowProjectionMatrix, ID3D11SamplerState* &shadowSampler, ID3D11ShaderResourceView* &shadowSRV);
-	void RenderWater(EngineEntity*& entity, ID3D11Buffer*& vertexBuffer, ID3D11Buffer*& indexBuffer, SimpleVertexShader*& vertexShader, SimplePixelShader*& pixelShader,
-		Camera*& camera, ID3D11DeviceContext*& context);
-	void RenderLights(EngineEntity*& entity, ID3D11Buffer*& vertexBuffer, ID3D11Buffer*& indexBuffer, SimpleVertexShader*& vertexShader, SimplePixelShader*& pixelShader, 
-		Camera*& camera, ID3D11DeviceContext*& context, ID3D11SamplerState*& sampler, ID3D11ShaderResourceView*& positionGBuffer, ID3D11ShaderResourceView*& normalGBuffer, ID3D11ShaderResourceView*& diffuseGBuffer);
 private:
-
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
-
-	void SetLights();
 
 	DirectionalLight dirLight_1;
 	AmbientLight ambientLight;
@@ -45,5 +30,21 @@ private:
 	SpotLight spotLight;
 
 	Water* water;
+
+	void SetLights();
+public:
+	Renderer();
+	~Renderer();
+
+	void RenderProcess(EngineEntity*& entity, ID3D11Buffer*& vertexBuffer, ID3D11Buffer*& indexBuffer, SimpleVertexShader*& vertexShader, SimplePixelShader*& pixelShader, 
+		Camera*& camera, ID3D11DeviceContext*& context);
+	void RenderGBuffer(EngineEntity*& entity, ID3D11Buffer*& vertexBuffer, ID3D11Buffer*& indexBuffer, SimpleVertexShader*& vertexShader, SimplePixelShader*& pixelShader, 
+		Camera*& camera, ID3D11DeviceContext*& context);
+	void RenderWater(EngineEntity*& entity, ID3D11Buffer*& vertexBuffer, ID3D11Buffer*& indexBuffer, SimpleVertexShader*& vertexShader, SimplePixelShader*& pixelShader,
+		Camera*& camera, ID3D11DeviceContext*& context);
+	void RenderSkyBox(Mesh*& skyMesh, ID3D11Buffer*& vertexBuffer, ID3D11Buffer*& indexBuffer, SimpleVertexShader*& vertexShader, SimplePixelShader*& pixelShader,
+		Camera*& camera, ID3D11DeviceContext*& context, ID3D11ShaderResourceView*& skySRV, ID3D11RasterizerState*& skyRasterizerState, ID3D11DepthStencilState*& skyDepthState);
+	void RenderLights(EngineEntity*& entity, ID3D11Buffer*& vertexBuffer, ID3D11Buffer*& indexBuffer, SimpleVertexShader*& vertexShader, SimplePixelShader*& pixelShader, 
+		Camera*& camera, ID3D11DeviceContext*& context, ID3D11SamplerState*& sampler, ID3D11ShaderResourceView*& positionGBuffer, ID3D11ShaderResourceView*& normalGBuffer, ID3D11ShaderResourceView*& diffuseGBuffer);
 };
 

@@ -26,9 +26,6 @@ private:
 	// Keep track of how many times player have flown through ring.
 	int currentScore;
 
-	// switch counter for changing buffer views for deferred
-	int switcher;
-
 	// Water related float variable for "translation"
 	float waterTranslation;
 	
@@ -47,8 +44,9 @@ private:
 	void CreateWater();
 	void CreateEntities();
 	void LightEntityInitialize();
+	/*void CalculateShadows();
 	void CreateShadows();
-	void RenderShadowMap();
+	void RenderShadowMap();*/
 
 	// Texture related schtuff.
 	ID3D11ShaderResourceView* objectTextureSRV;
@@ -89,9 +87,12 @@ private:
 	SimplePixelShader* particlePixelShader;
 	SimpleVertexShader* waterVertexShader;
 	SimplePixelShader* waterPixelShader;
+	SimpleGeometryShader* waterGeometryShader;
 	SimpleGeometryShader* backfaceGeometryShader;
 	SimpleDomainShader* displacementDomainShader;
 	SimpleHullShader* displacementHullShader;
+	SimpleVertexShader* skyboxVertexShader;
+	SimplePixelShader* skyboxPixelShader;
 
 	// Buffers to hold geometry data
 	ID3D11Buffer* vertexBuffer;
@@ -109,7 +110,8 @@ private:
 
 	// Keep track of objects and entities.
 	std::vector<Mesh*> meshes;
-	std::vector<EngineEntity*> entities;
+	std::vector<EngineEntity*> objectEntities;
+	// std::vector<EngineEntity*> waterEntity;
 	std::vector<EngineEntity*> lightEntities;
 	Camera* camera;
 

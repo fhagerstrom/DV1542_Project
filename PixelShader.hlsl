@@ -1,9 +1,8 @@
 Texture2D textureSRV : register(t0);
 Texture2D normalMapSRV : register(t1);
-Texture2D ShadowMap : register(t2);
 
 SamplerState basicSampler : register(s0);
-SamplerComparisonState ShadowSampler : register(s1);
+
 struct DirectionalLight
 {
     float4 diffuseColor;
@@ -68,8 +67,6 @@ cbuffer ExternalData : register(b0)
     PointLight outerPointLight8;
 
     SpotLight spotLight;
-
-    float alphaV;
 	
     float3 cameraPosition;
 };
@@ -82,7 +79,6 @@ struct VertexToPixel
     float3 tangent : TANGENT;
     float3 worldPos : POSITION;
     float2 uv : TEXCOORD; // UV co-ordinates
-    float4 posForShadow	: POSITION1;
 };
 
 void ComputeDirectionalLight(VertexToPixel input, DirectionalLight dirLight, float4 surfaceColor, out float4 diffuse)
@@ -228,19 +224,7 @@ float4 main(VertexToPixel input) : SV_TARGET
     specular += S;
 
 	// Total light
-    float3 totalLight = diffuse + specular + ambient;
+    float4 totalLight = diffuse + specular + ambient;
+    return totalLight;
 
-       //Shadow Mapping
-    float2 shadowUV = input.posForShadow.xy / input.posForShadow.w * 0.5f + 0.5f;
-    shadowUV.y = 1.0f - shadowUV.y;
-
-    float depthFromLight = input.posForShadow.z / input.posForShadow.w;
-
-    float shadowAmount = ShadowMap.SampleCmpLevelZero(
-        ShadowSampler,
-        shadowUV,
-        depthFromLight);
-    surfaceColor.a = alphaV;
-
-    return float4(totalLight * shadowAmount, surfaceColor.a);
 }

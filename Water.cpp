@@ -42,10 +42,6 @@ bool Water::Initialize(ID3D11Device* device, const WCHAR* textureFile, float wat
 	// Load texture.
 	LoadTexture(device, textureFile);
 
-	// Set tiles for the normal map.
-	normalMapTiling.x = 0.01f;
-	normalMapTiling.y = 0.02f;
-
 	// Initialize water translation.
 	waterTranslation = 0.0f;
 
@@ -171,7 +167,7 @@ void Water::Update()
 	return;
 }
 
-void Water::Renderer(ID3D11DeviceContext* context)
+void Water::Render(ID3D11DeviceContext* context)
 {
 	RenderBuffers(context);
 }

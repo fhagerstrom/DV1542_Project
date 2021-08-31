@@ -3,6 +3,7 @@ cbuffer externalData : register(b0)
     matrix world;
     matrix view;
     matrix projection;
+    matrix reflection;
 }
 
 struct VertexShaderInput
@@ -20,6 +21,7 @@ struct VertexToPixel
     float3 tangent : TANGENT;
     float4 worldPos : POSITION;
     float2 uv : TEXCOORD;
+    float3 reflWorldPos : POSITION1;
 };
 
 VertexToPixel main(VertexShaderInput input)
@@ -38,8 +40,11 @@ VertexToPixel main(VertexShaderInput input)
 	// Get world position of vertex
     output.worldPos = mul(float4(input.position, 1.0f), world);
 
+    matrix worldReflProj = mul(mul(world, reflection), projection);
+    output.reflWorldPos = mul(float4(input.position, 1.0f), worldReflProj);
+
 	// Pass through the uv
     output.uv = input.uv;
-
+    
     return output;
 }
