@@ -1,43 +1,48 @@
 #pragma once
-#include <Windows.h>
-#include <DirectXMath.h>
-#include <iostream>
 
-#include "DXInit.h"
+
 
 class Camera
 {
 private:
-	// Camera matrices
-	DirectX::XMFLOAT4X4 viewMatrix;
-	DirectX::XMFLOAT4X4 projMatrix;
+	XMMATRIX perspectiveMatrix;
+	XMMATRIX viewMatrix;
+	XMVECTOR forward;
+	XMVECTOR right;
+	XMVECTOR up;
+	XMVECTOR moveUp;
+	XMFLOAT3 position;
 
-	// Transformations
-	DirectX::XMFLOAT3 startPosition;
-	DirectX::XMFLOAT3 position;
-	DirectX::XMFLOAT4 rotation;
+	float pitch;
+	float yaw;
+	float rotationSpeed;
+	float speed;
+	float viewDistance;
 
-	float xRotation;
-	float yRotation;
+	float fov;
+	float aspectRatio;
+	float nearZ;
+	float farZ;
 
+	float pickingDistance;
+	XMVECTOR direction;
 public:
-	Camera(float x, float y, float z);
-	~Camera();
+	Camera();
+	Camera(float fov, float aspectRatio, float nearZ, float farZ, float rotationSpeed, float speed, XMFLOAT3 position);
 
-	// Transformations
-	void MoveRelative(float x, float y, float z);
-	void MoveAbsolute(float x, float y, float z);
-	void Rotate(float x, float y);
+	float GetNearZ() const { return this->nearZ; };
+	float GetFarZ() const { return this->farZ; };
+	float GetRatio() const { return this->aspectRatio; };
+	float GetFov() const { return this->fov; };
+	XMVECTOR GetUpVector() const { return this->up; };
+	XMFLOAT3 GetPosition() const { return this->position; }
+	XMMATRIX GetViewMatrix() const { return this->viewMatrix; };
+	XMMATRIX GetPerspectiveMatrix() const { return this->perspectiveMatrix; };
 
-	// Updating
-	void Update(float deltaTime);
-	void ResetCamera();
-	void UpdateViewMatrix();
-	void UpdateProjectionMatrix(float aspectRatio);
+	void MoveRight(float dt);
+	void MoveForward(float dt);
+	void MoveUpDown(float dt);
+	void Rotate(float dx, float dy);
 
-	// Getters
-	DirectX::XMFLOAT3 GetPosition() { return position; }
-	DirectX::XMFLOAT4X4 GetView() { return viewMatrix; }
-	DirectX::XMFLOAT4X4 GetProjection() { return projMatrix; }
+	void Update(float dt);
 };
-

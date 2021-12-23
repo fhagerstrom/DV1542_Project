@@ -1,22 +1,51 @@
 #pragma once
-
-#include <DirectXMath.h>
-
-// Custom vertex definition
+#include <array>
+// Struct for the data a vertex contains ( used in the mesh.cpp ) 
 struct Vertex
 {
-	Vertex() 
+	float pos[3];
+	float tex[2];
+	float nor[3];
+
+	Vertex() = default;
+	Vertex(const std::array<float, 3>& position, const std::array<float, 2>& textureCoords, const std::array<float, 3>& normal)
 	{
+		for (int i = 0; i < 3; ++i)
+		{
+			pos[i] = position[i];
+			nor[i] = normal[i];
+		}
 
+		tex[0] = textureCoords[0];
+		tex[1] = textureCoords[1];
 	}
-
-	Vertex(float x, float y, float z, float u, float v, float nx, float ny, float nz) : position(x, y, z), uv(u, v), normal(nx, ny, nz) 
+	// Assignment-operator 
+	Vertex& operator=(const Vertex& vertex)
 	{
+		for (int i = 0; i < 3; ++i)
+		{
+			pos[i] = vertex.pos[i];
+			nor[i] = vertex.nor[i];
 
+		}
+
+		tex[0] = vertex.tex[0];
+		tex[1] = vertex.tex[1];
+
+		return *this;
 	}
+};
+// Struct that contains the data of a face ( three vertices ) ( used in the mesh.cpp ) 
+struct Face
+{
+	Vertex vertices[3];
 
-	DirectX::XMFLOAT3 position;	    // The position of the vertex
-	DirectX::XMFLOAT2 uv;           // uv Coordinate for texturing
-	DirectX::XMFLOAT3 normal;       // normal for lighting
-	DirectX::XMFLOAT3 tangent;		// For normal mapping
+	Face() = default;
+	Face(Vertex v1, Vertex v2, Vertex v3)
+	{
+		// Using the assignment-operator
+		vertices[0] = v1;
+		vertices[1] = v2;
+		vertices[2] = v3;
+	}
 };

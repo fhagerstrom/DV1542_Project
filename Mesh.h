@@ -1,30 +1,49 @@
 #pragma once
-
-#include <d3d11.h>
-#include <DirectXMath.h>
-#include <iostream>
-#include <vector>
-#include <fstream>
 #include "Vertex.h"
+#include "Texture.h"
+#include "DirectXHelper.h"
 
 
-class Mesh
+struct Mesh
 {
 private:
-	ID3D11Buffer* vBuffer;
-	ID3D11Buffer* iBuffer;
-	int numIndices;
-
-	void CalculateTangents(Vertex* vertices, int numVertices, unsigned int* indices, int numIndices);
-	void CreateBuffers(ID3D11Device* device, Vertex* verticeArray, int numVertices, unsigned int* indexArray, int numIndices);
-
+	bool LoadModel(std::string name);
+	bool LoadMaterial(ID3D11Device* device, std::string name);
+	std::string name;
 public:
-	Mesh(ID3D11Device* device, Vertex* verticeArray, int numVertices, unsigned int* indexArray, int numIndices);
-	Mesh(ID3D11Device* device, const char* objFile);
+
+	Material material;
+
+	ID3D11Buffer* mtlBuffer;
+	Mesh() = default;
+	Mesh(ID3D11Device* device, std::string name)
+		:name(name)
+	{
+		if (!LoadModel(name))
+		{
+			std::cout << "FAILED TO LOAD MODEL DATA" << std::endl;
+		}
+		if (!LoadMaterial(device, name))
+		{
+			std::cout << "FAILED TO LOAD MATERIAL DATA" << std::endl;
+		}
+	}
 	~Mesh();
+	// Getting the DiffuseTexture and DisplacementTexture from Material.h (Material.h has included Texture.h)
+	void AddDiffuseTexture(ID3D11Device* device, std::string fileName) { material.diffuseTexures.emplace_back(new Texture(device, "Models/" + name + "/" + fileName)); }
 
-	ID3D11Buffer* GetVertexBuffer() { return vBuffer; }
-	ID3D11Buffer* GetIndexBuffer() { return iBuffer; }
-	int GetIndexCount() { return numIndices; }
+	//void AddDisplacementTexture(ID3D11Device* device, std::string fileName) { material.displacementTexture = new Texture(device, "Models/" + name + "/" + fileName); }
+
+	ID3D11Buffer* GetMTLBuffer() { return this->mtlBuffer; }
+
+	int vertexCount = 0;
+
+	// Struct from geometry
+	std::vector<Face> faces;
+	std::vector<XMFLOAT3> positions;	// used for storing the positions of every vertex, used in the shadow vertex-shader
+
+	void Shutdown()
+	{
+		mtlBuffer->Release();
+	}
 };
-

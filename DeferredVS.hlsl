@@ -1,41 +1,39 @@
-cbuffer externalData : register(b0)
-{
-    matrix world;
-    matrix view;
-    matrix projection;
-};
 
-struct VertexShaderInput
+// Geometry Pass Vertex Shader
+
+cbuffer constantBuffer : register(b1)
 {
+    float4x4 WVP;			//projectionMatrix
+    float4x4 worldSpace;    // worldMatrix
+}
+
+struct VertexInput
+{
+    // The vertices of the model has a position, texcoord (UV), and a normal
+
     float3 position : POSITION;
-    float2 uv : TEXCOORD0;
+    float2 tex : TEXCOORD;
     float3 normal : NORMAL;
-    float3 tangent : TANGENT;
 };
 
-struct VertexToPixel
+struct VertexOutput
 {
     float4 position : SV_POSITION;
-    float3 normal : NORMALWS;
-    float3 tangent : TANGENTWS;
-    float3 worldPos : POSITIONWS;
-    float2 uv : TEXCOORD;
+    float2 tex : TEXCOORD;
+    float3 normal : NORMAL;
+    float3 worldPos : WORLDPOS;
 };
 
-VertexToPixel main(in VertexShaderInput input)
+VertexOutput main(VertexInput input)
 {
-    VertexToPixel output;
+    VertexOutput output;
 
-    matrix worldViewProj = mul(mul(world, view), projection);
-    output.position = mul(float4(input.position, 1.0f), worldViewProj);
-
-    output.worldPos = mul(float4(input.position, 1.0f), world).xyz;
-	
-    output.normal = normalize(mul(input.normal, (float3x3) world));
-
-    output.tangent = normalize(mul(input.tangent, (float3x3) world));
-
-    output.uv = input.uv;
+    output.position = float4(input.position, 1);
+    output.worldPos = mul(output.position, worldSpace);
+    output.position = mul(output.position, WVP);
+    output.tex = input.tex;
+    output.normal = mul(float4(input.normal, 0), worldSpace);
+    output.normal = normalize(output.normal);
 
     return output;
 }

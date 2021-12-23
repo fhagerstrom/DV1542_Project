@@ -1,44 +1,57 @@
-Texture2D textureSRV : register(t0);
-Texture2D normalMapSRV : register(t1);
 
-SamplerState basicSampler : register(s0);
+// Geometry Pass Pixel Shader
 
-struct VertexToPixel
+Texture2D diffuseTex : register(t0);
+
+SamplerState wrapSampler : register(s0);
+SamplerState clampSampler : register(s1);
+
+struct PixelInput
 {
     float4 position : SV_POSITION;
-    float3 normal : NORMALWS;
-    float3 tangent : TANGENTWS;
-    float3 worldPos : POSITIONWS;
-    float2 uv : TEXCOORD;
+    float2 tex : TEXCOORD;
+    float3 normal : NORMAL;
+    float3 worldPos : WORLDPOS;
 };
 
-struct PSOut
+struct PixelOutput
 {
-    float4 Position : SV_Target0;
-    float4 Normal : SV_Target1;
-    float4 Diffuse : SV_Target2;
+    float4 position : SV_TARGET0;
+    float3 normal : SV_TARGET1;
+    float3 worldPos : SV_TARGET2;
+    float4 diffuse : SV_TARGET3;
+    float4 ambientMTL : SV_TARGET4;
+    float4 diffuseMTL : SV_TARGET5;
+    float4 specularMTL : SV_TARGET6;
+    float4 lightClipPos : SV_TARGET7;
 };
 
-PSOut main(in VertexToPixel input)
+cbuffer mtlData : register(b0)
 {
-    PSOut output;
+    float4 kA;
+    float4 kD;
+    float4 kS;
+}
 
-    float3 diffuse = textureSRV.Sample(basicSampler, input.uv).rgb;
+cbuffer LightMatrix : register(b1)
+{
+    float4x4 lightMatrix;
+}
 
-    float3 N = input.normal;
-    float3 T = normalize(input.tangent - N * dot(input.tangent, N));
-    float3 bitangent = cross(T, N);
+PixelOutput main(PixelInput input)
+{
+    PixelOutput output;
 
-    float3x3 tangentFrame = float3x3(normalize(input.tangent), normalize(bitangent), normalize(input.normal));
-	
-    float3 normal = normalMapSRV.Sample(basicSampler, input.uv).rgb;
-    normal = normalize(normal * 2.0f - 1.0f);
+    output.position = input.position;
+    output.normal = input.normal;
+    output.worldPos = input.worldPos;
+    output.diffuse = diffuseTex.Sample(wrapSampler, input.tex);
+    output.ambientMTL = kA;
+    output.diffuseMTL = kD;
+    output.specularMTL = kS;
 
-    float3 normalWS = mul(normal, tangentFrame);
-
-    output.Position = float4(input.worldPos, 1.0f);
-    output.Normal = float4(normalWS, 1.0f);
-    output.Diffuse = float4(diffuse, 1.0f);
+    output.lightClipPos = mul(float4(output.worldPos, 1.0f), lightMatrix);
 
     return output;
 }
+
