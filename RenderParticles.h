@@ -17,13 +17,7 @@ private:
 	ID3D11GeometryShader* geometryShader;
 
 public:
-	//RenderParticles();
 	RenderParticles(ID3D11Device* device);
-	//~RenderParticles();
-
-
-
 	void Render(ID3D11DeviceContext* context, Particles* particles);
-
 	void ShutDown();
 };

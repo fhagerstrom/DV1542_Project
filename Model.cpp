@@ -19,19 +19,19 @@ Model::Model(ID3D11Device* device, std::string name, XMVECTOR position, XMVECTOR
 	D3D11_SUBRESOURCE_DATA data = {};
 	data.pSysMem = mesh.faces.data();
 
-	HRESULT hr = device->CreateBuffer(&desc, &data, &vertexBuffer);
+	HRESULT hr = device->CreateBuffer(&desc, &data, &vBuffer);
 	if (FAILED(hr))
 	{
-		std::cout << "FAILED TO CREATE MESH VERTEXBUFFER" << std::endl;
+		std::cerr << "ERROR! COULD NOT CREATE MESH VERTEXBUFFER!" << std::endl;
 	}
 	desc.ByteWidth = mesh.vertexCount * sizeof(XMFLOAT3);
 	desc.StructureByteStride = sizeof(XMFLOAT3);
 
 	data.pSysMem = mesh.positions.data();
-	hr = device->CreateBuffer(&desc, &data, &positionsBuffer);
+	hr = device->CreateBuffer(&desc, &data, &posBuffer);
 	if (FAILED(hr))
 	{
-		std::cout << "FAILED TO CREATE POSITION VERTEXBUFFER" << std::endl;
+		std::cerr << "ERROR! COULD NOT CREATE POSITION VERTEXBUFFER" << std::endl;
 	}
 }
 
@@ -40,7 +40,6 @@ Model::~Model()
 
 }
 
-// Function to update the models data
 void Model::Update()
 {
 	XMMATRIX translation = XMMatrixTranslationFromVector(transform.translation);
@@ -49,15 +48,75 @@ void Model::Update()
 	worldMatrix = scale * rotation * translation;
 }
 
-void Model::WaterSettings(XMFLOAT2 movementSpeedUv, float deltatime)
+int Model::GetVertexCount()
 {
-	// Offset the UVs on both X and Y axis with the variable from the parameter * deltatime
-	// Reset the the offset down below 1 so the value doesnt get too large
+	return this->mesh.vertexCount; 
+}
 
-	offsetUV.x += movementSpeedUv.x * deltatime;
-	if (offsetUV.x > 1)
-		offsetUV.x = 1 - offsetUV.x;
-	offsetUV.y += movementSpeedUv.y * deltatime;
-	if (offsetUV.y > 1)
-		offsetUV.y = 1 - offsetUV.y;
+XMMATRIX Model::GetWorldMatrix()
+{
+	return this->worldMatrix; 
+}
+
+ID3D11Buffer** Model::GetMTLBuffer()
+{
+	return &this->mesh.mtlBuffer;
+}
+
+ID3D11Buffer** Model::GetPositionsBuffer()
+{
+	return &this->posBuffer;
+}
+
+ID3D11Buffer** Model::GetBuffer()
+{
+	return &this->vBuffer; 
+}
+
+XMVECTOR Model::GetPosition()
+{
+	return this->transform.translation; 
+}
+
+const Material::Data& Model::GetMaterial()
+{
+	return this->mesh.material.data;
+}
+
+
+void Model::BindTextures(ID3D11DeviceContext* context, int startSlot)
+{
+	int slot = startSlot;
+	for (auto texture : mesh.material.diffuseTexures)
+	{
+		texture->Bind(context, slot);
+		slot++;
+	}
+}
+
+void Model::SetTranslation(XMVECTOR translation)
+{
+	this->transform.translation = translation;
+}
+
+void Model::SetRotation(XMVECTOR rotation)
+{
+	this->transform.rotation = rotation; 
+}
+
+void Model::SetScale(XMVECTOR scale)
+{
+	this->transform.scale = scale; 
+}
+
+XMVECTOR Model::GetRotation()
+{ 
+	return this->transform.rotation;
+}
+
+void Model::Shutdown()
+{
+	mesh.Shutdown();
+	vBuffer->Release();
+	posBuffer->Release();
 }

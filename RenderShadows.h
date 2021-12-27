@@ -17,6 +17,5 @@ public:
 
 	RenderShadows(ID3D11Device* device);
 	void Render(ID3D11DeviceContext* context, Model* model);
-	
 	void ShutDown();
 };

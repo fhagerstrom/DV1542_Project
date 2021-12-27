@@ -108,3 +108,10 @@ void RenderModels::Render(ID3D11Device* device, ID3D11DeviceContext* context, Mo
 	context->Draw(model->GetVertexCount(), 0);
 }
 
+void RenderModels::ShutDown()
+{
+	pixelShader->Release();
+	vertexShader->Release();
+	matrixBuffer->Release();
+	lightingBuffer->Release();
+}

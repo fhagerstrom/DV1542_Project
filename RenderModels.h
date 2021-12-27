@@ -7,7 +7,6 @@
 class RenderModels
 {
 private:
-	// Struct in Geometry
 	const unsigned int stride = sizeof(Vertex);
 	const unsigned int offset = 0;
 	std::string byteCode;
@@ -35,11 +34,5 @@ public:
 
 	std::string GetByteCode() const { return this->byteCode; }
 
-	void ShutDown()
-	{
-		pixelShader->Release();
-		vertexShader->Release();
-		matrixBuffer->Release();
-		lightingBuffer->Release();
-	}
+	void ShutDown();
 };

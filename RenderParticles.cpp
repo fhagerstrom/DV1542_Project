@@ -88,7 +88,7 @@ void RenderParticles::Render(ID3D11DeviceContext* context, Particles* particles)
 	// Set the buffers for the GS, VS, Draw and reset the geometryshader for the next pass
 	context->GSSetConstantBuffers(1, 1, &cameraBuffer);
 	context->GSSetConstantBuffers(2, 1, &viewPersPectiveBuffer);
-	context->IASetVertexBuffers(0, 1, &particles->vertexBuffer, &stride, &offset);
+	context->IASetVertexBuffers(0, 1, &particles->vBuffer, &stride, &offset);
 	context->Draw(particles->particleCount, 0);
 
 	context->GSSetShader(NULL, NULL, 0);

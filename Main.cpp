@@ -13,7 +13,7 @@
 
 
 // Function to clear the window
-void clearView(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView, const GeometryBuffer& gBuffer)
+void clearView(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView, const GBuffer& gBuffer)
 {
 	// Background Color
 	float backGroundColor[4] = { 0.5f, 0.5f, 0.5f, 0 };
@@ -59,7 +59,7 @@ void update(ID3D11DeviceContext* immediateContext, float deltaTime, Camera& came
 // Geometry Pass for deferred rendering (and shadows)
 void RenderGBufferPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView,
 	D3D11_VIEWPORT& viewport, ID3D11PixelShader* pShaderDeferredRender, ID3D11VertexShader* vShaderDeferred,
-	ID3D11SamplerState* sampler, GeometryBuffer gBuffer, Particles* particles,
+	ID3D11SamplerState* sampler, GBuffer gBuffer, Particles* particles,
 	RenderParticles* particleRenderer, RenderModels* modelRenderer, const std::vector <Model*>& models,
 	RenderShadows* shadowRenderer, ID3D11RasterizerState*& rasterizerStateWireFrame, ID3D11RasterizerState*& rasterizerStateSolid,
 	ID3D11Device* device, ID3D11SamplerState* clampSampler)
@@ -105,7 +105,7 @@ void RenderGBufferPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTarget
 // Light pass -- renders the geometry and lighting on the final screen quad
 void RenderLightPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport,
 	ID3D11PixelShader* pShaderDeferredRender, ID3D11VertexShader* vShaderDeferred, ID3D11SamplerState* sampler,
-	GeometryBuffer gBuffer, ID3D11PixelShader* lightPShaderDeferred, ID3D11VertexShader* lightVShaderDeferred,
+	GBuffer gBuffer, ID3D11PixelShader* lightPShaderDeferred, ID3D11VertexShader* lightVShaderDeferred,
 	ID3D11InputLayout* renderTargetMeshInputLayout, ID3D11Buffer* screenQuadMesh, Lighting& light,
 	ID3D11Buffer* dirLightBuffer, Camera camera, ID3D11Buffer* cameraPos, ID3D11SamplerState* clampSampler
 )
@@ -172,7 +172,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
 	
 	//Gbuffer struct
-	GeometryBuffer gBuffer;
+	GBuffer gBuffer;
 	gBuffer.screenWidth = WIDTH;
 	gBuffer.screenHeight = HEIGHT;
 	for (int i = 0; i < gBuffer.NROFBUFFERS; i++)
@@ -212,30 +212,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	
 	Model* monkey = new Model(device, "Statue", { 3.0f, 5.0f, 0.0f }, { 0.0f, 0.0f, XM_PIDIV4 }, { 0.6f, 0.6f, 0.6f });
 	models.push_back(monkey);
-	/*
-	Model* plane = new Model(device, "plane", { 3.0f, 5.0f, 0.0f }, { 0.0f, 0.0f, XM_PIDIV4 }, { 0.6f, 0.6f, 0.6f });
-	models.push_back(monkey);
-	*/
+
+
 	Model* cameraModel = new Model(device, "cube", { 0.0f, -5.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.05f, 0.05f, 0.05f });
 	models.push_back(cameraModel);
-	/*
-	Model* dust = new Model(device, "buildings", { -10.0f, -0.2f, -5.0f }, { 0.0f, 0.0f, 0.0f }, { 1.1f, 1.1f, 1.1f });
-	models.push_back(dust);
-
-	Model* statue = new Model(device, "Statue", { 8.0f, 1.5f, 7.0f }, { 0.0f, XM_PIDIV2 + 0.623598776f, 0.0f }, { 0.25f, 0.25f, 0.25f });
-	models.push_back(statue);
-
-	Model* water = new Model(device, "water", { 0.0f, 5.0f, 8.0f }, { 0.0f, XM_PIDIV2 - 0.623598776f , -XM_PIDIV2 }, { 10.0f, 10.0f, 10.0f });
-
-	Model* sword = new Model(device, "sword", { 8.0f, 3.0f, -7.0f }, { -XM_PIDIV4, XM_PIDIV2, 0 }, { 0.7f, 0.7, 0.7f });
-	models.push_back(sword);
-
-	Model* ball = new Model(device, "ball", { 9.0f, 0.0f, 8.5f }, { 0.0f, 0.0f, 0 }, { 0.5f, 0.5f, 0.5f });
-	models.push_back(ball);
-
-	Model* board = new Model(device, "board", { 8.5f, 0.0f, 9.0f }, { 0.0f, XM_PIDIV4, 0 }, { 0.5f, 0.5f, 0.5f });
-	models.push_back(board);
-	*/
+	
 
 	Particles* particles = new Particles(device, 200, 5, 1, { 60, 25, 60 }, { 0, 20, 0 });
 	RenderParticles* particlesRenderer = new RenderParticles(device);

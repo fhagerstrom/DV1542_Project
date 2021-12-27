@@ -1,13 +1,11 @@
 #pragma once
 #include "DirectXHelper.h"
-// This is directional light
 
+//directional light
 class Lighting
 {
 private:
-
 	XMMATRIX matrix = XMMatrixIdentity();
-
 public:
 	struct Data
 	{
@@ -19,5 +17,5 @@ public:
 	Lighting() = default;
 	Lighting(float range);
 	~Lighting();
-	XMMATRIX GetMatrix() const;// Called upon in shaderdata::Update()
+	XMMATRIX GetMatrix() const;// used in Shaders::Update()
 };

@@ -1,13 +1,37 @@
 #include "Defines.h"
 #include "Mesh.h"
 
+
+Mesh::Mesh(ID3D11Device* device, std::string name)
+	:name(name)
+{
+	if (!LoadModel(name))
+	{
+		std::cout << "ERROR! COULD NOT LOAD MODEL DATA" << std::endl;
+	}
+	if (!LoadMaterial(device, name))
+	{
+		std::cout << "ERRO! COULD NOT LOAD MATERIAL DATA" << std::endl;
+	}
+}
+
+Mesh::~Mesh()
+{
+	
+}
+
+ID3D11Buffer* Mesh::GetMTLBuffer() 
+{ 
+	return this->mtlBuffer; 
+}
+
 // OBJ reader
 bool Mesh::LoadModel(std::string name)
 {
-	std::vector<std::array<float, 3>> v;
-	std::vector<std::array<float, 2>> vt;
-	std::vector<std::array<float, 3>> vn;
-	std::vector<std::array<std::array<int, 3>, 3>> f;
+	std::vector<std::array<float, 3>> vertex; //v is a vertex
+	std::vector<std::array<float, 2>> vertexTexture; //vt is the texture coordinate of one vertex
+	std::vector<std::array<float, 3>> vertexNormal;
+	std::vector<std::array<std::array<int, 3>, 3>> f; //face containing 3 vertices
 
 	std::ifstream reader;
 
@@ -21,49 +45,45 @@ bool Mesh::LoadModel(std::string name)
 	{
 		std::string text;
 		reader >> text;
-		if (text == "v") // v is a vertex
+		if (text == "v") 
 		{
-			std::array<float, 3> vertex;
+			std::array<float, 3> vertice;
 
-			reader >> vertex[0];	// load the first float to index 0
-			reader >> vertex[1];	// load the second float to index 1
-			reader >> vertex[2];	// load the thrid float to index 2
+			reader >> vertice[0];	// load the first float to index 0
+			reader >> vertice[1];	// load the second float to index 1
+			reader >> vertice[2];	// load the thrid float to index 2
 
-			v.push_back(vertex);
+			vertex.push_back(vertice);
 		}
 
-		if (text == "vt") // vt is the texture coordinate of one vertex
+		if (text == "vt") 
 		{
 			std::array<float, 2> texCoord;
 
-			reader >> texCoord[0]; 	  // load the first float to index 0
-			reader >> texCoord[1];	  // load the second float to index 1
-
-			texCoord[1] = 1 - texCoord[1];	// inverting V because directX reads it upsidedown otherwise
-
-			vt.push_back(texCoord);
+			reader >> texCoord[0]; 	  // load first float
+			reader >> texCoord[1];	  // load second float
+			texCoord[1] = 1 - texCoord[1];	// inverting since directX reads it upsidedown if I don't
+			vertexTexture.push_back(texCoord);
 		}
 
-		if (text == "vn") // vn is the normal of one vertex
+		if (text == "vn") //normal of one vertex
 		{
 			std::array<float, 3> normal;
-
 			reader >> normal[0];
 			reader >> normal[1];
 			reader >> normal[2];
-
-			vn.push_back(normal);
+			vertexNormal.push_back(normal);
 		}
 
-		if (text == "f") // f is a face containing 3 vertices
+		if (text == "f") //face with 3 verties
 		{
 			std::array<std::array<int, 3>, 3> face;
 
-			std::string temp;
+			std::string tempString;
 
 			for (int i = 0; i < 3; ++i)
 			{
-				reader >> temp;
+				reader >> tempString;
 
 				std::string substr;
 
@@ -73,56 +93,52 @@ bool Mesh::LoadModel(std::string name)
 
 				// stoi = string to int
 
-				face[0][i] = std::stoi(temp.substr(0, temp.find("/")));								 // position 
+				face[0][i] = std::stoi(tempString.substr(0, tempString.find("/"))); // position 
 
-				substr = temp.substr(temp.find("/") + 1, temp.length());
-				face[1][i] = std::stoi(substr.substr(0, substr.find("/")));							 // texcoord
-				face[2][i] = std::stoi(substr.substr(substr.find("/") + 1, substr.length()));		 // normal
+				substr = tempString.substr(tempString.find("/") + 1, tempString.length());
+				face[1][i] = std::stoi(substr.substr(0, substr.find("/")));	// texcoord
+				face[2][i] = std::stoi(substr.substr(substr.find("/") + 1, substr.length()));//normal
 			}
 
 			f.push_back(face);
 		}
 	}
 
-	// Kolla mer -- 2D array?
+
 	for (int i = 0; i < f.size(); ++i)
 	{
-		std::array<float, 3> pos;
+		std::array<float, 3> position;
 		std::array<float, 2> tex;
-		std::array<float, 3> nor;
+		std::array<float, 3> normal;
 		std::array<Vertex, 3> vertices;
 
 		for (int j = 0; j < 3; ++j)
 		{
-			// Position of vJ
+			//position of vertex j
 			int index = f[i][0][j] - 1;
+			position[0] = vertex[index][0];
+			position[1] = vertex[index][1];
+			position[2] = vertex[index][2];
 
-			pos[0] = v[index][0];
-			pos[1] = v[index][1];
-			pos[2] = v[index][2];
-
-			// TexCoord of vJ
+			//texCoord of vertex j
 			index = f[i][1][j] - 1;
+			tex[0] = vertexTexture[index][0];
+			tex[1] = vertexTexture[index][1];
 
-			tex[0] = vt[index][0];
-			tex[1] = vt[index][1];
-
-			// Normal of vJ
+			//normal of vertex j
 			index = f[i][2][j] - 1;
+			normal[0] = vertexNormal[index][0];
+			normal[1] = vertexNormal[index][1];
+			normal[2] = vertexNormal[index][2];
 
-			nor[0] = vn[index][0];
-			nor[1] = vn[index][1];
-			nor[2] = vn[index][2];
-
-			positions.push_back({ pos[0],pos[1],pos[2] });		//For shadow
-			vertices[j] = Vertex(pos, tex, nor);
+			positions.push_back({ position[0],position[1],position[2] });//used for shadows
+			vertices[j] = Vertex(position, tex, normal);
 			vertexCount++;
 		}
 
 		Face face = Face(vertices[0], vertices[1], vertices[2]);
 		faces.push_back(face);
 	}
-
 	return true;
 }
 
@@ -130,20 +146,18 @@ bool Mesh::LoadModel(std::string name)
 bool Mesh::LoadMaterial(ID3D11Device* device, std::string name)
 {
 	std::ifstream reader;
-
-	reader.open("Models/" + name + "/" + name + ".mtl", std::ios::beg);		// Opens the MTL-file
-
+	reader.open("Models/" + name + "/" + name + ".mtl", std::ios::beg);	// opens MTL-file
 	if (!reader.is_open())
+	{
 		return false;
-
+	}
 	int counter = 0;
 	std::string line;
 	while (std::getline(reader, line))
 	{
 		std::string text;
 		reader >> text;
-
-		if (text == "Kd")										// Find the diffuse and store it in the struct
+		if (text == "Kd")//this is diffuse, gets stored in the struct
 		{
 			XMFLOAT4 diffuse;
 
@@ -151,11 +165,10 @@ bool Mesh::LoadMaterial(ID3D11Device* device, std::string name)
 			reader >> diffuse.y;
 			reader >> diffuse.z;
 			diffuse.w = 0;
-
 			material.data.diffuse = diffuse;
 		}
 
-		if (text == "Ka")										// Find the ambient and store it in the struct
+		if (text == "Ka")	//this is ambient, gets stored in struct
 		{
 			XMFLOAT4 ambient;
 
@@ -167,7 +180,7 @@ bool Mesh::LoadMaterial(ID3D11Device* device, std::string name)
 			material.data.ambient = ambient;
 		}
 
-		if (text == "Ks")										// Find the specular and store it in the struct
+		if (text == "Ks") //this is specular, gets stored in struct
 		{
 			XMFLOAT4 specular;
 
@@ -179,33 +192,34 @@ bool Mesh::LoadMaterial(ID3D11Device* device, std::string name)
 			material.data.specular = specular;
 		}
 
-		if (text == "map_Kd")									// Find the texture used, create it and store it in the material-vector
+		if (text == "map_Kd") //this is texture which is used, gets stored in material vector		
 		{
 			std::string diffuse;
 			reader >> diffuse;
-			material.diffuseTexures.emplace_back(new Texture(device, "Models/" + name + "/" + diffuse));	//place into the container
+			material.diffuseTexures.emplace_back(new Texture(device, "Models/" + name + "/" + diffuse));
 		}
 
 	}
 
-	// Create the buffer contaning the material-data, per model
-	D3D11_BUFFER_DESC bufferDesc = {};
-	bufferDesc.ByteWidth = sizeof(material.data);
-	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	bufferDesc.MiscFlags = 0;
-	bufferDesc.StructureByteStride = 0;
+	// buffer per model containing material data
+	D3D11_BUFFER_DESC desc = {};
+	desc.ByteWidth = sizeof(material.data);
+	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	desc.MiscFlags = 0;
+	desc.StructureByteStride = 0;
 
-	HRESULT hr = device->CreateBuffer(&bufferDesc, nullptr, &mtlBuffer);
+	HRESULT hr = device->CreateBuffer(&desc, nullptr, &mtlBuffer);
 	if FAILED(hr)
 	{
-		std::cout << "FAILED TO CREATE BUFFER" << std::endl;
+		std::cerr << "ERROR! COULD NOT CREATE MTL BUFFER" << std::endl;
 	}
 	return true;
 }
 
-Mesh::~Mesh()
+void Mesh::Shutdown()
 {
-
+	mtlBuffer->Release();
 }
+

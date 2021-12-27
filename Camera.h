@@ -5,44 +5,38 @@
 class Camera
 {
 private:
-	XMMATRIX perspectiveMatrix;
 	XMMATRIX viewMatrix;
-	XMVECTOR forward;
+	XMMATRIX perspectiveMatrix;
 	XMVECTOR right;
 	XMVECTOR up;
+	XMVECTOR forward;
 	XMVECTOR moveUp;
-	XMFLOAT3 position;
-
+	XMFLOAT3 pos;
 	float pitch;
 	float yaw;
 	float rotationSpeed;
 	float speed;
 	float viewDistance;
-
 	float fov;
 	float aspectRatio;
 	float nearZ;
 	float farZ;
-
-	float pickingDistance;
 	XMVECTOR direction;
 public:
 	Camera();
 	Camera(float fov, float aspectRatio, float nearZ, float farZ, float rotationSpeed, float speed, XMFLOAT3 position);
 
-	float GetNearZ() const { return this->nearZ; };
-	float GetFarZ() const { return this->farZ; };
-	float GetRatio() const { return this->aspectRatio; };
-	float GetFov() const { return this->fov; };
-	XMVECTOR GetUpVector() const { return this->up; };
-	XMFLOAT3 GetPosition() const { return this->position; }
-	XMMATRIX GetViewMatrix() const { return this->viewMatrix; };
-	XMMATRIX GetPerspectiveMatrix() const { return this->perspectiveMatrix; };
-
+	float GetNearZ();
+	float GetFarZ();
+	float GetRatio();
+	float GetFov();
+	XMVECTOR GetUpVector();
+	XMFLOAT3 GetPosition();
+	XMMATRIX GetViewMatrix();
+	XMMATRIX GetPerspectiveMatrix();
 	void MoveRight(float dt);
 	void MoveForward(float dt);
 	void MoveUpDown(float dt);
 	void Rotate(float dx, float dy);
-
 	void Update(float dt);
 };

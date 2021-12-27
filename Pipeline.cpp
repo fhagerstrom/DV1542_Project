@@ -6,35 +6,30 @@ bool LoadShadersGbuffer(ID3D11Device* device, ID3D11PixelShader*& pShaderDeferre
 {
 	std::string shaderData;
 	std::ifstream reader;
-	// Clears the reader and shaderData and does the same thing for the PixelShader
 
 	reader.open(L"Debug/DeferredVS.cso", std::ios::binary | std::ios::ate);
 	if (!reader.is_open())
 	{
-		std::cerr << "Could not open VS file!" << std::endl;
+		std::cerr << "ERROR! COULD NOT OPEN VS FILE DEFERRED!" << std::endl;
 		return false;
 	}
-
 	reader.seekg(0, std::ios::end);
 	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
 	reader.seekg(0, std::ios::beg);
 
 	shaderData.assign((std::istreambuf_iterator<char>(reader)), std::istreambuf_iterator<char>());
-
 	if (FAILED(device->CreateVertexShader(shaderData.c_str(), shaderData.length(), nullptr, &vShaderDeferred)))
 	{
-		std::cerr << "Failed to create vertex shader!" << std::endl;
+		std::cerr << "ERROR! COULT NOT CREATE VERTEX SHADER DEFERRED!" << std::endl;
 		return false;
 	}
-
 	defVShaderByteCode = shaderData;
-
 	shaderData.clear();
 	reader.close();
 	reader.open(L"Debug/DeferredPS.cso", std::ios::binary | std::ios::ate);
 	if (!reader.is_open())
 	{
-		std::cerr << "Could not open PS file!" << std::endl;
+		std::cerr << "ERROR! COULD NOT OPEN PS FILE DEFERRED!" << std::endl;
 		return false;
 	}
 
@@ -46,7 +41,7 @@ bool LoadShadersGbuffer(ID3D11Device* device, ID3D11PixelShader*& pShaderDeferre
 
 	if (FAILED(device->CreatePixelShader(shaderData.c_str(), shaderData.length(), nullptr, &pShaderDeferred)))
 	{
-		std::cerr << "Failed to create pixel shader!" << std::endl;
+		std::cerr << "ERROR! COULD NOT CREATE PIXEL SHADER DEFERRED" << std::endl;
 		return false;
 	}
 	reader.close();
@@ -63,7 +58,7 @@ bool LoadShadersLight(ID3D11Device* device, ID3D11PixelShader*& lightPShaderDefe
 	reader.open(L"Debug/DeferredLightVS.cso", std::ios::binary | std::ios::ate);
 	if (!reader.is_open())
 	{
-		std::cerr << "Could not open VS file!" << std::endl;
+		std::cerr << "ERROR! COULD NOT OPEN VERTEX SHADER LIGHT!" << std::endl;
 		return false;
 	}
 
@@ -75,7 +70,7 @@ bool LoadShadersLight(ID3D11Device* device, ID3D11PixelShader*& lightPShaderDefe
 
 	if (FAILED(device->CreateVertexShader(shaderData.c_str(), shaderData.length(), nullptr, &lightVSShaderDeferred)))
 	{
-		std::cerr << "Failed to create pixel shader!" << std::endl;
+		std::cerr << "ERROR! COULD NOT CREATE VERTEX SHADER LIGHT!" << std::endl;
 		return false;
 	}
 
@@ -86,7 +81,7 @@ bool LoadShadersLight(ID3D11Device* device, ID3D11PixelShader*& lightPShaderDefe
 	reader.open(L"Debug/DeferredLightPS.cso", std::ios::binary | std::ios::ate);
 	if (!reader.is_open())
 	{
-		std::cerr << "Could not open PS file!" << std::endl;
+		std::cerr << "ERROR! COULD NOT OPEN PIXEL SHADER LIGHT!" << std::endl;
 		return false;
 	}
 
@@ -98,7 +93,7 @@ bool LoadShadersLight(ID3D11Device* device, ID3D11PixelShader*& lightPShaderDefe
 
 	if (FAILED(device->CreatePixelShader(shaderData.c_str(), shaderData.length(), nullptr, &lightPShaderDeferred)))
 	{
-		std::cerr << "Failed to create pixel shader!" << std::endl;
+		std::cerr << "ERROR! COULD NOT CREATE PIXEL SHADER LIGHT!" << std::endl;
 		return false;
 	}
 
@@ -110,49 +105,49 @@ bool CreateRenderTargetMesh(ID3D11Device* device, ID3D11Buffer*& renderTargetMes
 {
 	screenQuad rtvMeshData[] =
 	{
-		// Top Right
+		// (x, y, z), UV, normals
+		// 
+		//top right
 	   { {1.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {0, 0, -1} },
-	   // Bottom Right
+	   //bottom right
 	   { {1.0f, -1.0f, 0.0f}, {1.0f, 1.0f}, {0, 0, -1}  },
-	   // Top Left
+	   // top left
 	   { {-1.0f, 1.0f, 0.0f}, {0.0f, 0.0f}, {0, 0, -1}  },
-	   // Bottom Left
+	   //bottom left
 	   { {-1.0f, -1.0f, 0.0f}, {0.0f, 1.0f}, {0, 0, -1}  }
-	   // (X, Y, Z), UVs, Normals
+	   
 	};
 
-	D3D11_BUFFER_DESC rtvMeshDesc;
-	rtvMeshDesc.ByteWidth = sizeof(rtvMeshData);		// Bytesize of the vertices
-	rtvMeshDesc.Usage = D3D11_USAGE_IMMUTABLE;			// Usage_Immutable -- Only read by the GPU, not accessable by the CPU. Not changeable after creation
-	rtvMeshDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;   // Binds the buffer as a Vertex Buffer. 
-	rtvMeshDesc.CPUAccessFlags = 0;						// Set to 0 since the usage is Immutable. NO need to write or read since we have no access.
-	rtvMeshDesc.MiscFlags = 0;							// No need for additional flags
-	rtvMeshDesc.StructureByteStride = 0;				// Defines the size of each element in the buffer structure. No need for this buffer
+	D3D11_BUFFER_DESC desc; //rtvMesh desc
+	desc.ByteWidth = sizeof(rtvMeshData);//bytesize of vertices		
+	desc.Usage = D3D11_USAGE_IMMUTABLE; //Only read by the GPU, not accessable by the CPU
+	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER; // Binds buffer as vertex buffer. 
+	desc.CPUAccessFlags = 0; // because immutable, NO need to write or read because no access
+	desc.MiscFlags = 0; //nah we don't need more flags
+	desc.StructureByteStride = 0;// Defines size of each element in buffer structure. we don't need this magic
 
 	// Specifies data for initializing a subresource
 	D3D11_SUBRESOURCE_DATA data;
-	data.pSysMem = &rtvMeshData;						// Pointer to the initialization data
-	data.SysMemPitch = 0;								// The distance (in bytes) from the beginning of one line of a texture to the next line
-	data.SysMemSlicePitch = 0;							// The distance (in bytes) from the beginning of one depth level to the next. (Used only for 3D-textures)
+	data.pSysMem = &rtvMeshData;// Pointer to the init data
+	data.SysMemPitch = 0; // distance (in bytes) from the start of one line of a texture to the next line
+	data.SysMemSlicePitch = 0; // distance (in bytes) from the start of one depth level to the next
 
-	HRESULT hr = device->CreateBuffer(&rtvMeshDesc, &data, &renderTargetMesh);
+	HRESULT hr = device->CreateBuffer(&desc, &data, &renderTargetMesh);
 
 	return !FAILED(hr);
 }
 
 bool RenderMeshInputLayout(ID3D11Device* device, ID3D11InputLayout*& renderTargetMeshInputLayout, const std::string& lightVShaderByteCode)
 {
-	// Input layout for the quad covering the screen
-	D3D11_INPUT_ELEMENT_DESC inputDesc[] =
+	// Input layout for screen quad
+	D3D11_INPUT_ELEMENT_DESC desc[] =
 	{
 		// Name, Index, Format, Slot, ByteOffset, InputSlotClass, StepRate
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-
-		// These need to be in the right order for the data to be placed at the right location
 	};
 
-	HRESULT hr = device->CreateInputLayout(inputDesc, ARRAYSIZE(inputDesc), lightVShaderByteCode.c_str(), lightVShaderByteCode.length(), &renderTargetMeshInputLayout);
+	HRESULT hr = device->CreateInputLayout(desc, ARRAYSIZE(desc), lightVShaderByteCode.c_str(), lightVShaderByteCode.length(), &renderTargetMeshInputLayout);
 
 	return !FAILED(hr);
 }
@@ -160,24 +155,24 @@ bool RenderMeshInputLayout(ID3D11Device* device, ID3D11InputLayout*& renderTarge
 bool CreateSamplerState(ID3D11Device* device, ID3D11SamplerState*& wrapSampler, ID3D11SamplerState*& clampSampler)
 {
 	D3D11_SAMPLER_DESC desc;
-	desc.Filter = D3D11_FILTER_ANISOTROPIC; // Improve image quality
-	// adds the texture for each u, v for each intersection with integers
-	// if the u value is 3, the texture is repeated three times
+	desc.Filter = D3D11_FILTER_ANISOTROPIC; // improves image quality by adding texture for each u, v for each intersection with integers
+	// if u value is 3, the texture is repeated three times
 	desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	desc.MipLODBias = 0; // No offset from the mipmap
-	desc.MaxAnisotropy = 16;// The number of samples that can be taken to improve the quality
-	desc.BorderColor[0] = desc.BorderColor[1] = desc.BorderColor[2] = desc.BorderColor[3] = 0; // Puts a color for the edge
-	desc.MinLOD = 0; // Lower end of the mipmap range to clamp access to, where 0 is the largest and most detailed mipmap level 
-	desc.MaxLOD = D3D11_FLOAT32_MAX;
-	// Upper end of the mipmap range to clamp access to, 
-	// where 0 is the largest and most detailed mipmap level and any level higher than that is less detailed
+	desc.MipLODBias = 0; // No offset thank you
+	desc.MaxAnisotropy = 16;// amount of samples which can be taken for improved quality
+	desc.BorderColor[0] = desc.BorderColor[1] = desc.BorderColor[2] = desc.BorderColor[3] = 0; //nice little color for edge
+	desc.MinLOD = 0; // Lower end of mipmap range to clamp access to, where 0 is largest and most detailed mipmap level 
+	desc.MaxLOD = D3D11_FLOAT32_MAX; // Upper end of the mipmap range to clamp access to, 
+	// where 0 is largest and most detailed mipmap level and any level above that is less detailed
 
 	HRESULT hr = device->CreateSamplerState(&desc, &wrapSampler);
 	if (FAILED(hr))
+	{
+		std::cerr << "ERROR! COULD NOT CREATE SAMPLERSTATE!" << std::endl;
 		return false;
-
+	}
 	desc.Filter = D3D11_FILTER_ANISOTROPIC;
 	desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
 	desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -190,7 +185,10 @@ bool CreateSamplerState(ID3D11Device* device, ID3D11SamplerState*& wrapSampler, 
 
 	hr = device->CreateSamplerState(&desc, &clampSampler);
 	if (FAILED(hr))
+	{
+		std::cerr << "ERROR! COULD NOT CREATE SAMPLERSTATE!" << std::endl;
 		return false;
+	}
 
 	return !FAILED(hr);
 }
@@ -237,37 +235,37 @@ bool SetupPipeline(ID3D11Device* device, ID3D11SamplerState*& sampler,
 
 	if (!LoadShadersGbuffer(device, pShaderDeferred, vShaderDeferred, defVShaderByteCode))
 	{
-		std::cerr << "Error loading gbuffer!" << std::endl;
+		std::cerr << "ERROR! COULD NOT LOAD GBUFFER!" << std::endl;
 		return false;
 	}
 
 	if (!LoadShadersLight(device, lightPShaderDeferred, lightVShaderDeferred, lightVShaderByteCode))
 	{
-		std::cerr << "Error loading light!" << std::endl;
+		std::cerr << "ERROR! COULD NOT LOAD LIGHT!" << std::endl;
 		return false;
 	}
 
 	if (!CreateRenderTargetMesh(device, screenQuadMesh))
 	{
-		OutputDebugString(L"Failed to create screensized quad!");
+		OutputDebugString(L"ERROR! COULD NOT CREATE RT MESH!");
 		return false;
 	}
 
 	if (!RenderMeshInputLayout(device, renderTargetMesh, lightVShaderByteCode))
 	{
-		std::cerr << "Error creating input layout!" << std::endl;
+		std::cerr << "ERROR! COULD NOT RENDER MESH!" << std::endl;
 		return false;
 	}
 
 	if (!CreateSamplerState(device, sampler, clampSampler))
 	{
-		std::cerr << "Error creating sampler state! " << std::endl;
+		std::cerr << "ERROR! COULD NOT CREATE SAMPLER STATE! " << std::endl;
 		return false;
 	}
 
 	if (!SetUpRasterizer(device, rasterizerStateWireFrame, rasterizerStateSolid))
 	{
-		std::cerr << "Error creating rasterizer state! " << std::endl;
+		std::cerr << "ERROR! COULD NOT SETUP RASTERIZER STATE! " << std::endl;
 		return false;
 	}
 }
