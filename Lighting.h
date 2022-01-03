@@ -1,5 +1,5 @@
 #pragma once
-#include "DirectXHelper.h"
+#include "DxHandler.h"
 
 //directional light
 class Lighting

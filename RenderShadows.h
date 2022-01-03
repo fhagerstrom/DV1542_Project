@@ -1,6 +1,6 @@
 #pragma once
 #include "Shaders.h"
-#include "DirectXHelper.h"
+#include "DxHandler.h"
 #include "Model.h"
 
 class RenderShadows

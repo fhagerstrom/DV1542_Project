@@ -13,7 +13,5 @@ public:
 
 	void ShutDown();
 	ID3D11ShaderResourceView** GetSRV();
-
-	// Function to bind the shadowmap
 	void Bind(ID3D11DeviceContext* context);
 };

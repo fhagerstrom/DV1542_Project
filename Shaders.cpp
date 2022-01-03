@@ -12,7 +12,7 @@ XMMATRIX Shaders::perspectiveMatrix;
 ID3D11InputLayout* Shaders::positionOnlyLayout;
 ID3D11InputLayout* Shaders::modelLayout;
 
-std::string Shaders::gsPath = "Debug/CullingGS.cso"; //culling shader
+//std::string Shaders::gsPath = "Debug/CullingGS.cso"; //culling shader
 ID3D11GeometryShader* Shaders::gShader;
 
 //ID3D11Buffer* Shaders::camPos; buffer for culling
@@ -93,7 +93,7 @@ void Shaders::Initialize(ID3D11Device* device, std::string modelVSByteCode)
 		std::cerr << "ERROR INPUTLAYOUT" << std::endl;
 		return;
 	}
-
+	/*
 	reader.open(gsPath, std::ios::binary | std::ios::ate);
 	if (!reader.is_open())
 	{
@@ -108,9 +108,9 @@ void Shaders::Initialize(ID3D11Device* device, std::string modelVSByteCode)
 
 	if (FAILED(hr))
 	{
-		std::cout << "Failed to create position VERTEX shader!" << std::endl;
+		std::cout << "Failed to create GS shader!" << std::endl;
 		return;
-	}
+	}*/
 
 	Shaders.clear();
 	reader.close();

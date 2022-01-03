@@ -12,12 +12,15 @@ RenderModels::RenderModels(ID3D11Device* device)
 	std::string shaderData;
 	std::ifstream reader;
 	std::string shaderByteCode;
+	
+	modelsRendered = 0;
+
 	// PIXEL SHADER
 	reader.open(ps_path, std::ios::binary | std::ios::beg);
 
 	if (!reader.is_open())
 	{
-		std::cout << "COULD NOT OPEN FILE: " + ps_path << std::endl;
+		std::cout << "ERROR! COULD NOT OPEN FILE!: " + ps_path << std::endl;
 		return;
 	}
 
@@ -29,7 +32,7 @@ RenderModels::RenderModels(ID3D11Device* device)
 	HRESULT hr = device->CreatePixelShader(shaderData.c_str(), shaderData.length(), nullptr, &pixelShader);
 	if FAILED(hr)
 	{
-		std::cout << "FAILED TO CREATE PIXEL SHADER" << std::endl;
+		MessageBox(NULL, L"Couldn't create pixel shader!", L"SHADER ERROR", MB_OK);
 		return;
 	}
 
@@ -40,7 +43,7 @@ RenderModels::RenderModels(ID3D11Device* device)
 	reader.open(vs_path, std::ios::binary | std::ios::ate);
 	if (!reader.is_open())
 	{
-		std::cerr << "Could not open VS file!" << std::endl;
+		MessageBox(NULL, L"Couldn't read the path to the vertex shader!", L"READ ERROR", MB_OK);
 		return;
 	}
 
@@ -52,7 +55,7 @@ RenderModels::RenderModels(ID3D11Device* device)
 
 	if (FAILED(device->CreateVertexShader(shaderData.c_str(), shaderData.length(), nullptr, &vertexShader)))
 	{
-		std::cerr << "Failed to create pixel shader!" << std::endl;
+		MessageBox(NULL, L"Couldn't create the vertex shader!", L"SHADER ERROR", MB_OK);
 		return;
 	}
 
@@ -62,50 +65,57 @@ RenderModels::RenderModels(ID3D11Device* device)
 	reader.close();
 }
 
+
 void RenderModels::Render(ID3D11Device* device, ID3D11DeviceContext* context, Model* model, bool rotation)
 {
-	// Get the WorldMatrix, store and update the buffer for the model ( Transposed WorldMatrix HLSL is columnmayor )
+	// Get WorldMatrix, store and update buffer for models
 	XMStoreFloat4x4(&matrix.worldSpace, XMMatrixTranspose(model->GetWorldMatrix()));
-	XMMATRIX wvp = XMMatrixTranspose(model->GetWorldMatrix() * Shaders::viewMatrix * Shaders::perspectiveMatrix); // Local to clipspace (camera)
+	XMMATRIX wvp = XMMatrixTranspose(model->GetWorldMatrix() * Shaders::viewMatrix * Shaders::perspectiveMatrix); //local to clipspace
 	XMStoreFloat4x4(&matrix.wvp, wvp);
 	UpdateBuffer(context, matrixBuffer, matrix);
 
-	// Set the inputlayout, VS and topology
 	context->IASetInputLayout(Shaders::modelLayout);
 	context->VSSetShader(vertexShader, NULL, 0);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	
-	// use pixelshader for each model
+
+	// Pixel shader for every model
 	context->PSSetShader(pixelShader, NULL, 0);
 	
 
-	// Update the lightbuffer for each model, used for the shadows (sent to the clipspace target in the PS)
+	// Update the light buffer for every model. This is also used for the shadows 
 	UpdateBuffer(context, lightingBuffer, Shaders::lightingMatrix);
-	context->PSSetConstantBuffers(1, 1, &lightingBuffer); // set the CB containing light info
-	model->BindTextures(context);	// Set the shader resource with the specific texture used for the modelm
-	context->VSSetConstantBuffers(1, 1, &matrixBuffer); // set the CB for the vs with the WVP and worldspace matrices
-	// DS and HS not used for regular models
+	context->PSSetConstantBuffers(1, 1, &lightingBuffer); //set constant buffer containing light info
+	model->BindTextures(context); //set shader resource
+	context->VSSetConstantBuffers(1, 1, &matrixBuffer); //set constant buffer for the vertex shader with the WVP and worldspace 
+	// DS and HS are not used for regular models
 	context->HSSetShader(NULL, NULL, 0);
 	context->DSSetShader(NULL, NULL, 0);
-	// GS already set outside the renderer
+	// GS is already set outside the renderer
 
-	// Get, update and set the MTL data for each model
+	// Get, update and set the MTL data for every model
 	D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
 	HRESULT hr = context->Map(*model->GetMTLBuffer(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);
 	if FAILED(hr)
 	{
-		std::cout << "FAILED TO UPDATE MTL BUFFER" << std::endl;
+		MessageBox(NULL, L"Couldn't get the material buffer for the model!", L"BUFFER ERROR", MB_OK);
 		return;
 	}
+
 	memcpy(mappedBuffer.pData, &model->GetMaterial(), sizeof(model->GetMaterial()));
 	context->Unmap(*model->GetMTLBuffer(), 0);
 
+	modelsRendered++; //for printouts to control furstum culling
+
 	context->PSSetConstantBuffers(0, 1, model->GetMTLBuffer());
-	context->IASetVertexBuffers(0, 1, model->GetBuffer(), &stride, &offset);				// Sends vertex buffer, per model, to the input assembly 
-																							// ( first stage of the graphics pipeline ) that tells the vertex 
-																							// shader how to read the data
+	context->IASetVertexBuffers(0, 1, model->GetBuffer(), &stride, &offset);																		
 	context->Draw(model->GetVertexCount(), 0);
+}
+
+
+std::string RenderModels::GetByteCode() const
+{
+	return this->byteCode; 
 }
 
 void RenderModels::ShutDown()

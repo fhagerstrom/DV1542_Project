@@ -1,7 +1,7 @@
 #pragma once
 #pragma once
 #include "Model.h"
-#include "DirectXHelper.h"
+#include "DxHandler.h"
 #include "Shaders.h"
 
 class RenderModels
@@ -16,10 +16,8 @@ private:
 	ID3D11PixelShader* pixelShader;
 	const std::string vs_path = "x64/Debug/DeferredVS.cso";
 	ID3D11VertexShader* vertexShader;
-
 	ID3D11Buffer* lightingBuffer;
 	ID3D11Buffer* matrixBuffer;
-
 	struct Matrix
 	{
 		XMFLOAT4X4 wvp;
@@ -27,12 +25,9 @@ private:
 	}matrix;
 
 public:
-
 	RenderModels(ID3D11Device* device);
-
 	void Render(ID3D11Device* device, ID3D11DeviceContext* context, Model* model, bool rotation);
-
-	std::string GetByteCode() const { return this->byteCode; }
-
+	std::string GetByteCode() const;
 	void ShutDown();
+	int modelsRendered;
 };

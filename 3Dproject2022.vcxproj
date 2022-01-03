@@ -125,6 +125,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <FxCompile>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -155,9 +158,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Defines.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="DirectXHelper.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Defines.h</PrecompiledHeaderFile>
+    <ClCompile Include="DxHandler.cpp" />
+    <ClCompile Include="Frustum.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Defines.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -192,6 +194,10 @@
     <ClCompile Include="Pipeline.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Defines.h</PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Defines.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="QuadTree.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Defines.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -239,11 +245,13 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Defines.h" />
-    <ClInclude Include="DirectXHelper.h" />
+    <ClInclude Include="DxHandler.h" />
+    <ClInclude Include="Frustum.h" />
     <ClInclude Include="Lighting.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Particles.h" />
+    <ClInclude Include="QuadTree.h" />
     <ClInclude Include="Randomizer.h" />
     <ClInclude Include="RenderModels.h" />
     <ClInclude Include="RenderParticles.h" />

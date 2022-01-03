@@ -1,7 +1,7 @@
 #pragma once
 #include "Vertex.h"
 #include "Texture.h"
-#include "DirectXHelper.h"
+#include "DxHandler.h"
 
 
 struct Mesh
@@ -9,9 +9,9 @@ struct Mesh
 private:
 	bool LoadModel(std::string name);
 	bool LoadMaterial(ID3D11Device* device, std::string name);
-	std::string name;
+	//std::string name;
 public:
-
+	std::string name;
 	Material material;
 	ID3D11Buffer* mtlBuffer;
 	Mesh() = default;

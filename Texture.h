@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DirectXHelper.h"
+#include "DxHandler.h"
 
 class Texture
 {
@@ -38,16 +38,11 @@ struct Material
 		XMFLOAT4 specular = { 0.0f, 0.0f, 0.0f, 1.0f };
 	} data;
 
-	// std::vector is a sequence container that encapsulates dynamic size arrays
-	std::vector<Texture*> diffuseTexures;
-
-	Texture* displacementTexture = nullptr;
+	std::vector<Texture*> diffuseTextures;
 
 	~Material()
 	{
-		if (displacementTexture)
-			delete displacementTexture;
-		for (auto& texture : diffuseTexures)
+		for (auto& texture : diffuseTextures)
 			delete texture;
 	}
 

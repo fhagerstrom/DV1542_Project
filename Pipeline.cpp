@@ -212,6 +212,7 @@ bool SetUpRasterizer(ID3D11Device*& device, ID3D11RasterizerState*& rasterizerSt
 	{
 		std::cout << "Failed to create wireframe" << std::endl;
 	}
+
 	desc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
 	hr = device->CreateRasterizerState(&desc, &rasterizerStateSolid);
 	if (FAILED(hr))

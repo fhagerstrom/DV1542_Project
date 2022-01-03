@@ -1,10 +1,7 @@
-# Blender MTL File: 'None'
-# Material Count: 1
-
-newmtl None
-Ns 500
-Ka 0.8 0.8 0.8
-Kd 0.8 0.8 0.8
-Ks 0.8 0.8 0.8
-d 1
-illum 2
+newmtl lambert2SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd seamlessMetal.jpg
+Ni 5.00

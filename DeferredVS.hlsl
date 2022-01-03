@@ -3,8 +3,8 @@
 
 cbuffer constantBuffer : register(b1)
 {
-    float4x4 WVP;			//projectionMatrix
-    float4x4 worldSpace;    // worldMatrix
+    float4x4 WVP; //projectionMatrix
+    float4x4 worldSpace; // worldMatrix
 }
 
 struct VertexInput

@@ -8,6 +8,8 @@ Model::Model(ID3D11Device* device, std::string name, XMVECTOR position, XMVECTOR
 {
 	Update();
 
+	XMStoreFloat3(&posForQuads, position);//for frustum
+
 	D3D11_BUFFER_DESC desc = {};
 	desc.ByteWidth = (int)mesh.faces.size() * sizeof(Face);
 	desc.Usage = D3D11_USAGE_IMMUTABLE;
@@ -87,7 +89,7 @@ const Material::Data& Model::GetMaterial()
 void Model::BindTextures(ID3D11DeviceContext* context, int startSlot)
 {
 	int slot = startSlot;
-	for (auto texture : mesh.material.diffuseTexures)
+	for (auto texture : mesh.material.diffuseTextures)
 	{
 		texture->Bind(context, slot);
 		slot++;

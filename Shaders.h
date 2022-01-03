@@ -1,5 +1,5 @@
 #pragma once
-#include "DIrectXHelper.h"
+#include "DxHandler.h"
 #include "Camera.h"
 #include "Shadow.h"
 #include "Lighting.h"
@@ -10,14 +10,15 @@ class Shaders
 	friend class RenderParticles;
 	friend class RenderModels;
 	friend class RenderShadows;
+	friend class Tesselation;
 
 private:
 	static std::string positionOnlyVSPath;
-	static ID3D11InputLayout* positionOnlyLayout;	// positionOnly_layout used for particle and shadowRenderer
+	static ID3D11InputLayout* positionOnlyLayout;	// positionOnlyLayout used for particle and shadow renderering
 	static ID3D11VertexShader* positionOnlyVS;
 	static std::string gsPath; 					// For GeometryShader 
 
-	static ID3D11InputLayout* modelLayout;			// model_layout used for model- and terrainRenderer
+	static ID3D11InputLayout* modelLayout;			// model_layout used for model
 
 	// Setting this in update, and getting the values from Camera and DirectionalLight
 	static XMFLOAT3 camPosition;					// XMFLOAT3 containg the cameras Position

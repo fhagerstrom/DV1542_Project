@@ -193,10 +193,10 @@ bool Mesh::LoadMaterial(ID3D11Device* device, std::string name)
 		}
 
 		if (text == "map_Kd") //this is texture which is used, gets stored in material vector		
-		{
+		{  //this can be changed in the mtl file
 			std::string diffuse;
 			reader >> diffuse;
-			material.diffuseTexures.emplace_back(new Texture(device, "Models/" + name + "/" + diffuse));
+			material.diffuseTextures.emplace_back(new Texture(device, "Models/" + name + "/" + diffuse));
 		}
 
 	}

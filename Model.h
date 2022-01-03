@@ -3,9 +3,11 @@
 
 class Model
 {
+	friend class QuadTree;
+	
 private:
 
-	Mesh mesh;
+	//Mesh mesh;
 	XMMATRIX worldMatrix; //world matrix is unique for each object in the world. It's responsible for transforming vertices of objects from its
 	//local space to world space
 	std::string name;
@@ -28,10 +30,12 @@ public:
 		XMVECTOR rotation = { 0.0f,0.0f,0.0f }, XMVECTOR scale = { 1.0f, 1.0f, 1.0f });
 	~Model();
 
+	XMFLOAT3 posForQuads;
+
 	// Buffers
 	ID3D11Buffer* vBuffer;
 	ID3D11Buffer* posBuffer;
-
+	Mesh mesh;
 	void Update();//updates data of models
 	int GetVertexCount(); 
 	XMMATRIX GetWorldMatrix(); 

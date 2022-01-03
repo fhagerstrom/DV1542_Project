@@ -13,8 +13,10 @@ struct screenQuad
             positions[i] = position[i];
 
         }
+
         uv[0] = uvCoords[0];
         uv[1] = uvCoords[1];
+
         for (int j = 0; j < 3; ++j)
         {
             normals[j] = normal[j];

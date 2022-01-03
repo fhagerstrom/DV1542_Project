@@ -45,7 +45,7 @@ RenderParticles::RenderParticles(ID3D11Device* device) :pixelShader(nullptr), ge
 
 	if (!reader.is_open())
 	{
-		//std::cout << "COULD NOT OPEN FILE: " + gs_path << std::endl;
+		std::cout << "ERROR! COULD NOT OPEN FILE: " << gsPath << std::endl;
 		return;
 	}
 
@@ -65,12 +65,7 @@ RenderParticles::RenderParticles(ID3D11Device* device) :pixelShader(nullptr), ge
 	reader.close();
 
 }
-/*
-RenderParticles::~RenderParticles()
-{
 
-}
-*/
 void RenderParticles::Render(ID3D11DeviceContext* context, Particles* particles)
 {
 	UpdateBuffer(context, cameraBuffer, Shaders::camPosition);								// Update the buffer containing the users position ( used for billboarding )

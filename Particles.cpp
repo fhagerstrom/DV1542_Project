@@ -43,7 +43,7 @@ void Particles::Update(ID3D11DeviceContext* context, float dt)
     // If we dont have max amount of particles - create a new one
     if (particleCount < maxParticles)
     {
-        // Add the deltatime to make the particles spawn "smoothly"
+        // Add the deltatime to make the  spawn "smoothly"
         timePassedSinceLastParticle += dt;
 
         // Create 

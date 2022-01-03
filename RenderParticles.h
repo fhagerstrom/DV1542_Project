@@ -1,6 +1,6 @@
 #pragma once
 #include "Particles.h"
-#include "DirectXHelper.h"
+#include "DxHandler.h"
 #include "Shaders.h"
 
 class RenderParticles
