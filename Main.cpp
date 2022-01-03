@@ -270,41 +270,80 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	Model* ground = new Model(device, "plane", { 3.0f, 1.5f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 3.0f, 0.001f, 3.0f });
 	models.push_back(ground);
 	
-	Model* sphere = new Model(device, "sphere", { 8.0f, 2.5f, 5.0f }, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.02f, 0.02f });
+	Model* sphere = new Model(device, "sphere", { 8.0f, 2.5f, 5.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
 	models.push_back(sphere);
 	
-	Model* sphere2 = new Model(device, "sphere", { -8.0f, 2.5f, -5.0f }, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.02f, 0.02f });
+	Model* sphere2 = new Model(device, "sphere", { -8.0f, 2.5f, -5.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
 	models.push_back(sphere2);
 
-	Model* sphere3 = new Model(device, "sphere", { -8.0f, 2.5f, 5.0f }, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.02f, 0.02f });
+	Model* sphere3 = new Model(device, "sphere", { -8.0f, 2.5f, 5.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
 	models.push_back(sphere3);
 
-	Model* sphere4 = new Model(device, "sphere", { 8.0f, 2.5f, -5.0f }, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.02f, 0.02f });
+	Model* sphere4 = new Model(device, "sphere", { 8.0f, 2.5f, -5.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
 	models.push_back(sphere4);
 	
-	Model* sphere5 = new Model(device, "sphere", { 6.0f, 2.5f, -2.0f }, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.02f, 0.02f });
+	Model* sphere5 = new Model(device, "sphere", { 6.0f, 2.5f, -2.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
 	models.push_back(sphere5);
 
-	Model* sphere6 = new Model(device, "sphere", { 6.0f, 2.5f, 2.0f }, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.02f, 0.02f });
+	Model* sphere6 = new Model(device, "sphere", { 6.0f, 2.5f, 2.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
 	models.push_back(sphere6);
 
-	Model* sphere7 = new Model(device, "sphere", { -6.0f, 2.5f, -2.0f }, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.02f, 0.02f });
+	Model* sphere7 = new Model(device, "sphere", { -6.0f, 2.5f, -2.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
 	models.push_back(sphere7);
 
-	Model* sphere8 = new Model(device, "sphere", { -6.0f, 2.5f, 2.0f }, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.02f, 0.02f });
+	Model* sphere8 = new Model(device, "sphere", { -6.0f, 2.5f, 2.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
 	models.push_back(sphere8);
 
-	Model* sphere9 = new Model(device, "sphere", { 15.0f, 2.5f, 2.0f }, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.02f, 0.02f });
+	Model* sphere9 = new Model(device, "sphere", { 7.0f, 2.5f, 2.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
 	models.push_back(sphere9);
 
-	Model* sphere10 = new Model(device, "sphere", { 15.0f, 2.5f, -2.0f }, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.02f, 0.02f });
+	Model* sphere10 = new Model(device, "sphere", { 7.0f, 2.5f, -2.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
 	models.push_back(sphere10);
 
-	Model* sphere11 = new Model(device, "sphere", { 12.0f, 2.5f, -4.0f }, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.02f, 0.02f });
+	Model* sphere11 = new Model(device, "sphere", { 12.0f, 2.5f, -4.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
 	models.push_back(sphere11);
 
-	Model* sphere12 = new Model(device, "sphere", { 20, 2.5f, -7.0f }, { 0.0f, 0.0f, 0.0f }, { 0.02f, 0.02f, 0.02f });
+	Model* sphere12 = new Model(device, "sphere", { 10.0f, 2.5f, -7.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
 	models.push_back(sphere12);
+
+	Model* sphere13 = new Model(device, "sphere", { 5.0f, 1.0f, -2.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
+	models.push_back(sphere13);
+
+	Model* sphere14 = new Model(device, "sphere", { 12.0f, 2.5f, 7.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
+	models.push_back(sphere14);
+
+	Model* sphere15 = new Model(device, "sphere", { 11.0f, 2.5f, 12.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
+	models.push_back(sphere15);
+
+	Model* sphere16 = new Model(device, "sphere", { -4.0f, 2.5f, 8.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
+	models.push_back(sphere16);
+
+	Model* sphere17 = new Model(device, "sphere", { -6.0f, 1.0f, 6.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
+	models.push_back(sphere17);
+
+	Model* sphere18 = new Model(device, "sphere", { -4.0f, 1.5f, -4.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
+	models.push_back(sphere18);
+
+	Model* sphere19 = new Model(device, "sphere", { 11.0f, 2.5f, -6.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
+	models.push_back(sphere19);
+
+	Model* sphere20 = new Model(device, "sphere", { -7.0f, 1.0f, -4.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
+	models.push_back(sphere20);
+
+	Model* sphere21 = new Model(device, "sphere", { -8.0f, 2.5f, 8.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
+	models.push_back(sphere21);
+
+	Model* sphere22 = new Model(device, "sphere", { -2.0f, 2.5f, 12.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
+	models.push_back(sphere22);
+
+	Model* sphere23 = new Model(device, "sphere", { -1.0f, 1.0f, 4.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
+	models.push_back(sphere23);
+
+	Model* sphere24 = new Model(device, "sphere", { 0.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
+	models.push_back(sphere24);
+
+	Model* sphere25 = new Model(device, "sphere", { 0, 2.5f, -12.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
+	models.push_back(sphere25);
 
 	
 
@@ -386,6 +425,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	sphere10->Shutdown();	
 	sphere11->Shutdown();
 	sphere12->Shutdown();
+	sphere13->Shutdown();
+	sphere14->Shutdown();
+	sphere15->Shutdown();
+	sphere16->Shutdown();
+	sphere17->Shutdown();
+	sphere18->Shutdown();
+	sphere19->Shutdown();
+	sphere20->Shutdown();
+	sphere21->Shutdown();
+	sphere22->Shutdown();
+	sphere23->Shutdown();
+	sphere24->Shutdown();
+	sphere25->Shutdown();
+
 
 
 
@@ -414,6 +467,39 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	delete sphere6;
 	delete sphere7;
 	delete sphere8;
+	delete sphere9;
+	delete sphere10;
+	delete sphere11;
+	delete sphere12;
+	delete sphere13;
+	delete sphere14;
+	delete sphere15;
+	delete sphere16;
+	delete sphere17; 
+	delete sphere18;
+	delete sphere19;
+	delete sphere20;
+	delete sphere21;
+	delete sphere22;
+	delete sphere23;
+	delete sphere24;
+	delete sphere25;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

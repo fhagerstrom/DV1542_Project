@@ -4,7 +4,7 @@
 #include "RenderModels.h"
 #include "Vertex.h"
 
-const int MAXMODELSPERQUAD = 1;
+const int MAXMODELSPERQUAD = 2;
 
 class QuadTree
 {

@@ -19,7 +19,7 @@ bool QuadTree::Initialize(std::vector<Model*> models)
 	modelCount = 0;
 	centerX = 0;
 	centerZ = 0;
-	width = 30.0f;
+	width = 50.0f;
 
 	//how many vectices on plane?
 	for (auto& model : models)
