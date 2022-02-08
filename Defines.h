@@ -13,9 +13,7 @@
 #include <string>
 #include "Image.h"
 
-
 using namespace DirectX;
-
 
 // For aligning 16 bits
 #define ALIGN16 _declspec(align(16))

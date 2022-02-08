@@ -16,7 +16,7 @@ Frustum::~Frustum()
 void Frustum::ConstructFrustum(float screenDepth, XMMATRIX projMatrix, XMMATRIX viewMatrix)
 {
 	float zMinimum, r;
-	XMMATRIX matrix;
+	XMMATRIX frustumMat;
 	XMFLOAT4X4 tempMatrix;
 	XMStoreFloat4x4(&tempMatrix, projMatrix);
 
@@ -30,8 +30,8 @@ void Frustum::ConstructFrustum(float screenDepth, XMMATRIX projMatrix, XMMATRIX 
 	projMatrix = XMLoadFloat4x4(&tempMatrix);
 
 	// Create the frustum matrix from the view matrix and updated projection matrix.
-	matrix = XMMatrixMultiply(viewMatrix, projMatrix);
-	XMStoreFloat4x4(&tempMatrix, matrix);
+	frustumMat = XMMatrixMultiply(viewMatrix, projMatrix);
+	XMStoreFloat4x4(&tempMatrix, frustumMat);
 
 	XMVECTOR tempPlane;
 
@@ -162,19 +162,16 @@ bool Frustum::CheckCube(float xCenter, float yCenter, float zCenter, float radiu
 		{
 			continue;
 		}
-
-		
 		 
-		 tempPlane = XMLoadFloat4(&planes[i]);
-		 tempFloat3 = XMFLOAT3((xCenter - radius), (yCenter - radius), (zCenter + radius));
-		 tempPlane2 = XMLoadFloat3(&tempFloat3);
-		 tempPlane = XMPlaneDotCoord(tempPlane, tempPlane2);
-		 XMStoreFloat(&tempFloat, tempPlane);
-		 if(tempFloat >= 0.0f)
-		 {
+		tempPlane = XMLoadFloat4(&planes[i]);
+		tempFloat3 = XMFLOAT3((xCenter - radius), (yCenter - radius), (zCenter + radius));
+		tempPlane2 = XMLoadFloat3(&tempFloat3);
+		tempPlane = XMPlaneDotCoord(tempPlane, tempPlane2);
+		XMStoreFloat(&tempFloat, tempPlane);
+		if(tempFloat >= 0.0f)
+		{
 			continue;
-		 }
-		
+		}
 		
 		tempPlane = XMLoadFloat4(&planes[i]);
 		tempFloat3 = XMFLOAT3((xCenter + radius), (yCenter - radius), (zCenter + radius));
@@ -185,8 +182,6 @@ bool Frustum::CheckCube(float xCenter, float yCenter, float zCenter, float radiu
 		{
 			continue;
 		}
-
-		
 		
 		tempPlane = XMLoadFloat4(&planes[i]);
 		tempFloat3 = XMFLOAT3((xCenter - radius), (yCenter + radius), (zCenter + radius));
@@ -198,7 +193,6 @@ bool Frustum::CheckCube(float xCenter, float yCenter, float zCenter, float radiu
 			continue;
 		}
 		
-		
 		tempPlane = XMLoadFloat4(&planes[i]);
 		tempFloat3 = XMFLOAT3((xCenter + radius), (yCenter + radius), (zCenter + radius));
 		tempPlane2 = XMLoadFloat3(&tempFloat3);
@@ -209,11 +203,12 @@ bool Frustum::CheckCube(float xCenter, float yCenter, float zCenter, float radiu
 			continue;
 		}
 
-		return false;  //not in frustum
+		return false;  // Outside frustum
 	}
 
-	return true;  //in frustum
+	return true;  // Inside frustum
 }
+
 /*
 bool Frustum::CheckSphere(float xCenter, float yCenter, float zCenter, float radius)
 {

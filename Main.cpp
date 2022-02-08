@@ -13,11 +13,11 @@
 #include "QuadTree.h"
 #include "Frustum.h"
 
-//console shite
+// Console thingy's
 #include<io.h>
 #include<fcntl.h>
 
-// Console Function, got this thingy from canvas
+// Console Function, Taken from canvas
 void RedirectIOToConsole()
 {
 	AllocConsole();
@@ -63,7 +63,7 @@ void update(ID3D11DeviceContext* immediateContext, float deltaTime, Camera& came
 	camera.Update(deltaTime);
 	particlesystem->Update(immediateContext, deltaTime);
 
-	// Rotation of Monkey-model
+	// Rotation of monkey-model
 	XMFLOAT4 tempRotation;
 	XMStoreFloat4(&tempRotation, monkey->GetRotation());
 	tempRotation.y += 1.3f * deltaTime;
@@ -99,9 +99,7 @@ void RenderGBufferPass(ID3D11DeviceContext* context, ID3D11RenderTargetView* rtv
 
 	modelRenderer->modelsRendered = 0;
 	
-	// Set the HS, DS and GS shaders to NULL, used in the different renderers
-	context->HSSetShader(NULL, NULL, 0);
-	context->DSSetShader(NULL, NULL, 0);
+	// Set the GS shaders to NULL, used in the different renderers
 	context->GSSetShader(NULL, NULL, 0);
 
 	// Loops through the models-vector and render shadows
@@ -109,7 +107,6 @@ void RenderGBufferPass(ID3D11DeviceContext* context, ID3D11RenderTargetView* rtv
 	{
 		shadowRenderer->Render(context, model);
 	}
-
 
 	// Reset the Viewport for the next pass (geometry pass)
 	context->RSSetViewports(NULL, NULL);
@@ -120,32 +117,28 @@ void RenderGBufferPass(ID3D11DeviceContext* context, ID3D11RenderTargetView* rtv
 	context->PSSetSamplers(1, 1, &clampSampler);
 	context->DSSetSamplers(0, 1, &sampler);
 	context->DSSetSamplers(1, 1, &clampSampler);
-	context->RSSetState(rasterizerStateSolid);
-	context->GSSetShader(Shaders::gShader, nullptr, 0); //geometry shader
+	context->RSSetState(rasterizerStateWireFrame);
+	context->GSSetShader(Shaders::gShader, nullptr, 0); // Geometry shader
 
 	clearView(context, rtv, dsView, gBuffer); 	// Clear the window for next render pass
 
 	// Time for frustum stuff_________________________________________________________________________________________
-	frustum->ConstructFrustum(camera.GetFarZ(), camera.GetPerspectiveMatrix(), camera.GetViewMatrix()); //make the actual frustum
+	frustum->ConstructFrustum(camera.GetFarZ(), camera.GetProjectionMatrix(), camera.GetViewMatrix()); //make the actual frustum
 	
 	quadTree->Render(frustum, device, context, modelRenderer);
-	
-
 
 	//________________________________________________________________________________________________________________
 
-
 	// Render the models using different renderers (modelRenderer,  particleRenderer)
-	for (auto& model : models) //används detta för icke frustum, fixa en annan loop för frustum (
+	for (auto& model : models) // Används detta för icke frustum, fixa en annan loop för frustum
 	{
 		if( model->mesh.name == "monkey" || model->mesh.name == "plane")
-			modelRenderer->Render(device, context, model, false);
+			modelRenderer->Render(device, context, model, false, 3);
 	}	
 	std::cout << "Models rendered: " << modelRenderer->modelsRendered << std::endl;
-	//render particles
-	particleRenderer->Render(context, particles);
-	
 
+	// Render particles
+	particleRenderer->Render(context, particles);
 }
 
 // Light pass -- renders the geometry and lighting on the final screen quad
@@ -153,21 +146,20 @@ void RenderLightPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetVi
 	ID3D11PixelShader* pShaderDeferredRender, ID3D11VertexShader* vShaderDeferred, ID3D11SamplerState* sampler,
 	GBuffer gBuffer, ID3D11PixelShader* lightPShaderDeferred, ID3D11VertexShader* lightVShaderDeferred,
 	ID3D11InputLayout* renderTargetMeshInputLayout, ID3D11Buffer* screenQuadMesh, Lighting& light,
-	ID3D11Buffer* dirLightBuffer, Camera camera, ID3D11Buffer* cameraPos, ID3D11SamplerState* clampSampler
-)
+	ID3D11Buffer* dirLightBuffer, Camera camera, ID3D11Buffer* cameraPos, ID3D11SamplerState* clampSampler)
 {
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 
-	immediateContext->OMSetRenderTargets(1, &rtv, dsView);										// Backbuffer
-	immediateContext->IASetVertexBuffers(0, 1, &screenQuadMesh, &stride, &offset);				// quads vertexbuffer set
-	immediateContext->IASetInputLayout(renderTargetMeshInputLayout);							// set the Input Layout
-	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);			// triangletstrip since we know how many points we have
-	immediateContext->VSSetShader(lightVShaderDeferred, nullptr, 0);							// setting the shaders
-	immediateContext->PSSetShader(lightPShaderDeferred, nullptr, 0);							// setting the shaders
+	immediateContext->OMSetRenderTargets(1, &rtv, dsView);											// Backbuffer
+	immediateContext->IASetVertexBuffers(0, 1, &screenQuadMesh, &stride, &offset);					// Quads vertexbuffer set
+	immediateContext->IASetInputLayout(renderTargetMeshInputLayout);								// Set the Input Layout
+	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);	// Since we're going for tessellated models we use a 3 control point patchlist
+	immediateContext->VSSetShader(lightVShaderDeferred, nullptr, 0);								// Setting the shaders
+	immediateContext->PSSetShader(lightPShaderDeferred, nullptr, 0);								// Setting the shaders
 
 	immediateContext->PSSetShaderResources(0, gBuffer.NROFBUFFERS, gBuffer.gBufferSrv);
-	immediateContext->PSSetShaderResources(8, 1, Shaders::shadowmap->GetSRV());				// Get the shadow-map SRV and send it to the PixelShader
+	immediateContext->PSSetShaderResources(8, 1, Shaders::shadowmap->GetSRV());						// Get the shadow-map SRV and send it to the PixelShader
 	immediateContext->PSSetConstantBuffers(0, 1, &dirLightBuffer);
 	immediateContext->PSSetConstantBuffers(1, 1, &cameraPos);
 	immediateContext->PSSetSamplers(0, 1, &sampler);
@@ -188,7 +180,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	RedirectIOToConsole();
 
 	// Camera
-	Camera camera(XM_PIDIV4, (float)WINWIDTH / (float)WINHEIGHT, 0.1, 100, 2.5, 5.0f, { 15.0f, 10.0f ,0.0f });
+	Camera camera(XM_PIDIV4, (float)WINWIDTH / (float)WINHEIGHT, 0.1, 100, 2.5, 5.0f, { 10.0f, 5.0f, 0.0f });
 	ID3D11Buffer* cameraBuffer;
 
 	// Time
@@ -208,17 +200,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	ID3D11SamplerState* wrapSampler;					// Wrap sampler - wraps or "loops" the texture
 	ID3D11SamplerState* clampSampler;					// Clamp sampler - clamps the UV values [0.0 - 1.0]
 
-	//Deferred
+	// Deferred
 	ID3D11PixelShader* lightPShaderDeferred;			// Pixel Shader for the light pass ( quad )
 	ID3D11VertexShader* lightVShaderDeferred;		    // Vertex Shader for the light pass ( quad ) 
 	ID3D11PixelShader* pShaderDeferred;					// Pixel Shader for the geometry pass
 	ID3D11VertexShader* vShaderDeferred;				// Vertex Shader for the geometry pass
 	ID3D11InputLayout* renderTargetMeshInputLayout;		// Input layout for the quad covering the sqreen							
 	ID3D11Buffer* screenQuadMesh;						// Quad covering the screen used in the deferred rendering- light pass
-
-
 	
-	//Gbuffer struct
+	// Gbuffer struct
 	GBuffer gBuffer;
 	gBuffer.screenWidth = WINWIDTH;
 	gBuffer.screenHeight = WINHEIGHT;
@@ -238,7 +228,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		return -1;
 	}
 
-	// Setups DirectX11
+	// Setup DirectX
 	if (!SetupD3D11(WINWIDTH, WINHEIGHT, window, device, immediateContext,
 		swapChain, rtv, dsTexture, dsView, viewport, gBuffer))
 	{
@@ -246,6 +236,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		return -2;
 	}
 
+	// Setup pipeline
 	if (!SetupPipeline(device, wrapSampler, pShaderDeferred, vShaderDeferred, lightPShaderDeferred, lightVShaderDeferred,
 		renderTargetMeshInputLayout, screenQuadMesh, rasterizerStateWireFrame, rasterizerStateSolid, clampSampler))
 	{
@@ -254,21 +245,23 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	}
 
 	// Creating a vector that stores the models
-	std::vector <Model*>models;
+	std::vector<Model*> models;
 
-	// Creating a new model for each mesh in the scene
-																									// "depth" "height" "width"
+	// Creating a new model for each mesh in the scene											// "depth" "height" "width"
 	Model* monkey = new Model(device, "monkey", { 3.0f, 2.5f, 2.0f }, { 0.0f, XM_PIDIV4, 0.0f }, { 0.6f, 0.6f, 0.6f });
 	models.push_back(monkey);
 
-	Model* monkey2 = new Model(device, "monkey", { 1.0f, 2.5f, 0.0f }, { XM_PIDIV4, 0.0f, 0.0f }, { 0.6f, 0.6f, 0.6f });
+	Model* monkey2 = new Model(device, "monkey", { 3.0f, 2.5f, 0.0f }, { XM_PIDIV4, 0.0f, 0.0f }, { 0.6f, 0.6f, 0.6f });
 	models.push_back(monkey2);
 
 	Model* monkey3 = new Model(device, "monkey", { 5.0f, 2.5f, 0.0f }, { 0.0f, 0.0f, XM_PIDIV4 }, { 0.6f, 0.6f, 0.6f });
 	models.push_back(monkey3);
 	
-	Model* ground = new Model(device, "plane", { 3.0f, 1.5f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 3.0f, 0.001f, 3.0f });
+	Model* ground = new Model(device, "plane", { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 3.0f, 0.001f, 3.0f });
 	models.push_back(ground);
+
+	Model* triforce = new Model(device, "Triforce", { 0.0f, 3.0f, 0.0f }, { XM_PIDIV2, XM_PIDIV2, 0.0f }, { 1.0f, 1.0f, 1.0f });
+	models.push_back(triforce);
 	
 	Model* sphere = new Model(device, "sphere", { 8.0f, 2.5f, 5.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
 	models.push_back(sphere);
@@ -345,14 +338,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	Model* sphere25 = new Model(device, "sphere", { 0, 2.5f, -12.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
 	models.push_back(sphere25);
 
-	
-
 	Particles* particles = new Particles(device, 100, 50, 20, { 60, 25, 60 }, { 0, 20, 0 });
 	RenderParticles* particlesRenderer = new RenderParticles(device);
 	RenderModels* modelRenderer = new RenderModels(device);
 	RenderShadows* shadowRenderer = new RenderShadows(device);
 
-	//for culling
+	// For culling
 	Frustum* frustum = new Frustum;
 	QuadTree* quadTree = new QuadTree;
 	bool initSuccessful = quadTree->Initialize(models);
@@ -362,13 +353,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		return -4;
 	}
 	//_______________________________________________________________________________________________
-	
 
 	Shaders::Initialize(device, modelRenderer->GetByteCode());
 
-	CreateBuffer(device, lightBuffer, sizeof(Lighting::Data));
+	CreateConstantBuffer(device, lightBuffer, sizeof(Lighting::Data));
 	UpdateBuffer(immediateContext, lightBuffer, light.data);
-	CreateBuffer(device, cameraBuffer, sizeof(XMFLOAT4));
+	CreateConstantBuffer(device, cameraBuffer, sizeof(XMFLOAT4));
 
 	MSG msg = {};
 
@@ -413,6 +403,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	monkey2->Shutdown();
 	monkey3->Shutdown();
 	ground->Shutdown();
+	triforce->Shutdown();
 	sphere->Shutdown();
 	sphere2->Shutdown();
 	sphere3->Shutdown();
@@ -439,9 +430,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	sphere24->Shutdown();
 	sphere25->Shutdown();
 
-
-
-
 	if (quadTree)
 	{
 		quadTree->Shutdown();
@@ -459,6 +447,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	delete monkey2;
 	delete monkey3;
 	delete ground;
+	delete triforce;
 	delete sphere;
 	delete sphere2;
 	delete sphere3;

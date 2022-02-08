@@ -4,10 +4,11 @@
 
 
 RenderModels::RenderModels(ID3D11Device* device)
-	:matrix(), pixelShader(nullptr), vertexShader(nullptr)
+	:matrixData(), pixelShader(nullptr), vertexShader(nullptr)
 {
-	CreateBuffer(device, matrixBuffer, sizeof(matrix));
-	CreateBuffer(device, lightingBuffer, sizeof(XMMATRIX));
+	CreateConstantBuffer(device, matrixBuffer, sizeof(matrixData));
+	CreateConstantBuffer(device, lightingBuffer, sizeof(XMMATRIX));
+	CreateConstantBuffer(device, tessellBuffer, sizeof(TessellationBuffer));
 
 	std::string shaderData;
 	std::ifstream reader;
@@ -63,34 +64,88 @@ RenderModels::RenderModels(ID3D11Device* device)
 
 	shaderData.clear();
 	reader.close();
+
+	// DOMAIN SHADER
+	reader.open(dsPath, std::ios::binary | std::ios::ate);
+	if (!reader.is_open())
+	{
+		MessageBox(NULL, L"Couldn't read path to the domain shader!", L"SHADER ERROR", MB_OK);
+		return;
+	}
+	reader.seekg(0, std::ios::end);
+	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
+	reader.seekg(0, std::ios::beg);
+	shaderData.assign((std::istreambuf_iterator<char>(reader)), std::istreambuf_iterator<char>());
+	hr = device->CreateDomainShader(shaderData.c_str(), shaderData.length(), nullptr, &domainShader);
+
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, L"Couldn't create the domain shader!", L"SHADER ERROR", MB_OK);
+		return;
+	}
+
+	shaderData.clear();
+	reader.close();
+
+	// HULL SHADER
+	reader.open(hsPath, std::ios::binary | std::ios::ate);
+	if (!reader.is_open())
+	{
+		MessageBox(NULL, L"Couldn't read path to the hull shader!", L"SHADER ERROR", MB_OK);
+		return;
+	}
+
+	reader.seekg(0, std::ios::end);
+	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
+	reader.seekg(0, std::ios::beg);
+	shaderData.assign((std::istreambuf_iterator<char>(reader)), std::istreambuf_iterator<char>());
+	hr = device->CreateHullShader(shaderData.c_str(), shaderData.length(), nullptr, &hullShader);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, L"Couldn't create the hull shader!", L"SHADER ERROR", MB_OK);
+		return;
+	}
+
+	shaderData.clear();
+	reader.close();
 }
 
 
-void RenderModels::Render(ID3D11Device* device, ID3D11DeviceContext* context, Model* model, bool rotation)
+void RenderModels::Render(ID3D11Device* device, ID3D11DeviceContext* context, Model* model, bool rotation, float tessellAmount)
 {
 	// Get WorldMatrix, store and update buffer for models
-	XMStoreFloat4x4(&matrix.worldSpace, XMMatrixTranspose(model->GetWorldMatrix()));
-	XMMATRIX wvp = XMMatrixTranspose(model->GetWorldMatrix() * Shaders::viewMatrix * Shaders::perspectiveMatrix); //local to clipspace
-	XMStoreFloat4x4(&matrix.wvp, wvp);
-	UpdateBuffer(context, matrixBuffer, matrix);
+	XMStoreFloat4x4(&matrixData.worldSpace, XMMatrixTranspose(model->GetWorldMatrix()));
+	XMMATRIX wvp = XMMatrixTranspose(model->GetWorldMatrix() * Shaders::viewMatrix * Shaders::projectionMatrix); // Local to clipspace
+	XMStoreFloat4x4(&matrixData.wvp, wvp);
+	UpdateBuffer(context, matrixBuffer, matrixData);
 
 	context->IASetInputLayout(Shaders::modelLayout);
 	context->VSSetShader(vertexShader, NULL, 0);
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
 
 	// Pixel shader for every model
 	context->PSSetShader(pixelShader, NULL, 0);
-	
 
 	// Update the light buffer for every model. This is also used for the shadows 
 	UpdateBuffer(context, lightingBuffer, Shaders::lightingMatrix);
-	context->PSSetConstantBuffers(1, 1, &lightingBuffer); //set constant buffer containing light info
-	model->BindTextures(context); //set shader resource
-	context->VSSetConstantBuffers(1, 1, &matrixBuffer); //set constant buffer for the vertex shader with the WVP and worldspace 
-	// DS and HS are not used for regular models
-	context->HSSetShader(NULL, NULL, 0);
-	context->DSSetShader(NULL, NULL, 0);
+	context->PSSetConstantBuffers(1, 1, &lightingBuffer); // Set constant buffer containing light info
+	model->BindTextures(context); // Set shader resource
+	context->VSSetConstantBuffers(1, 1, &matrixBuffer); // Set constant buffer for the vertex shader with the WVP and worldspace
+
+	// Set matrix Cbuffer in the domain shader and update tesellation buffer
+	context->DSSetConstantBuffers(2, 1, &matrixBuffer);
+
+	// Copy tessellation data into constant buffer
+	tessellData.tessellAmount = tessellAmount;
+	tessellData.padding = XMFLOAT3(0.0f, 0.0f, 0.0f);
+
+	UpdateBuffer(context, tessellBuffer, tessellData);
+	context->HSSetConstantBuffers(2, 1, &tessellBuffer);
+
+	// DS and HS are used for tessellation
+	context->HSSetShader(hullShader, NULL, 0);
+	context->DSSetShader(domainShader, NULL, 0);
+
 	// GS is already set outside the renderer
 
 	// Get, update and set the MTL data for every model
@@ -105,7 +160,7 @@ void RenderModels::Render(ID3D11Device* device, ID3D11DeviceContext* context, Mo
 	memcpy(mappedBuffer.pData, &model->GetMaterial(), sizeof(model->GetMaterial()));
 	context->Unmap(*model->GetMTLBuffer(), 0);
 
-	modelsRendered++; //for printouts to control furstum culling
+	modelsRendered++; // For printouts to control frustum culling
 
 	context->PSSetConstantBuffers(0, 1, model->GetMTLBuffer());
 	context->IASetVertexBuffers(0, 1, model->GetBuffer(), &stride, &offset);																		

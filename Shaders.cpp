@@ -7,15 +7,14 @@ ID3D11VertexShader* Shaders::positionOnlyVS;
 XMFLOAT3 Shaders::camPosition;
 XMMATRIX Shaders::viewMatrix;
 XMMATRIX Shaders::lightingMatrix;
-XMMATRIX Shaders::perspectiveMatrix;
+XMMATRIX Shaders::projectionMatrix;
 
 ID3D11InputLayout* Shaders::positionOnlyLayout;
 ID3D11InputLayout* Shaders::modelLayout;
 
-//std::string Shaders::gsPath = "Debug/CullingGS.cso"; //culling shader
 ID3D11GeometryShader* Shaders::gShader;
-
-//ID3D11Buffer* Shaders::camPos; buffer for culling
+ID3D11HullShader* Shaders::hShader;
+ID3D11DomainShader* Shaders::dShader;
 
 Shadow* Shaders::shadowmap;
 
@@ -38,9 +37,9 @@ void Shaders::Initialize(ID3D11Device* device, std::string modelVSByteCode)
 {
 	shadowmap = new Shadow(device, 4096);
 	std::string byteCode;
-	std::string Shaders;
+	std::string shaders;
 	std::ifstream reader;
-	//Clears the reader and Shaders and does the same thing for the PixelShader
+	// Clears the reader and Shaders and does the same thing for the PixelShader
 
 	reader.open(positionOnlyVSPath, std::ios::binary | std::ios::ate);
 	if (!reader.is_open())
@@ -50,20 +49,20 @@ void Shaders::Initialize(ID3D11Device* device, std::string modelVSByteCode)
 	}
 
 	reader.seekg(0, std::ios::end);
-	Shaders.reserve(static_cast<unsigned int>(reader.tellg()));
+	shaders.reserve(static_cast<unsigned int>(reader.tellg()));
 	reader.seekg(0, std::ios::beg);
 
-	Shaders.assign((std::istreambuf_iterator<char>(reader)), std::istreambuf_iterator<char>());
+	shaders.assign((std::istreambuf_iterator<char>(reader)), std::istreambuf_iterator<char>());
 
-	if (FAILED(device->CreateVertexShader(Shaders.c_str(), Shaders.length(), nullptr, &positionOnlyVS)))
+	if (FAILED(device->CreateVertexShader(shaders.c_str(), shaders.length(), nullptr, &positionOnlyVS)))
 	{
 		std::cerr << "Failed to create position VERTEX shader!" << std::endl;
 		return;
 	}
 
-	byteCode = Shaders;
+	byteCode = shaders;
 
-	Shaders.clear();
+	shaders.clear();
 	reader.close();
 
 	D3D11_INPUT_ELEMENT_DESC positionDesc[1] =
@@ -77,15 +76,16 @@ void Shaders::Initialize(ID3D11Device* device, std::string modelVSByteCode)
 		std::cout << "FAILED TO CREATE POSITION INPUT LAYOUT" << std::endl;
 	}
 
-	// Array av element med en beskrivning
+	// Input layout, array element description
 	D3D11_INPUT_ELEMENT_DESC inputDesc[] =
 	{
-		//name, index, format, slot, byteOffset, inputSlotClass, stepRate
+		// Name, index, format, slot, byteOffset, inputSlotClass, stepRate
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}, // Input data is per-vertex data.
 		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
-	//Viktigt!! Allt behöver vara i rätt ordning för om det laddas in i fel ordning så funkar det ej
+
+	// Viktigt!! Allt behöver vara i rätt ordning för om det laddas in i fel ordning så funkar det ej
 	hr = device->CreateInputLayout(inputDesc, ARRAYSIZE(inputDesc), modelVSByteCode.c_str(), modelVSByteCode.length(), &modelLayout);
 
 	if FAILED(hr)
@@ -93,29 +93,9 @@ void Shaders::Initialize(ID3D11Device* device, std::string modelVSByteCode)
 		std::cerr << "ERROR INPUTLAYOUT" << std::endl;
 		return;
 	}
-	/*
-	reader.open(gsPath, std::ios::binary | std::ios::ate);
-	if (!reader.is_open())
-	{
-		std::cout << "Could not open GS file!" << std::endl;
-		return;
-	}
-	reader.seekg(0, std::ios::end);
-	Shaders.reserve(static_cast<unsigned int>(reader.tellg()));
-	reader.seekg(0, std::ios::beg);
-	Shaders.assign((std::istreambuf_iterator<char>(reader)), std::istreambuf_iterator<char>());
-	hr = device->CreateGeometryShader(Shaders.c_str(), Shaders.length(), nullptr, &gShader);
 
-	if (FAILED(hr))
-	{
-		std::cout << "Failed to create GS shader!" << std::endl;
-		return;
-	}*/
-
-	Shaders.clear();
+	shaders.clear();
 	reader.close();
-	 
-	//CreateBuffer(device, camPos, sizeof(XMFLOAT4)); backface culling
 }
 
 
@@ -123,11 +103,9 @@ void Shaders::Update(ID3D11DeviceContext*& context, Camera camera, Lighting& lig
 {
 	camPosition = camera.GetPosition();
 	viewMatrix = camera.GetViewMatrix();
-	perspectiveMatrix = camera.GetPerspectiveMatrix();
-	lightingMatrix = light.GetMatrix();						// Lights transposed orthographic viewPerspective matrix
+	projectionMatrix = camera.GetProjectionMatrix();
+	lightingMatrix = light.GetMatrix();	// Lights transposed orthographic viewPerspective matrix
 
-	//UpdateBuffer(context, camPos, camera.GetPosition()); back culling
-	//context->GSSetConstantBuffers(0, 1, &camPos);
 	// CAM POS
-	//std::cout << "X: " << cameraPosition.x << " Y: " << cameraPosition.y << " Z: " << cameraPosition.z << std::endl;
+	// std::cout << "X: " << cameraPosition.x << " Y: " << cameraPosition.y << " Z: " << cameraPosition.z << std::endl;
 }

@@ -5,6 +5,7 @@ struct screenQuad
     float positions[3];
     float uv[2];
     float normals[3];
+
     // std::array is a container which encapsulates fixed size arrays
     screenQuad(const std::array<float, 3>& position, const std::array<float, 2>& uvCoords, const std::array<float, 3>& normal)
     {

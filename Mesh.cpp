@@ -28,10 +28,10 @@ ID3D11Buffer* Mesh::GetMTLBuffer()
 // OBJ reader
 bool Mesh::LoadModel(std::string name)
 {
-	std::vector<std::array<float, 3>> vertex; //v is a vertex
-	std::vector<std::array<float, 2>> vertexTexture; //vt is the texture coordinate of one vertex
+	std::vector<std::array<float, 3>> vertex; // v is a vertex
+	std::vector<std::array<float, 2>> vertexTexture; // vt is the texture coordinate of one vertex
 	std::vector<std::array<float, 3>> vertexNormal;
-	std::vector<std::array<std::array<int, 3>, 3>> f; //face containing 3 vertices
+	std::vector<std::array<std::array<int, 3>, 3>> f; // face containing 3 vertices
 
 	std::ifstream reader;
 
@@ -66,7 +66,7 @@ bool Mesh::LoadModel(std::string name)
 			vertexTexture.push_back(texCoord);
 		}
 
-		if (text == "vn") //normal of one vertex
+		if (text == "vn") // Normal of one vertex
 		{
 			std::array<float, 3> normal;
 			reader >> normal[0];
@@ -75,7 +75,7 @@ bool Mesh::LoadModel(std::string name)
 			vertexNormal.push_back(normal);
 		}
 
-		if (text == "f") //face with 3 verties
+		if (text == "f") // Face with 3 verties
 		{
 			std::array<std::array<int, 3>, 3> face;
 
@@ -90,8 +90,6 @@ bool Mesh::LoadModel(std::string name)
 				// in an obj:
 				// f 1/2/3 4/5/6 7/8/9
 				//    v0	v1	  v2     position, texcoord(uv), normal
-
-				// stoi = string to int
 
 				face[0][i] = std::stoi(tempString.substr(0, tempString.find("/"))); // position 
 

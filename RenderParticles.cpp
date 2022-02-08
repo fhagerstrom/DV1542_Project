@@ -10,8 +10,8 @@ RenderParticles::RenderParticles()
 
 RenderParticles::RenderParticles(ID3D11Device* device) :pixelShader(nullptr), geometryShader(nullptr)
 {
-	CreateBuffer(device, viewPersPectiveBuffer, sizeof(XMFLOAT4X4));
-	CreateBuffer(device, cameraBuffer, sizeof(XMFLOAT4));
+	CreateConstantBuffer(device, viewProjectionBuffer, sizeof(XMFLOAT4X4));
+	CreateConstantBuffer(device, cameraBuffer, sizeof(XMFLOAT4));
 
 	std::string shaderData;
 	std::ifstream reader;
@@ -69,10 +69,10 @@ RenderParticles::RenderParticles(ID3D11Device* device) :pixelShader(nullptr), ge
 void RenderParticles::Render(ID3D11DeviceContext* context, Particles* particles)
 {
 	UpdateBuffer(context, cameraBuffer, Shaders::camPosition);								// Update the buffer containing the users position ( used for billboarding )
-	XMMATRIX viewPerspectiveMatrix = Shaders::viewMatrix * Shaders::perspectiveMatrix; 		// Get the viewPerspectiveMatrix
+	XMMATRIX viewPerspectiveMatrix = Shaders::viewMatrix * Shaders::projectionMatrix; 		// Get the viewPerspectiveMatrix
 	XMFLOAT4X4 viewPersp;
 	XMStoreFloat4x4(&viewPersp, XMMatrixTranspose(viewPerspectiveMatrix));
-	UpdateBuffer(context, viewPersPectiveBuffer, viewPersp);
+	UpdateBuffer(context, viewProjectionBuffer, viewPersp);
 
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);		// The particles are made of points that are then used in the GS to create a quad
 	context->IASetInputLayout(Shaders::positionOnlyLayout); 				// The points only uses a position
@@ -82,7 +82,7 @@ void RenderParticles::Render(ID3D11DeviceContext* context, Particles* particles)
 
 	// Set the buffers for the GS, VS, Draw and reset the geometryshader for the next pass
 	context->GSSetConstantBuffers(1, 1, &cameraBuffer);
-	context->GSSetConstantBuffers(2, 1, &viewPersPectiveBuffer);
+	context->GSSetConstantBuffers(2, 1, &viewProjectionBuffer);
 	context->IASetVertexBuffers(0, 1, &particles->vBuffer, &stride, &offset);
 	context->Draw(particles->particleCount, 0);
 
@@ -92,7 +92,7 @@ void RenderParticles::Render(ID3D11DeviceContext* context, Particles* particles)
 void RenderParticles::ShutDown()
 {
 	cameraBuffer->Release();
-	viewPersPectiveBuffer->Release();
+	viewProjectionBuffer->Release();
 	geometryShader->Release();
 	pixelShader->Release();
 }

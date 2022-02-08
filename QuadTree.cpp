@@ -26,7 +26,7 @@ bool QuadTree::Initialize(std::vector<Model*> models)
 	{
 		if (model->name == "monkey" || model->name == "plane")
 		{
-			//we ain't doing anything with moving/rotating objects or ground. 
+			// We ain't doing anything with moving/rotating objects or ground. 
 		}
 		else
 		{
@@ -39,7 +39,7 @@ bool QuadTree::Initialize(std::vector<Model*> models)
 	{
 		if (model->name == "monkey" || model->name == "plane")
 		{
-			//we ain't doing anything with moving objects. This one is rotating. ain't touching ground either
+			// We ain't doing anything with moving objects. This one is rotating. ain't touching ground either
 		}
 		else
 		{
@@ -85,6 +85,7 @@ void QuadTree::Shutdown()
 		delete parentNode;
 		parentNode = 0;
 	}
+
 	modelList.clear();
 	modelIsRendered.clear();
 	return;
@@ -332,9 +333,10 @@ void QuadTree::RenderNode(Node* node, Frustum* frustum, ID3D11Device* device, ID
 		if (modelIsRendered[node->modelIndex[i]] == false) //see if it is already rendered, if not, render it
 		{	//modelIndex contains correct index for model(s)
 			modelIsRendered[node->modelIndex[i]] = true;
-			renderer->Render(device, context, modelList[node->modelIndex[i]], false);
+			renderer->Render(device, context, modelList[node->modelIndex[i]], false, 3);
 		}
-		//else:			node->modelVector[i]
+		//else:			
+		// node->modelVector[i]
 		//if it is already rendered, we dont need to render it again. obviously
 	}
 

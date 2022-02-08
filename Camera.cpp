@@ -182,7 +182,7 @@ XMMATRIX Camera::GetViewMatrix()
 { 
 	return this->viewMatrix; 
 };
-XMMATRIX Camera::GetPerspectiveMatrix()  
+XMMATRIX Camera::GetProjectionMatrix()  
 { 
 	return this->perspectiveMatrix; 
 };

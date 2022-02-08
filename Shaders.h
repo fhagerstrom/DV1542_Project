@@ -3,6 +3,7 @@
 #include "Camera.h"
 #include "Shadow.h"
 #include "Lighting.h"
+#include "Tessellation.h"
 
 class Shaders
 {
@@ -10,25 +11,30 @@ class Shaders
 	friend class RenderParticles;
 	friend class RenderModels;
 	friend class RenderShadows;
-	friend class Tesselation;
+	friend class Tessellation;
 
 private:
 	static std::string positionOnlyVSPath;
-	static ID3D11InputLayout* positionOnlyLayout;	// positionOnlyLayout used for particle and shadow renderering
+	static ID3D11InputLayout* positionOnlyLayout;	// positionOnlyLayout used for particle and shadow rendering
 	static ID3D11VertexShader* positionOnlyVS;
-	static std::string gsPath; 					// For GeometryShader 
 
-	static ID3D11InputLayout* modelLayout;			// model_layout used for model
+	inline static std::string gsPath; 					// For Geometry shader
+	inline static std::string dsPath;					// For Domain shader
+	inline static std::string hsPath;					// For Hull shader
+
+	static ID3D11InputLayout* modelLayout;			// Input layout used for model
 
 	// Setting this in update, and getting the values from Camera and DirectionalLight
 	static XMFLOAT3 camPosition;					// XMFLOAT3 containg the cameras Position
 	static XMMATRIX viewMatrix;						// Matrix containing the cameras viewMatrix
-	static XMMATRIX perspectiveMatrix;				// Matrix containing the cameras perpectiveMatrix
+	static XMMATRIX projectionMatrix;				// Matrix containing the cameras perpectiveMatrix
 	static XMMATRIX lightingMatrix;					// Matrix containing the light orthographic viewProjection-matrix
-	//static ID3D11Buffer* camPos; 				// Used for the backfaced culling
 
 public:
 	static ID3D11GeometryShader* gShader;
+	static ID3D11HullShader* hShader;
+	static ID3D11DomainShader* dShader;
+
 	static Shadow* shadowmap;
 	static void Shutdown();
 	static void Initialize(ID3D11Device* device, std::string modelVSByteCode);

@@ -10,7 +10,7 @@ private:
 	unsigned int offset = 0;
 
 	ID3D11Buffer* cameraBuffer;
-	ID3D11Buffer* viewPersPectiveBuffer;
+	ID3D11Buffer* viewProjectionBuffer;
 	const std::string psPath = "x64/Debug/ParticlePS.cso";
 	ID3D11PixelShader* pixelShader;
 	const std::string gsPath = "x64/Debug/ParticleGS.cso";

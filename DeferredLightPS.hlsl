@@ -43,11 +43,11 @@ LightResult LightCalculation(float4 P, float3 N, float4 D, float4 S)
     LightResult result = { { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 } };
     float4 V = { 1, 1, 1, 1 };	
 
-    float3 E = normalize(cameraPosition - P.xyz);//cam to pixel 
+    float3 E = normalize(cameraPosition - P.xyz); // Camera to pixel 
 
-    float diffuse = saturate(dot(N, direction)); //dot product of normal and direction
+    float diffuse = saturate(dot(N, direction)); // Dot product of normal and direction
 
-    if (diffuse < 0.0f) //if backface
+    if (diffuse < 0.0f) // If backface
         continue;
 
     if (D.x > 0)

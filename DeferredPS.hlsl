@@ -1,7 +1,6 @@
-
 // Geometry Pass Pixel Shader
-
 Texture2D diffuseTex : register(t0);
+Texture2D normalMap : register(t1);
 
 SamplerState wrapSampler : register(s0);
 SamplerState clampSampler : register(s1);

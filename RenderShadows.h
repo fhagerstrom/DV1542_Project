@@ -8,6 +8,7 @@ class RenderShadows
 private:
 	const unsigned int stride = sizeof(XMFLOAT3);
 	const unsigned int offset = 0;
+
 	// Only using the vertexshader
 	const std::string vsPath = "x64/Debug/ShadowVS.cso";
 	ID3D11VertexShader* vertexShader;

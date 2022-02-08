@@ -107,18 +107,21 @@ bool CreateRenderTargetMesh(ID3D11Device* device, ID3D11Buffer*& renderTargetMes
 	{
 		// (x, y, z), UV, normals
 		// 
-		//top right
+		// Top right
 	   { {1.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {0, 0, -1} },
-	   //bottom right
+	   
+	   // Bottom right
 	   { {1.0f, -1.0f, 0.0f}, {1.0f, 1.0f}, {0, 0, -1}  },
-	   // top left
+	   
+	   // Top left
 	   { {-1.0f, 1.0f, 0.0f}, {0.0f, 0.0f}, {0, 0, -1}  },
-	   //bottom left
+	   
+	   // Bottom left
 	   { {-1.0f, -1.0f, 0.0f}, {0.0f, 1.0f}, {0, 0, -1}  }
 	   
 	};
 
-	D3D11_BUFFER_DESC desc; //rtvMesh desc
+	D3D11_BUFFER_DESC desc; // rtvMesh desc
 	desc.ByteWidth = sizeof(rtvMeshData);//bytesize of vertices		
 	desc.Usage = D3D11_USAGE_IMMUTABLE; //Only read by the GPU, not accessable by the CPU
 	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER; // Binds buffer as vertex buffer. 
@@ -161,8 +164,8 @@ bool CreateSamplerState(ID3D11Device* device, ID3D11SamplerState*& wrapSampler, 
 	desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 	desc.MipLODBias = 0; // No offset thank you
-	desc.MaxAnisotropy = 16;// amount of samples which can be taken for improved quality
-	desc.BorderColor[0] = desc.BorderColor[1] = desc.BorderColor[2] = desc.BorderColor[3] = 0; //nice little color for edge
+	desc.MaxAnisotropy = 16; // Amount of samples which can be taken for improved quality
+	desc.BorderColor[0] = desc.BorderColor[1] = desc.BorderColor[2] = desc.BorderColor[3] = 0; // Nice little color for edge
 	desc.MinLOD = 0; // Lower end of mipmap range to clamp access to, where 0 is largest and most detailed mipmap level 
 	desc.MaxLOD = D3D11_FLOAT32_MAX; // Upper end of the mipmap range to clamp access to, 
 	// where 0 is largest and most detailed mipmap level and any level above that is less detailed
@@ -173,6 +176,7 @@ bool CreateSamplerState(ID3D11Device* device, ID3D11SamplerState*& wrapSampler, 
 		std::cerr << "ERROR! COULD NOT CREATE SAMPLERSTATE!" << std::endl;
 		return false;
 	}
+
 	desc.Filter = D3D11_FILTER_ANISOTROPIC;
 	desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
 	desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -219,7 +223,6 @@ bool SetUpRasterizer(ID3D11Device*& device, ID3D11RasterizerState*& rasterizerSt
 	{
 		std::cout << "Failed to create fill solid" << std::endl;
 	}
-
 
 	return !FAILED(hr);
 }

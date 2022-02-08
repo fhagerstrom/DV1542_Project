@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 enum class shaders { DS, PS };
 
 //Gbuffer to store info about geometry
@@ -33,8 +31,8 @@ inline void UpdateBuffer(ID3D11DeviceContext* context, ID3D11Buffer*& buffer, co
 	context->Unmap(buffer, 0);
 }
 
-//standard create buffer which specifies what buffer to use and what size it should be
-inline void CreateBuffer(ID3D11Device* device, ID3D11Buffer*& buffer, unsigned int size)
+// Standard constant buffer which specifies what buffer to use and what size it should be
+inline void CreateConstantBuffer(ID3D11Device* device, ID3D11Buffer*& buffer, unsigned int size)
 {
 	D3D11_BUFFER_DESC desc = {};
 	desc.Usage = D3D11_USAGE_DYNAMIC;

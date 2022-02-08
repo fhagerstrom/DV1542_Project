@@ -3,7 +3,7 @@
 
 RenderShadows::RenderShadows(ID3D11Device* device) :matrixBuffer(nullptr), vertexShader(nullptr)
 {
-	CreateBuffer(device, matrixBuffer, sizeof(XMFLOAT4X4));
+	CreateConstantBuffer(device, matrixBuffer, sizeof(XMFLOAT4X4));
 
 	std::string shaderData;
 	std::ifstream reader;
@@ -23,7 +23,7 @@ RenderShadows::RenderShadows(ID3D11Device* device) :matrixBuffer(nullptr), verte
 
 	if (FAILED(device->CreateVertexShader(shaderData.c_str(), shaderData.length(), nullptr, &vertexShader)))
 	{
-		std::cerr << "Failed to create pixel shader!" << std::endl;
+		std::cerr << "Failed to create vertex shader!" << std::endl;
 		return;
 	}
 

@@ -26,6 +26,7 @@ Model::Model(ID3D11Device* device, std::string name, XMVECTOR position, XMVECTOR
 	{
 		std::cerr << "ERROR! COULD NOT CREATE MESH VERTEXBUFFER!" << std::endl;
 	}
+
 	desc.ByteWidth = mesh.vertexCount * sizeof(XMFLOAT3);
 	desc.StructureByteStride = sizeof(XMFLOAT3);
 
