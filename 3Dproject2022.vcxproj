@@ -213,6 +213,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Defines.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="RenderTessellated.cpp" />
     <ClCompile Include="Shaders.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Defines.h</PrecompiledHeaderFile>
@@ -248,6 +249,7 @@
     <ClInclude Include="Defines.h" />
     <ClInclude Include="DxHandler.h" />
     <ClInclude Include="Frustum.h" />
+    <ClInclude Include="Image.h" />
     <ClInclude Include="Lighting.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
@@ -256,6 +258,7 @@
     <ClInclude Include="Randomizer.h" />
     <ClInclude Include="RenderModels.h" />
     <ClInclude Include="RenderParticles.h" />
+    <ClInclude Include="RenderTessellated.h" />
     <ClInclude Include="Shaders.h" />
     <ClInclude Include="RenderShadows.h" />
     <ClInclude Include="Shadow.h" />

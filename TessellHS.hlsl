@@ -46,7 +46,7 @@ ConstantOutputType CalcHSPatchConstants(InputPatch<HullInputType, NUM_CONTROL_PO
 }
 
 [domain("tri")]
-[partitioning("fractional_odd")]
+[partitioning("integer")]
 [outputtopology("triangle_cw")]
 [outputcontrolpoints(3)]
 [patchconstantfunc("CalcHSPatchConstants")]
@@ -58,6 +58,6 @@ HullOutputType main(InputPatch<HullInputType, NUM_CONTROL_POINTS> ip, uint i : S
 	output.position = ip[i].position;
     output.tex = ip[i].tex;
     output.normal = ip[i].normal;
-
+    
 	return output;
 }

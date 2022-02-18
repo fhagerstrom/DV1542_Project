@@ -29,3 +29,18 @@ using namespace DirectX;
 //#define FOV 90.0f
 #define NEAR_Z 0.1f
 #define FAR_Z 1000.0f
+
+// STRUCTS FOR BUFFERS
+ALIGN16
+struct MatrixBuffer
+{
+	XMFLOAT4X4 wvp;
+	XMFLOAT4X4 worldSpace;
+};
+
+ALIGN16
+struct TessellationBuffer
+{
+	float tessellAmount;
+	XMFLOAT3 padding;
+};

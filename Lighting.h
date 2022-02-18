@@ -17,5 +17,5 @@ public:
 	Lighting() = default;
 	Lighting(float range);
 	~Lighting();
-	XMMATRIX GetMatrix() const;// used in Shaders::Update()
+	XMMATRIX GetMatrix() const; // used in Shaders::Update()
 };

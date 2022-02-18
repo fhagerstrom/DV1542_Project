@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
-// Struct for the data a vertex contains ( used in the mesh.cpp ) 
+// Struct for the data a vertex contains ( used in the mesh.cpp )
+
 struct Vertex
 {
 	float pos[3];

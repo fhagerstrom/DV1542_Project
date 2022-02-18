@@ -8,7 +8,7 @@ RenderParticles::RenderParticles()
 
 }*/
 
-RenderParticles::RenderParticles(ID3D11Device* device) :pixelShader(nullptr), geometryShader(nullptr)
+RenderParticles::RenderParticles(ID3D11Device* device) : pixelShader(nullptr), geometryShader(nullptr)
 {
 	CreateConstantBuffer(device, viewProjectionBuffer, sizeof(XMFLOAT4X4));
 	CreateConstantBuffer(device, cameraBuffer, sizeof(XMFLOAT4));

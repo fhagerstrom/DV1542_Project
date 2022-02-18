@@ -3,7 +3,7 @@
 #include "Camera.h"
 #include "Shadow.h"
 #include "Lighting.h"
-#include "Tessellation.h"
+#include "RenderTessellated.h"
 
 class Shaders
 {
@@ -11,7 +11,7 @@ class Shaders
 	friend class RenderParticles;
 	friend class RenderModels;
 	friend class RenderShadows;
-	friend class Tessellation;
+	friend class RenderTessellated;
 
 private:
 	static std::string positionOnlyVSPath;

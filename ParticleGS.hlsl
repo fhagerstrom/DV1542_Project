@@ -5,7 +5,7 @@ cbuffer CAMERA : register(b1)
 
 cbuffer MATRIX : register(b2)
 {
-    float4x4 viewPerspecive;
+    float4x4 viewPerspective;
 }
 
 struct GSOutput
@@ -36,7 +36,7 @@ void main(point float4 input[1] : SV_POSITION, inout TriangleStream< GSOutput > 
     [unroll]
     for (uint i = 0; i < 4; i++)
     {
-        gOut.pos = mul(corners[i], viewPerspecive);
+        gOut.pos = mul(corners[i], viewPerspective);
         output.Append(gOut);
     }
 }

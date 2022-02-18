@@ -1,6 +1,7 @@
-cbuffer constantBuffer
+cbuffer constantBuffer : register(b0)
 {
     matrix wvp;
+    matrix worldSpace;
 };
 
 // Default name: DS_OUTPUT
@@ -37,7 +38,8 @@ PixelInputType main(ConstantOutputType input, float3 domain : SV_DomainLocation,
 	// Determine new vertice's position
     vertexPos = domain.x * patch[0].position + domain + domain.y * patch[1].position + domain.z * patch[2].position;
 	
-	// Calculate position of the new vertex against the wvp matrix
+	// Calculate position of the new vertex against the world and wvp matrix
+    output.position = mul(float4(vertexPos, 1.0f), worldSpace);
     output.position = mul(float4(vertexPos, 1.0f), wvp);
 	
     output.tex = patch[0].tex;

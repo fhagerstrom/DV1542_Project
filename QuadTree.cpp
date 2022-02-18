@@ -331,9 +331,9 @@ void QuadTree::RenderNode(Node* node, Frustum* frustum, ID3D11Device* device, ID
 	for (int i = 0; i < node->modelCount; i++) 
 	{
 		if (modelIsRendered[node->modelIndex[i]] == false) //see if it is already rendered, if not, render it
-		{	//modelIndex contains correct index for model(s)
+		{	// modelIndex contains correct index for model(s)
 			modelIsRendered[node->modelIndex[i]] = true;
-			renderer->Render(device, context, modelList[node->modelIndex[i]], false, 3);
+			renderer->Render(device, context, modelList[node->modelIndex[i]], false);
 		}
 		//else:			
 		// node->modelVector[i]

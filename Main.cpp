@@ -82,18 +82,19 @@ void update(ID3D11DeviceContext* immediateContext, float deltaTime, Camera& came
 	rotation = XMVectorSet(tempRotation.x, tempRotation.y, tempRotation.z, tempRotation.z);
 	monkey3->SetRotation(rotation);
 	monkey3->Update();
-
-	
 }
 
 // Geometry Pass for deferred rendering (and shadows)
 void RenderGBufferPass(ID3D11DeviceContext* context, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView,
 	D3D11_VIEWPORT& viewport, ID3D11PixelShader* pShaderDeferredRender, ID3D11VertexShader* vShaderDeferred,
 	ID3D11SamplerState* sampler, GBuffer gBuffer, Particles* particles,
-	RenderParticles* particleRenderer, RenderModels* modelRenderer, const std::vector <Model*>& models,
+	RenderParticles* particleRenderer, RenderModels* modelRenderer, RenderTessellated* tessellRenderer, const std::vector <Model*>& models,
 	RenderShadows* shadowRenderer, ID3D11RasterizerState*& rasterizerStateWireFrame, ID3D11RasterizerState*& rasterizerStateSolid,
 	ID3D11Device* device, ID3D11SamplerState* clampSampler, Frustum* frustum, QuadTree* quadTree, Camera camera)
 {
+	// Set tessellation amount
+	float tessellAmount = 3;
+
 	// Binds the shadowmap (sets resources)
 	Shaders::shadowmap->Bind(context);
 
@@ -111,13 +112,20 @@ void RenderGBufferPass(ID3D11DeviceContext* context, ID3D11RenderTargetView* rtv
 	// Reset the Viewport for the next pass (geometry pass)
 	context->RSSetViewports(NULL, NULL);
 
-	// Set all the Samplers, Rasterizerstate, viewport and geometryshader (GS used for culling)
+	// Set all the Samplers, Rasterizerstate, viewport and geometryshader
 	context->RSSetViewports(1, &viewport);
 	context->PSSetSamplers(0, 1, &sampler);
 	context->PSSetSamplers(1, 1, &clampSampler);
 	context->DSSetSamplers(0, 1, &sampler);
 	context->DSSetSamplers(1, 1, &clampSampler);
-	context->RSSetState(rasterizerStateWireFrame);
+
+	// Toggle between different rasterizer states (Solid / WireFrame)
+	if (GetAsyncKeyState('1') & 0x8000)
+		context->RSSetState(rasterizerStateSolid);
+
+	if (GetAsyncKeyState('2') & 0x8000)
+		context->RSSetState(rasterizerStateWireFrame);
+
 	context->GSSetShader(Shaders::gShader, nullptr, 0); // Geometry shader
 
 	clearView(context, rtv, dsView, gBuffer); 	// Clear the window for next render pass
@@ -129,16 +137,20 @@ void RenderGBufferPass(ID3D11DeviceContext* context, ID3D11RenderTargetView* rtv
 
 	//________________________________________________________________________________________________________________
 
-	// Render the models using different renderers (modelRenderer,  particleRenderer)
-	for (auto& model : models) // Används detta för icke frustum, fixa en annan loop för frustum
+	// Render the models using different renderers (modelRenderer, tesellRenderer, particleRenderer)
+	for (auto& model : models) // Använd detta för icke frustum, fixa en annan loop för frustum
 	{
 		if( model->mesh.name == "monkey" || model->mesh.name == "plane")
-			modelRenderer->Render(device, context, model, false, 3);
+			modelRenderer->Render(device, context, model, false);
 	}	
 	std::cout << "Models rendered: " << modelRenderer->modelsRendered << std::endl;
 
 	// Render particles
 	particleRenderer->Render(context, particles);
+
+	Model* triforce = new Model(device, "Triforce", { 0.0f, 3.0f, 0.0f }, { XM_PIDIV2, XM_PIDIV2, 0.0f }, { 1.0f, 1.0f, 1.0f });
+	// Render tessellated model
+	tessellRenderer->Render(device, context, triforce, tessellAmount);
 }
 
 // Light pass -- renders the geometry and lighting on the final screen quad
@@ -154,7 +166,7 @@ void RenderLightPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetVi
 	immediateContext->OMSetRenderTargets(1, &rtv, dsView);											// Backbuffer
 	immediateContext->IASetVertexBuffers(0, 1, &screenQuadMesh, &stride, &offset);					// Quads vertexbuffer set
 	immediateContext->IASetInputLayout(renderTargetMeshInputLayout);								// Set the Input Layout
-	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);	// Since we're going for tessellated models we use a 3 control point patchlist
+	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);				// Set primitive topology
 	immediateContext->VSSetShader(lightVShaderDeferred, nullptr, 0);								// Setting the shaders
 	immediateContext->PSSetShader(lightPShaderDeferred, nullptr, 0);								// Setting the shaders
 
@@ -171,9 +183,6 @@ void RenderLightPass(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetVi
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	_In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
-	// Width and height of the window
-	const UINT WIDTH = 1024;
-	const UINT HEIGHT = 768;
 	HWND window;
 
 	//Console window-function
@@ -222,7 +231,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	ID3D11Buffer* lightBuffer;
 
 	// Creates the window
-	if (!SetupWindow(hInstance, WIDTH, HEIGHT, nCmdShow, window))
+	if (!SetupWindow(hInstance, WINWIDTH, WINHEIGHT, nCmdShow, window))
 	{
 		std::cerr << "Failed to setup window!" << std::endl;
 		return -1;
@@ -259,9 +268,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	
 	Model* ground = new Model(device, "plane", { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 3.0f, 0.001f, 3.0f });
 	models.push_back(ground);
-
-	Model* triforce = new Model(device, "Triforce", { 0.0f, 3.0f, 0.0f }, { XM_PIDIV2, XM_PIDIV2, 0.0f }, { 1.0f, 1.0f, 1.0f });
-	models.push_back(triforce);
 	
 	Model* sphere = new Model(device, "sphere", { 8.0f, 2.5f, 5.0f }, { 0.0f, 0.0f, 0.0f }, { 0.01f, 0.01f, 0.01f });
 	models.push_back(sphere);
@@ -341,6 +347,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	Particles* particles = new Particles(device, 100, 50, 20, { 60, 25, 60 }, { 0, 20, 0 });
 	RenderParticles* particlesRenderer = new RenderParticles(device);
 	RenderModels* modelRenderer = new RenderModels(device);
+	RenderTessellated* tessellRenderer = new RenderTessellated(device);
 	RenderShadows* shadowRenderer = new RenderShadows(device);
 
 	// For culling
@@ -355,6 +362,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	//_______________________________________________________________________________________________
 
 	Shaders::Initialize(device, modelRenderer->GetByteCode());
+	Shaders::Initialize(device, tessellRenderer->GetByteCode());
 
 	CreateConstantBuffer(device, lightBuffer, sizeof(Lighting::Data));
 	UpdateBuffer(immediateContext, lightBuffer, light.data);
@@ -377,7 +385,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		Shaders::Update(immediateContext, camera, light);
 
 		RenderGBufferPass(immediateContext, rtv, dsView, viewport, pShaderDeferred, vShaderDeferred,
-			wrapSampler, gBuffer, particles, particlesRenderer, modelRenderer, models, shadowRenderer,
+			wrapSampler, gBuffer, particles, particlesRenderer, modelRenderer, tessellRenderer, models, shadowRenderer,
 			rasterizerStateWireFrame, rasterizerStateSolid, device, clampSampler, frustum, quadTree, camera);
 
 		RenderLightPass(immediateContext, rtv, dsView, viewport, pShaderDeferred, vShaderDeferred,
@@ -403,7 +411,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	monkey2->Shutdown();
 	monkey3->Shutdown();
 	ground->Shutdown();
-	triforce->Shutdown();
 	sphere->Shutdown();
 	sphere2->Shutdown();
 	sphere3->Shutdown();
@@ -447,7 +454,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	delete monkey2;
 	delete monkey3;
 	delete ground;
-	delete triforce;
 	delete sphere;
 	delete sphere2;
 	delete sphere3;
@@ -474,35 +480,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	delete sphere24;
 	delete sphere25;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	particlesRenderer->ShutDown();
 	shadowRenderer->ShutDown();
 	modelRenderer->ShutDown();
+	tessellRenderer->Shutdown();
 
 	Shaders::Shutdown();
 	particles->Shutdown();
 	delete particles;
 	delete particlesRenderer;
 	delete modelRenderer;
+	delete tessellRenderer;
 	delete shadowRenderer;
 	rasterizerStateWireFrame->Release();
 	rasterizerStateSolid->Release();
