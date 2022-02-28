@@ -1,51 +1,45 @@
-cbuffer MatrixBuffer
-{
-    matrix worldMatrix;
-    matrix viewMatrix;
-    matrix projectionMatrix;
-    float3 lightPos;
-};
 
-cbuffer CameraBuffer
+// Geometry Pass Vertex Shader
+cbuffer constantBuffer : register(b1)
 {
-    float3 cameraPosition;
-};
+    float4x4 WVP; // ProjectionMatrix
+    float4x4 worldSpace; // WorldMatrix
+}
 
-struct VertexInputType
+struct VertexInput
 {
-    float4 position : POSITION;
-    float2 tex : TEXCOORD0;
+    // The vertices of the model has a position, texcoord (UV), and a normal
+    float3 position : POSITION;
+    float2 tex : TEXCOORD;
     float3 normal : NORMAL;
 };
 
-struct PixelInputType
+// MISMATCH PÅ SEMANTICS TILL HULL SHADERN - FIX THIS
+struct VertexOutput
 {
     float4 position : SV_POSITION;
-    float2 tex : TEXCOORD0;
+    float2 tex : TEXCOORD;
     float3 normal : NORMAL;
-    float3 lightPos : TEXCOORD1;
-    float3 viewDirection : TEXCOORD2;
+    float3 worldPos : WORLDPOS;
 };
-PixelInputType DeferredVertexShader(VertexInputType input)
+
+//struct VertexOutput
+//{
+//    float3 position : POSITION;
+//    float2 tex : TEXCOORD;
+//    float3 normal : NORMAL;
+//};
+
+VertexOutput main(VertexInput input)
 {
-    PixelInputType output;
-    float4 worldPosition;
-    input.position.w = 1.0f;
+    VertexOutput output;
 
-    output.position = mul(input.position, worldMatrix);
-    output.position = mul(output.position, viewMatrix);
-    output.position = mul(output.position, projectionMatrix);
+    output.position = float4(input.position, 1);
+    output.worldPos = mul(output.position, worldSpace);
+    output.position = mul(output.position, WVP);
     output.tex = input.tex;
-    output.normal = mul(input.normal, (float3x3) worldMatrix);
-
+    output.normal = mul(float4(input.normal, 0), worldSpace);
     output.normal = normalize(output.normal);
-
-    worldPosition = mul(input.position, worldMatrix);
-    output.lightPos = lightPos.xyz - lightPos.xyz;
-    output.lightPos = normalize(output.lightPos);
-
-    output.viewDirection = cameraPosition.xyz - worldPosition.xyz;
-    output.viewDirection = normalize(output.viewDirection);
 
     return output;
 }

@@ -1,0 +1,188 @@
+﻿#include "Defines.h"
+#include "Camera.h"
+
+#include <cstdint>
+#include <iomanip>
+
+Camera::Camera()
+	:pitch(0), yaw(0), rotationSpeed(0), speed(0)
+{
+	this->right = { 1,0,0 };//x
+	this->up = { 0,1,0 };//y
+	this->forward = { 0,0,1 };//z
+	
+	// Builds a view matrix for a left-handed coordinate system using a camera position, an up direction, and a focal point, XMLoadFloat3 = Loads an XMFLOAT3 into an XMVECTOR
+	this->viewMatrix = XMMatrixLookAtLH(XMLoadFloat3(&pos), forward, up);
+	// Builds a left-handed perspective projection matrix based on a field of view, XM_PIDIV4 =  π/4
+	perspectiveMatrix = XMMatrixPerspectiveFovLH(XM_PIDIV4, (float)1024 / float(576), 0.1f, 100.0f);
+
+	this->direction = forward;
+}
+
+Camera::Camera(float fov, float aspectRatio, float nearZ, float farZ, float rotationSpeed, float speed, XMFLOAT3 pos)
+	:pos(pos), pitch(0), yaw(-XM_PIDIV2), rotationSpeed(rotationSpeed), speed(speed)
+{
+
+	this->up = { 0,1,0 };		 // Y
+	this->forward = { 0, 0, 1 }; // Z
+	this->right = { 1,0,0 };	 // X
+	this->viewMatrix = XMMatrixLookAtLH(XMLoadFloat3(&pos), forward, up);
+
+	this->perspectiveMatrix = XMMatrixPerspectiveFovLH(fov, aspectRatio, nearZ, farZ);
+
+	this->direction = forward;
+
+	this->fov = fov;
+	this->aspectRatio = aspectRatio;
+	this->nearZ = nearZ;
+	this->farZ = farZ;
+}
+
+void Camera::MoveRight(float dt)
+{
+	XMVECTOR forwardVec = XMVector3Transform(forward, XMMatrixRotationRollPitchYaw(pitch, yaw, 0.0f) * XMMatrixScaling(speed, speed, speed));
+
+	XMVECTOR rightVec = XMVector3Cross(up, forwardVec);
+	rightVec = XMVector3Normalize(rightVec);
+	XMFLOAT3 rightFloat;
+	XMStoreFloat3(&rightFloat, rightVec);
+
+	pos.x += rightFloat.x * dt * speed;
+	pos.y += rightFloat.y * dt * speed;
+	pos.z += rightFloat.z * dt * speed;
+}
+
+void Camera::MoveForward(float dt)
+{
+	XMVECTOR forwardVec = XMVector3Transform(forward,
+		XMMatrixRotationRollPitchYaw(pitch, yaw, 0.0f) *
+		XMMatrixScaling(speed, speed, speed));
+
+	forwardVec = XMVector3Normalize(forwardVec);
+	XMFLOAT3 forwardFloat;
+
+	XMStoreFloat3(&forwardFloat, forwardVec);
+
+	pos.x += forwardFloat.x * dt * speed;
+	pos.y += forwardFloat.y * dt * speed;
+	pos.z += forwardFloat.z * dt * speed;
+}
+
+void Camera::MoveUpDown(float dt)
+{
+	XMVECTOR upDownVec = XMVector3Transform(moveUp,
+		XMMatrixRotationRollPitchYaw(pitch, yaw, 0.0f) *
+		XMMatrixScaling(speed, speed, speed));
+
+	upDownVec = XMVector3Normalize(upDownVec);
+	XMFLOAT3 upDownFloat;
+
+	XMStoreFloat3(&upDownFloat, upDownVec);
+
+	//position.x += upDownFloat.x * dt * speed;
+	pos.y += upDownFloat.y * dt * speed;
+	//position.z += upDownFloat.z * dt * speed;
+}
+
+void Camera::Rotate(float dx, float dy)
+{
+	yaw = (yaw + dx * rotationSpeed);
+	yaw = (float)fmod((double)yaw + XM_PI, XM_2PI);
+	if (yaw < 0)
+		yaw += XM_2PI;
+	yaw -= XM_PI;
+	
+	pitch = std::clamp(pitch + dy * rotationSpeed, 0.995f * -XM_PIDIV2, 0.995f * XM_PIDIV2);
+	//Clamps a variable to a given range[high – low].
+}
+
+void Camera::Update(float dt)
+{
+	// Move and change the camera on key press
+
+	if (GetAsyncKeyState('W'))
+	{
+		MoveForward(dt);
+
+	}
+	if (GetAsyncKeyState('S'))
+	{
+		MoveForward(-dt);
+	}
+	if (GetAsyncKeyState('A'))
+	{
+		MoveRight(-dt);
+	}
+	if (GetAsyncKeyState('D'))
+	{
+		MoveRight(dt);
+	}
+
+	if (GetAsyncKeyState(VK_CONTROL))
+	{
+		MoveUpDown(dt);
+	}
+
+	if (GetAsyncKeyState(VK_SPACE))
+	{
+		MoveUpDown(-dt);
+	}
+
+	if (GetAsyncKeyState(VK_RIGHT))
+	{
+		Rotate(dt, 0);
+	}
+	if (GetAsyncKeyState(VK_LEFT))
+	{
+		Rotate(-dt, 0);
+	}
+
+	if (GetAsyncKeyState(VK_UP))
+	{
+		Rotate(0, -dt);
+	}
+	if (GetAsyncKeyState(VK_DOWN))
+	{
+		Rotate(0, dt);
+	}
+
+	const XMVECTOR lookAtVec = XMVector3Transform(forward, XMMatrixRotationRollPitchYaw(pitch, yaw, 0.0f));
+	const XMVECTOR target = XMLoadFloat3(&pos) + lookAtVec;
+	direction = XMVector3Normalize(lookAtVec);
+
+	this->viewMatrix = XMMatrixLookAtLH(XMLoadFloat3(&pos), target, up);
+}
+
+
+float Camera::GetNearZ() 
+{ 
+	return this->nearZ; 
+};
+float Camera::GetFarZ()  
+{ 
+	return this->farZ; 
+};
+float Camera::GetRatio()  
+{ 
+	return this->aspectRatio; 
+};
+float Camera::GetFov()  
+{ 
+	return this->fov; 
+};
+XMVECTOR Camera::GetUpVector()  
+{ 
+	return this->up; 
+};
+XMFLOAT3 Camera::GetPosition()  
+{ 
+	return this->pos; 
+}
+XMMATRIX Camera::GetViewMatrix()  
+{ 
+	return this->viewMatrix; 
+};
+XMMATRIX Camera::GetProjectionMatrix()  
+{ 
+	return this->perspectiveMatrix; 
+};
