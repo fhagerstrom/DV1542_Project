@@ -1,25 +1,50 @@
 #pragma once
 
-#include <d3d11.h>
-#include <WICTextureLoader.h>
-#include <fstream>
-using namespace DirectX;
+#include "DxHandler.h"
 
-class TextureClass
+class Texture
 {
-
-public:
-	TextureClass();
-	TextureClass(const TextureClass&);
-	~TextureClass();
-
-	bool Initialize(ID3D11Device*, const WCHAR*);
-	void Shutdown();
-
-	ID3D11ShaderResourceView* GetTexture();
-
 private:
-	ID3D11Texture2D* m_texture;
-	ID3D11ShaderResourceView* m_textureView;
+	ID3D11ShaderResourceView* texture = nullptr;
+public:
 
+	ID3D11ShaderResourceView** Get() { return &this->texture; }
+
+	Texture() = default;
+	Texture(ID3D11Device* device, std::string path);
+
+	void Bind(ID3D11DeviceContext* context, int slot = 0, shaders shader = shaders::PS)
+	{
+		switch (shader)
+		{
+		case shaders::PS:
+			context->PSSetShaderResources(slot, 1, &texture);
+			break;
+		case shaders::DS:
+			context->DSSetShaderResources(slot, 1, &texture);
+			break;
+		}
+	}
+
+	~Texture() { this->texture->Release(); }
+};
+
+struct Material
+{
+	struct Data
+	{
+		XMFLOAT4 diffuse = { 0.0f, 0.0f, 0.0f, 1.0f };
+		XMFLOAT4 ambient = { 0.0f, 0.0f, 0.0f, 1.0f };
+		XMFLOAT4 specular = { 0.0f, 0.0f, 0.0f, 1.0f };
+	} data;
+
+	std::vector<Texture*> diffuseTextures;
+
+	~Material()
+	{
+		for (auto& texture : diffuseTextures)
+			delete texture;
+	}
+
+	Material() = default;
 };

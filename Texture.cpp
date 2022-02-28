@@ -1,52 +1,48 @@
+#include "Defines.h"
 #include "Texture.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 
-TextureClass::TextureClass()
+Texture::Texture(ID3D11Device* device, std::string path)
 {
-	m_texture = 0;
-}
+    int imgWidth, imgHeight;
+    unsigned char* image = stbi_load((path).c_str(), &imgWidth, &imgHeight, nullptr, STBI_rgb_alpha);
 
+    // Desc from https://docs.microsoft.com/en-us/windows/win32/direct3d11/overviews-direct3d-11-resources-textures-create
+    D3D11_TEXTURE2D_DESC textureDesc = {};
+    textureDesc.Width = imgWidth;
+    textureDesc.Height = imgHeight;
+    textureDesc.MipLevels = 1;
+    textureDesc.ArraySize = 1;
+    textureDesc.MiscFlags = 0;
+    textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    textureDesc.SampleDesc.Count = 1;
+    textureDesc.SampleDesc.Quality = 0;
+    textureDesc.Usage = D3D11_USAGE_IMMUTABLE;	// GPU READ
+    textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    textureDesc.CPUAccessFlags = 0;
 
-TextureClass::TextureClass(const TextureClass& other)
-{
-}
+    D3D11_SUBRESOURCE_DATA data = {};
+    data.pSysMem = image;
+    data.SysMemPitch = imgWidth * STBI_rgb_alpha;
 
+    ID3D11Texture2D* img;
+    HRESULT hr = device->CreateTexture2D(&textureDesc, &data, &img);
+    if (FAILED(hr))
+    {
+        std::cout << "FAILED TO CREATE TEXTURE 2D" << std::endl;
+        return;
+    }
+    hr = device->CreateShaderResourceView(img, nullptr, &this->texture);
 
-TextureClass::~TextureClass()
-{
-}
+    if (FAILED(hr))
+    {
+        std::cout << "FAILED TO CREATE SHADER RESOURCE VIEW" << std::endl;
+        return;
+    }
 
-
-bool TextureClass::Initialize(ID3D11Device* device, const WCHAR* filename)
-{
-	HRESULT result;
-
-
-	// Load the texture in.
-	result = CreateWICTextureFromFile(device, filename, NULL, &m_textureView, NULL);
-	if (FAILED(result))
-	{
-		return false;
-	}
-
-	return true;
-}
-
-
-void TextureClass::Shutdown()
-{
-	// Release the texture resource.
-	if (m_texture)
-	{
-		m_texture->Release();
-		m_texture = 0;
-	}
-
-	return;
-}
-
-
-ID3D11ShaderResourceView* TextureClass::GetTexture()
-{
-	return m_textureView;
+    stbi_image_free(image);
+    img->Release();
+    img = nullptr;
 }
