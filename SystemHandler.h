@@ -1,17 +1,17 @@
 #pragma once
+
 #define WIN32_LEAN_AND_MEAN
 
 #include <windows.h>
 
-#include "inputclass.h"
-#include "App.h"
+#include "Input.h"
+#include "Graphics.h"
 
-class SystemClass
+class SystemHandler
 {
 public:
-	SystemClass();
-	SystemClass(const SystemClass&);
-	~SystemClass();
+	SystemHandler();
+	~SystemHandler();
 
 	bool Initialize();
 	void Shutdown();
@@ -25,14 +25,13 @@ private:
 	void ShutdownWindows();
 
 private:
-	LPCWSTR m_applicationName;
-	HINSTANCE m_hinstance;
-	HWND m_hwnd;
+	LPCWSTR appName;
+	HINSTANCE hInstance;
+	HWND hwnd;
 
-	InputClass* m_Input;
-	App* m_Graphics;
+	Input* input;
+	Graphics* graphics;
 };
 
 static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-
-static SystemClass* ApplicationHandle = 0;
+static SystemHandler* applicationHandle = 0;

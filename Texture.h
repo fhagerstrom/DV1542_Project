@@ -1,25 +1,21 @@
-#pragma once
-
 #include <d3d11.h>
 #include <WICTextureLoader.h>
-#include <fstream>
-using namespace DirectX;
 
-class TextureClass
+class Texture
 {
+private:
+	HRESULT hr;
+	ID3D11Texture2D* texture;
+	ID3D11ShaderResourceView* textureSrv;
 
 public:
-	TextureClass();
-	TextureClass(const TextureClass&);
-	~TextureClass();
+	Texture();
+	Texture(const Texture&);
+	~Texture();
 
-	bool Initialize(ID3D11Device*, const WCHAR*);
+	bool Initialize(ID3D11Device* device, LPCWSTR textureFile);
 	void Shutdown();
 
-	ID3D11ShaderResourceView* GetTexture();
-
-private:
-	ID3D11Texture2D* m_texture;
-	ID3D11ShaderResourceView* m_textureView;
+	ID3D11ShaderResourceView* GetTexture() { return textureSrv; };
 
 };

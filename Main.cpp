@@ -1,33 +1,29 @@
-////////////////////////////////////////////////////////////////////////////////
-// Filename: main.cpp
-////////////////////////////////////////////////////////////////////////////////
-#include "systemclass.h"
-
+#include "SystemHandler.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
 {
-	SystemClass* System;
+	SystemHandler* systemHandler;
 	bool result;
 	
 	
 	// Create the system object.
-	System = new SystemClass;
-	if(!System)
+	systemHandler = new SystemHandler;
+	if(!systemHandler)
 	{
 		return 0;
 	}
 
 	// Initialize and run the system object.
-	result = System->Initialize();
+	result = systemHandler->Initialize();
 	if(result)
 	{
-		System->Run();
+		systemHandler->Run();
 	}
 
 	// Shutdown and release the system object.
-	System->Shutdown();
-	delete System;
-	System = 0;
+	systemHandler->Shutdown();
+	delete systemHandler;
+	systemHandler = 0;
 
 	return 0;
 }

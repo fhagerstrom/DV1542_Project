@@ -1,52 +1,47 @@
 #include "Texture.h"
 
-
-TextureClass::TextureClass()
+Texture::Texture()
 {
-	m_texture = 0;
+	texture = 0;
+	textureSrv = 0;
 }
 
 
-TextureClass::TextureClass(const TextureClass& other)
-{
-}
-
-
-TextureClass::~TextureClass()
+Texture::Texture(const Texture& other)
 {
 }
 
 
-bool TextureClass::Initialize(ID3D11Device* device, const WCHAR* filename)
+Texture::~Texture()
 {
-	HRESULT result;
+}
 
 
-	// Load the texture in.
-	result = CreateWICTextureFromFile(device, filename, NULL, &m_textureView, NULL);
-	if (FAILED(result))
-	{
+bool Texture::Initialize(ID3D11Device* device, LPCWSTR textureFile)
+{
+	hr = DirectX::CreateWICTextureFromFile(device, textureFile, nullptr, &textureSrv);
+	if (FAILED(hr))
 		return false;
-	}
 
 	return true;
 }
 
 
-void TextureClass::Shutdown()
+void Texture::Shutdown()
 {
-	// Release the texture resource.
-	if (m_texture)
+	// Release the texture view resource.
+	if(textureSrv)
 	{
-		m_texture->Release();
-		m_texture = 0;
+		textureSrv->Release();
+		textureSrv = 0;
+	}
+
+	// Release the texture.
+	if(texture)
+	{
+		texture->Release();
+		texture = 0;
 	}
 
 	return;
-}
-
-
-ID3D11ShaderResourceView* TextureClass::GetTexture()
-{
-	return m_textureView;
 }

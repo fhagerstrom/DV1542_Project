@@ -1,11 +1,11 @@
 #pragma once
 
-class InputClass
+class Input
 {
 public:
-	InputClass();
-	InputClass(const InputClass&);
-	~InputClass();
+	Input();
+	Input(const Input&);
+	~Input();
 
 	void Initialize();
 
@@ -15,5 +15,5 @@ public:
 	bool IsKeyDown(unsigned int);
 
 private:
-	bool m_keys[256];
+	bool keys[256];
 };
