@@ -14,19 +14,29 @@ struct MatrixBuffer
 	XMMATRIX projection;
 };
 
+struct LightBuffer
+{
+	XMFLOAT4 ambient;
+	XMFLOAT4 diffuse;
+	XMFLOAT3 lightDirection;
+	float padding;
+};
+
 class Shader
 {
 private:
 	bool InitializeShader(ID3D11Device*, HWND, LPCWSTR, LPCWSTR);
 	void ShutdownShader();
 
-	bool SetShaderParameters(ID3D11DeviceContext* context, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* textureSrv);
+	bool SetShaderParameters(ID3D11DeviceContext* context, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* textureSrv, 
+		XMFLOAT3 lightDirection, XMFLOAT4 ambient, XMFLOAT4 diffuse);
 	void RenderShader(ID3D11DeviceContext*, int);
 
 	ID3D11VertexShader* vertexShader;
 	ID3D11PixelShader* pixelShader;
 	ID3D11InputLayout* defaultLayout;
 	ID3D11Buffer* matrixBuffer;
+	ID3D11Buffer* lightBuffer;
 	ID3D11SamplerState* samplerState;
 
 public:
@@ -35,5 +45,6 @@ public:
 
 	bool Initialize(ID3D11Device*, HWND);
 	void Shutdown();
-	bool Render(ID3D11DeviceContext* context, int indexCount, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* textureSrv);
+	bool Render(ID3D11DeviceContext* context, int indexCount, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* textureSrv, 
+		XMFLOAT3 lightDirection, XMFLOAT4 ambient, XMFLOAT4 diffuse);
 };

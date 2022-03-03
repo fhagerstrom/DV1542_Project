@@ -6,12 +6,6 @@ Texture::Texture()
 	textureSrv = 0;
 }
 
-
-Texture::Texture(const Texture& other)
-{
-}
-
-
 Texture::~Texture()
 {
 }

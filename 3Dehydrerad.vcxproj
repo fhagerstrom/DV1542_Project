@@ -145,10 +145,11 @@
     <None Include="DefaultVS.hlsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="cameraclass.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="DxHandler.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="Input.h" />
+    <ClInclude Include="Light.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="SystemHandler.h" />
     <ClInclude Include="Texture.h" />
@@ -163,10 +164,11 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cameraclass.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DxHandler.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="Input.cpp" />
+    <ClCompile Include="Light.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="SystemHandler.cpp" />

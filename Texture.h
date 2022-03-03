@@ -10,7 +10,6 @@ private:
 
 public:
 	Texture();
-	Texture(const Texture&);
 	~Texture();
 
 	bool Initialize(ID3D11Device* device, LPCWSTR textureFile);

@@ -1,9 +1,10 @@
 #pragma once
 
 #include "DxHandler.h"
-#include "cameraclass.h"
+#include "Camera.h"
 #include "Model.h"
 #include "Shaders.h"
+#include "Light.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -29,6 +30,7 @@ private:
 	Camera* camera;
 	Model* testCube;
 	Shader* textureShader;
+	Light* light;
 
 	// Rotation related variables for models that should.
 	float rotCubeAngle = 0.0f;

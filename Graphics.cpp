@@ -7,6 +7,7 @@ Graphics::Graphics()
 	camera = 0;
 	testCube = 0;
 	textureShader = 0;
+	light = 0;
 }
 
 
@@ -47,9 +48,12 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Set the initial position of the camera.
-	camera->SetPosition(0.0f, 0.0f, -5.0f);
+	camera->SetPosition(0.0f, 0.0f, -7.0f);
 
 	testCube = new Model;
+	if (!testCube)
+		return false;
+
 	result = testCube->InitializeCube(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"Textures/coollink.png");
 	if (!result)
 		return false;
@@ -69,6 +73,14 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	light = new Light;
+	if (!light)
+		return false;
+
+	light->SetAmbientColor(0.1f, 0.3f, 0.5f, 1.0f);
+	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
+	light->SetDirection(0.0f, 0.0f, 1.0f);
+
 	return true;
 }
 
@@ -81,6 +93,13 @@ void Graphics::Shutdown()
 		textureShader->Shutdown();
 		delete textureShader;
 		textureShader = 0;
+	}
+
+	// Release the light object.
+	if (light)
+	{
+		delete light;
+		light = 0;
 	}
 
 	// Release the testCube object.
@@ -113,8 +132,6 @@ bool Graphics::Frame()
 {
 	bool result;
 
-	// static float rotationValue = 0.0001f;
-
 	// Render the graphics scene.
 	result = Render();
 	if (!result)
@@ -132,7 +149,7 @@ bool Graphics::Render()
 	bool result;
 
 	// Clear the buffers to begin the scene.
-	dxHandler->BeginScene(0.2f, 0.2f, 0.2f, 1.0f);
+	dxHandler->BeginScene(0.1f, 0.1f, 0.1f, 1.0f);
 
 	// PUT RENDERS BELOW HERE
 	//___________________________________________________________________________________________________
@@ -160,7 +177,8 @@ bool Graphics::Render()
 	testCube->Render(dxHandler->GetDeviceContext());
 
 	// Render the testCube using the texture shader.
-	result = textureShader->Render(dxHandler->GetDeviceContext(), testCube->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, testCube->GetTexture());
+	result = textureShader->Render(dxHandler->GetDeviceContext(), testCube->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, testCube->GetTexture(), 
+									light->GetDirection(), light->GetAmbientColor(), light->GetDiffuseColor());
 	if (!result)
 	{
 		return false;

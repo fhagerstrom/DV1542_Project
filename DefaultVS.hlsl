@@ -1,4 +1,4 @@
-cbuffer MatrixBuffer
+cbuffer matrixBuffer
 {
 	matrix worldMatrix;
 	matrix viewMatrix;
@@ -35,8 +35,10 @@ PixelInputType main(VertexInputType input)
 	// Store the texture coordinates for the pixel shader.
     output.tex = input.tex;
     
+    output.normal = mul(input.normal, (float3x3)worldMatrix);
+    
     // Same goes for normals.
-    output.normal = input.normal;
+    output.normal = normalize(output.normal);
     
     return output;
 }
