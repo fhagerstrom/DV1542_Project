@@ -77,7 +77,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	if (!light)
 		return false;
 
-	light->SetAmbientColor(0.1f, 0.3f, 0.5f, 1.0f);
+	light->SetAmbientColor(0.25f, 0.25f, 0.25f, 1.0f);
 	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetDirection(0.0f, 0.0f, 1.0f);
 

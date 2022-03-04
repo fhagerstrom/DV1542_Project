@@ -19,6 +19,13 @@ struct LightBuffer
 	XMFLOAT4 ambient;
 	XMFLOAT4 diffuse;
 	XMFLOAT3 lightDirection;
+	XMFLOAT4 specular;
+	float specularPower;
+};
+
+struct CameraBuffer
+{
+	XMFLOAT3 cameraPos;
 	float padding;
 };
 
@@ -37,6 +44,7 @@ private:
 	ID3D11InputLayout* defaultLayout;
 	ID3D11Buffer* matrixBuffer;
 	ID3D11Buffer* lightBuffer;
+	ID3D11Buffer* cameraBuffer;
 	ID3D11SamplerState* samplerState;
 
 public:

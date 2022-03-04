@@ -79,12 +79,19 @@ bool DxHandler::Initialize(int screenWidth, int screenHeight, HWND hwnd, float s
 	// Set the feature level to DirectX 11.
 	featureLevel = D3D_FEATURE_LEVEL_11_0;
 
+	UINT flags = 0;
+
+#ifdef _DEBUG
+	flags = D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
 	// Create the swap chain, Direct3D device, and Direct3D device context.
-	hr = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, &featureLevel, 1,
+	hr = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, flags, &featureLevel, 1,
 		D3D11_SDK_VERSION, &swapChainDesc, &swapChain, &devicePtr, NULL, &contextPtr);
 
 	if (FAILED(hr))
 	{
+		MessageBox(NULL, L"Couldn't create device and swapchain!", L"DX ERROR", MB_OK);
 		return false;
 	}
 
