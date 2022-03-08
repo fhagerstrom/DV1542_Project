@@ -16,11 +16,11 @@ struct MatrixBuffer
 
 struct LightBuffer
 {
-	XMFLOAT4 ambient;
-	XMFLOAT4 diffuse;
+	XMFLOAT4 ambientColor;
+	XMFLOAT4 diffuseColor;
 	XMFLOAT3 lightDirection;
 	float specularPower;
-	XMFLOAT4 specular;
+	XMFLOAT4 specularColor;
 };
 
 struct CameraBuffer

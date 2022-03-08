@@ -34,5 +34,5 @@ private:
 
 	// Rotation related variables for models that should.
 	float rotCubeAngle = 0.0f;
-	float rotSpeed = 0.0001f;
+	float rotSpeed = 0.00005f;
 };

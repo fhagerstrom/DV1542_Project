@@ -9,7 +9,7 @@ using namespace DirectX;
 
 struct Vertex
 {
-	Vertex() : position(), texCoord(), normal() {}
+	Vertex() {}
 	Vertex(float x, float y, float z,
 		float u, float v,
 		float nx, float ny, float nz)
@@ -48,6 +48,5 @@ private:
 	HRESULT hr;
 	ID3D11Buffer *vertexBuffer, *indexBuffer;
 	int vertexCount, indexCount;
-	Vertex* modelData;
 	Texture* texture;
 };

@@ -62,8 +62,6 @@ bool Shader::InitializeShader(ID3D11Device* device, HWND hwnd, LPCWSTR vsFilenam
 	HRESULT hr;
 	ID3DBlob* vertexShaderBuffer;
 	ID3DBlob* pixelShaderBuffer;
-	D3D11_INPUT_ELEMENT_DESC polygonLayout[2];
-	unsigned int numElements;
 	D3D11_BUFFER_DESC matrixBufferDesc;
 	D3D11_BUFFER_DESC lightBufferDesc;
 	D3D11_BUFFER_DESC cameraBufferDesc;
@@ -103,10 +101,9 @@ bool Shader::InitializeShader(ID3D11Device* device, HWND hwnd, LPCWSTR vsFilenam
 		return false;
 	}
 
-	// TODO: REFACTOR INPUT LAYOUT STRUCTURE
 	D3D11_INPUT_ELEMENT_DESC inputLayoutPosTexNormal[] =
 	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,	D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,	0, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
@@ -283,6 +280,9 @@ bool Shader::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX wo
 	// Unlock the constant buffer.
     deviceContext->Unmap(matrixBuffer, 0);
 
+	// Finanly set the constant buffer in the vertex shader with the updated values.
+	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
+
 	// Lock the camera constant buffer so it can be written to.
 	result = deviceContext->Map(cameraBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result))
@@ -299,9 +299,6 @@ bool Shader::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX wo
 
 	// Unlock the camera constant buffer.
 	deviceContext->Unmap(cameraBuffer, 0);
-
-	// Finanly set the constant buffer in the vertex shader with the updated values.
-    deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
 
 	// Now set the camera constant buffer in the vertex shader with the updated values.
 	deviceContext->VSSetConstantBuffers(1, 1, &cameraBuffer);
@@ -320,10 +317,10 @@ bool Shader::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX wo
 	dataPtr2 = (LightBuffer*)mappedResource.pData;
 
 	// Copy the lighting variables into the constant buffer.
-	dataPtr2->ambient = ambient;
-	dataPtr2->diffuse = diffuse;
+	dataPtr2->ambientColor = ambient;
+	dataPtr2->diffuseColor = diffuse;
 	dataPtr2->lightDirection = lightDirection;
-	dataPtr2->specular = specular;
+	dataPtr2->specularColor = specular;
 	dataPtr2->specularPower = specularPower;
 
 	// Unlock the constant buffer.
@@ -348,7 +345,7 @@ void Shader::RenderShader(ID3D11DeviceContext* deviceContext, int indexCount)
 	// Set the sampler state in the pixel shader.
 	deviceContext->PSSetSamplers(0, 1, &samplerState);
 
-	// Render the triangle.
+	// Render the object.
 	deviceContext->DrawIndexed(indexCount, 0, 0);
 
 	return;

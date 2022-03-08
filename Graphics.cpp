@@ -54,7 +54,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	if (!testCube)
 		return false;
 
-	result = testCube->InitializeCube(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"Textures/coollink.png");
+	result = testCube->InitializeCube(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"Textures/spaceWallpaper.jpg");
 	if (!result)
 		return false;
 
@@ -79,9 +79,9 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	light->SetAmbientColor(0.1f, 0.1f, 0.1f, 1.0f);
 	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light->SetDirection(0.0f, 0.0f, 1.0f);
+	light->SetDirection(0.0f, -1.0f, 1.0f);
 	light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light->SetSpecularPower(64.0f);
+	light->SetSpecularPower(16.0f);
 
 
 	return true;
@@ -152,7 +152,7 @@ bool Graphics::Render()
 	bool result;
 
 	// Clear the buffers to begin the scene.
-	dxHandler->BeginScene(0.0f, 0.4f, 0.4f, 1.0f);
+	dxHandler->BeginScene(0.0f, 0.2f, 0.3f, 1.0f);
 
 	// PUT RENDERS BELOW HERE
 	//___________________________________________________________________________________________________
@@ -170,7 +170,7 @@ bool Graphics::Render()
 	if (rotCubeAngle > 2 * XM_PI)
 		rotCubeAngle = 0.0f;
 
-	XMVECTOR rotCubeAxis = DirectX::XMVectorSet(0.0f, rotCubeAngle, 0.0f, 0.0f);
+	XMVECTOR rotCubeAxis = DirectX::XMVectorSet(rotCubeAngle, rotCubeAngle, 0.0f, 0.0f);
 	XMMATRIX rotCubeRotation = DirectX::XMMatrixRotationRollPitchYawFromVector(rotCubeAxis);
 
 	// TODO: SEPARATE WORLD MATRIX BETWEEN MODELS WHEN RENDERING MORE OF THEM.

@@ -151,6 +151,7 @@
     <ClInclude Include="Input.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="ObjReader.h" />
     <ClInclude Include="SystemHandler.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Shaders.h" />
@@ -171,6 +172,7 @@
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="ObjReader.cpp" />
     <ClCompile Include="SystemHandler.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Shaders.cpp" />
