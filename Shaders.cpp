@@ -106,14 +106,15 @@ bool Shader::InitializeShader(ID3D11Device* device, HWND hwnd, LPCWSTR vsFilenam
 	// TODO: REFACTOR INPUT LAYOUT STRUCTURE
 	D3D11_INPUT_ELEMENT_DESC inputLayoutPosTexNormal[] =
 	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,	 D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,	D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 
 	hr = device->CreateInputLayout(inputLayoutPosTexNormal, ARRAYSIZE(inputLayoutPosTexNormal), vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), &defaultLayout);
 	if (FAILED(hr))
 	{
+		MessageBox(NULL, L"Couldn't create input layout!", L"SHADER ERROR", MB_OK);
 		return false;
 	}
 
@@ -299,11 +300,11 @@ bool Shader::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX wo
 	// Unlock the camera constant buffer.
 	deviceContext->Unmap(cameraBuffer, 0);
 
-	// Now set the camera constant buffer in the vertex shader with the updated values.
-	deviceContext->VSSetConstantBuffers(1, 1, &cameraBuffer);
-
 	// Finanly set the constant buffer in the vertex shader with the updated values.
     deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
+
+	// Now set the camera constant buffer in the vertex shader with the updated values.
+	deviceContext->VSSetConstantBuffers(1, 1, &cameraBuffer);
 
 	// Set shader texture resource in the pixel shader.
 	deviceContext->PSSetShaderResources(0, 1, &texture);

@@ -77,9 +77,12 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	if (!light)
 		return false;
 
-	light->SetAmbientColor(0.25f, 0.25f, 0.25f, 1.0f);
+	light->SetAmbientColor(0.1f, 0.1f, 0.1f, 1.0f);
 	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetDirection(0.0f, 0.0f, 1.0f);
+	light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
+	light->SetSpecularPower(64.0f);
+
 
 	return true;
 }
@@ -149,7 +152,7 @@ bool Graphics::Render()
 	bool result;
 
 	// Clear the buffers to begin the scene.
-	dxHandler->BeginScene(0.1f, 0.1f, 0.1f, 1.0f);
+	dxHandler->BeginScene(0.0f, 0.4f, 0.4f, 1.0f);
 
 	// PUT RENDERS BELOW HERE
 	//___________________________________________________________________________________________________
@@ -158,8 +161,8 @@ bool Graphics::Render()
 	camera->Render();
 
 	// Get the world, view, and projection matrices from the camera and DX objects.
-	dxHandler->GetWorldMatrix(worldMatrix);
 	camera->GetViewMatrix(viewMatrix);
+	dxHandler->GetWorldMatrix(worldMatrix);
 	dxHandler->GetProjectionMatrix(projectionMatrix);
 
 	// Rotation n stuff
@@ -167,7 +170,7 @@ bool Graphics::Render()
 	if (rotCubeAngle > 2 * XM_PI)
 		rotCubeAngle = 0.0f;
 
-	XMVECTOR rotCubeAxis = DirectX::XMVectorSet(rotCubeAngle, rotCubeAngle, 0.0f, 0.0f);
+	XMVECTOR rotCubeAxis = DirectX::XMVectorSet(0.0f, rotCubeAngle, 0.0f, 0.0f);
 	XMMATRIX rotCubeRotation = DirectX::XMMatrixRotationRollPitchYawFromVector(rotCubeAxis);
 
 	// TODO: SEPARATE WORLD MATRIX BETWEEN MODELS WHEN RENDERING MORE OF THEM.
@@ -178,7 +181,7 @@ bool Graphics::Render()
 
 	// Render the testCube using the texture shader.
 	result = textureShader->Render(dxHandler->GetDeviceContext(), testCube->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, testCube->GetTexture(), 
-									light->GetDirection(), light->GetAmbientColor(), light->GetDiffuseColor());
+									light->GetDirection(), light->GetAmbientColor(), light->GetDiffuseColor(), camera->GetPosition(), light->GetSpecularColor(), light->GetSpecularPower());
 	if (!result)
 	{
 		return false;

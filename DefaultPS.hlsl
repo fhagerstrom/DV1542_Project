@@ -3,11 +3,11 @@ SamplerState SampleType;
 
 cbuffer lightBuffer
 {
-    float4 ambientColor;
+    float4 ambient;
     float4 diffuse;
     float3 lightDirection;
-    float4 specularColor;
     float specularPower;
+    float4 specular;
 };
 
 struct PixelInputType
@@ -27,7 +27,7 @@ float4 main(PixelInputType input) : SV_TARGET
     float3 reflection;
     float4 specular;
     
-    color = ambientColor;
+    color = ambient;
     
     // Initialize the specular color.
     specular = float4(0.0f, 0.0f, 0.0f, 0.0f);
