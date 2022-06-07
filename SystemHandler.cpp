@@ -17,8 +17,8 @@ bool SystemHandler::Initialize()
 	bool result;
 
 	// Initialize the width and height of the screen.
-	screenWidth = 1024;
-	screenHeight = 768;
+	screenWidth = 1280;
+	screenHeight = 720;
 
 	// Initialize the windows api.
 	InitializeWindows(screenWidth, screenHeight);
@@ -100,6 +100,7 @@ void SystemHandler::Run()
 		{
 			done = true;
 		}
+
 		else
 		{
 			// Otherwise do the frame processing.
@@ -127,10 +128,13 @@ bool SystemHandler::Frame()
 		return false;
 	}
 
+	frameTimer.Frame();
+
 	// Do the frame processing for the graphics object.
-	result = graphics->Frame();
+	result = graphics->Frame(frameTimer.DeltaTime());
 	if(!result)
 	{
+		MessageBox(NULL, L"Couldn't process frame for graphics", L"SYSTEMHANDLER ERROR", MB_OK);
 		return false;
 	}
 

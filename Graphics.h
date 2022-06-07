@@ -5,9 +5,8 @@
 #include "Model.h"
 #include "Shaders.h"
 #include "Light.h"
+#include "Timer.h"
 
-const bool FULL_SCREEN = false;
-const bool VSYNC_ENABLED = true;
 const float SCREEN_DEPTH = 1000.0f;
 const float SCREEN_NEAR = 0.1f;
 
@@ -15,24 +14,25 @@ class Graphics
 {
 public:
 	Graphics();
-	Graphics(const Graphics&);
 	~Graphics();
 
 	bool Initialize(int, int, HWND);
 	void Shutdown();
-	bool Frame();
+	bool Frame(float dt);
+	void Update(float dt);
 
 private:
-	bool Render();
+	bool Render(float dt);
 
-private:
 	DxHandler* dxHandler;
 	Camera* camera;
 	Model* testCube;
 	Shader* textureShader;
 	Light* light;
 
-	// Rotation related variables for models that should.
+	XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
+
+	// Rotation related variables for models that will rotate.
 	float rotCubeAngle = 0.0f;
-	float rotSpeed = 0.00005f;
+	float rotSpeed = 0.0005f;
 };

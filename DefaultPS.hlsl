@@ -50,7 +50,7 @@ float4 main(PixelInputType input) : SV_TARGET
         color = saturate(color);
         
         // Calculate the reflection vector based on the light intensity, normal vector, and light direction.
-        reflection = normalize(4 * lightIntensity * input.normal - lightDir);
+        reflection = normalize(2 * lightIntensity * input.normal - lightDir);
         
         // Determine the amount of specular light based on the reflection vector, viewing direction, and specular power.
         specular = pow(saturate(dot(reflection, input.viewDirection)), specularPower);

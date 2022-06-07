@@ -10,12 +10,6 @@ Graphics::Graphics()
 	light = 0;
 }
 
-
-Graphics::Graphics(const Graphics& other)
-{
-}
-
-
 Graphics::~Graphics()
 {
 }
@@ -29,6 +23,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	dxHandler = new DxHandler;
 	if(!dxHandler)
 	{
+		MessageBox(hwnd, L"Couldn't create DirectX handler object!", L"DX ERROR", MB_OK);
 		return false;
 	}
 
@@ -36,7 +31,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	result = dxHandler->Initialize(screenWidth, screenHeight, hwnd, SCREEN_DEPTH, SCREEN_NEAR);
 	if(!result)
 	{
-		MessageBox(hwnd, L"Could not initialize Direct3D.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize DirectX!", L" DX ERROR", MB_OK);
 		return false;
 	}
 
@@ -54,7 +49,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	if (!testCube)
 		return false;
 
-	result = testCube->InitializeCube(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"Textures/spaceWallpaper.jpg");
+	result = testCube->InitializeCube(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"Textures/bathTiles.jpg");
 	if (!result)
 		return false;
 
@@ -79,7 +74,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	light->SetAmbientColor(0.1f, 0.1f, 0.1f, 1.0f);
 	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light->SetDirection(0.0f, -1.0f, 1.0f);
+	light->SetDirection(0.0f, 0.0f, 1.0f);
 	light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetSpecularPower(16.0f);
 
@@ -131,12 +126,15 @@ void Graphics::Shutdown()
 	return;
 }
 
-bool Graphics::Frame()
+bool Graphics::Frame(float dt)
 {
 	bool result;
 
+	// Update models and other moving objects
+	// Update(dt);
+
 	// Render the graphics scene.
-	result = Render();
+	result = Render(dt);
 	if (!result)
 	{
 		return false;
@@ -145,10 +143,15 @@ bool Graphics::Frame()
 	return true;
 }
 
+//void Graphics::Update(float dt)
+//{
+//
+//
+//}
 
-bool Graphics::Render()
+
+bool Graphics::Render(float dt)
 {
-	XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
 	bool result;
 
 	// Clear the buffers to begin the scene.
@@ -166,14 +169,14 @@ bool Graphics::Render()
 	dxHandler->GetProjectionMatrix(projectionMatrix);
 
 	// Rotation n stuff
-	rotCubeAngle += XM_PI * rotSpeed;
+	rotCubeAngle += 1.5f * dt;
 	if (rotCubeAngle > 2 * XM_PI)
 		rotCubeAngle = 0.0f;
 
-	XMVECTOR rotCubeAxis = DirectX::XMVectorSet(rotCubeAngle, rotCubeAngle, 0.0f, 0.0f);
+	XMVECTOR rotCubeAxis = DirectX::XMVectorSet(0.0f, rotCubeAngle, 0.0f, 0.0f);
 	XMMATRIX rotCubeRotation = DirectX::XMMatrixRotationRollPitchYawFromVector(rotCubeAxis);
 
-	// TODO: SEPARATE WORLD MATRIX BETWEEN MODELS WHEN RENDERING MORE OF THEM.
+	// TODO: Make a SetWorldMatrix function for the Model class.
 	worldMatrix = rotCubeRotation * XMMatrixTranslation(0.0f, 0.0f, 0.0f);
 
 	// Put the testCube vertex and index buffers on the graphics pipeline to prepare them for drawing.

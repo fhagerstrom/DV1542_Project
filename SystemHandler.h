@@ -6,6 +6,7 @@
 
 #include "Input.h"
 #include "Graphics.h"
+#include "Timer.h"
 
 class SystemHandler
 {
@@ -31,6 +32,7 @@ private:
 
 	Input* input;
 	Graphics* graphics;
+	Timer frameTimer;
 };
 
 static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
