@@ -2,6 +2,7 @@
 #include <vector>
 #include <fstream>
 #include <istream>
+#include <sstream>
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include <assert.h>

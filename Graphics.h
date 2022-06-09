@@ -19,7 +19,7 @@ public:
 	bool Initialize(int, int, HWND);
 	void Shutdown();
 	bool Frame(float dt);
-	void Update(float dt);
+	// void Update(float dt);
 
 private:
 	bool Render(float dt);

@@ -43,16 +43,18 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Set the initial position of the camera.
-	camera->SetPosition(0.0f, 0.0f, -7.0f);
+	camera->SetPosition(0.0f, 0.0f, -6.0f);
 
 	testCube = new Model;
 	if (!testCube)
 		return false;
 
-	result = testCube->InitializeCube(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"Textures/bathTiles.jpg");
+	result = testCube->InitializeCube(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/bathTiles.jpg");
 	if (!result)
+	{
+		MessageBox(NULL, L"Couldn't initialize cube. Check path to texture", L"MODEL ERROR", MB_OK);
 		return false;
-
+	}
 	// Create the texture shader object.
 	textureShader = new Shader;
 	if (!textureShader)
@@ -74,9 +76,9 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	light->SetAmbientColor(0.1f, 0.1f, 0.1f, 1.0f);
 	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light->SetDirection(0.0f, 0.0f, 1.0f);
+	light->SetDirection(0.0f, -1.0f, 1.0f);
 	light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light->SetSpecularPower(16.0f);
+	light->SetSpecularPower(8.0f);
 
 
 	return true;
@@ -149,13 +151,12 @@ bool Graphics::Frame(float dt)
 //
 //}
 
-
 bool Graphics::Render(float dt)
 {
 	bool result;
 
 	// Clear the buffers to begin the scene.
-	dxHandler->BeginScene(0.0f, 0.2f, 0.3f, 1.0f);
+	dxHandler->BeginScene(0.2f, 0.2f, 0.2f, 1.0f);
 
 	// PUT RENDERS BELOW HERE
 	//___________________________________________________________________________________________________
