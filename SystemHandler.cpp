@@ -182,7 +182,7 @@ void SystemHandler::InitializeWindows(int& screenWidth, int& screenHeight)
 	hInstance = GetModuleHandle(NULL);
 
 	// Give the application a name.
-	appName = L"3D Fart Box";
+	appName = L"3D Project Thingy";
 
 	// Setup the windows class with default settings.
 	wc.style         = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;

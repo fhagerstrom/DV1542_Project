@@ -8,6 +8,10 @@ Model::Model()
 	texture = 0;
 }
 
+Model::Model(std::string name)
+{
+}
+
 Model::~Model()
 {
 }

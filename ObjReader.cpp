@@ -162,7 +162,7 @@ bool ObjReader::LoadObj(ID3D11Device* device, Model* model, std::wstring modelFi
 									// Convert strings to ints
 									std::wistringstream wStoi(vertexPart);
 
-									if (partCheck == 0) // Vertex positions
+									if (partCheck == 0) // Simply v
 									{
 										wStoi >> tempVertexPosIndex;
 										tempVertexPosIndex -= 1; // OBJ arrays start at 1, not 0. Therefore, subtract 1
@@ -174,10 +174,38 @@ bool ObjReader::LoadObj(ID3D11Device* device, Model* model, std::wstring modelFi
 										}
 									}
 
-									// TODO: Continue here!!!!!
+									else if (partCheck == 1) // vt
+									{
+										if (vertexPart != L"")
+										{
+											wStoi >> tempVertexTCIndex;
+											tempVertexTCIndex -= 1;
+										}
+
+										// No texcoords, default
+										else
+											tempVertexTCIndex = 0;
+
+										if (j == vertexDef.length() - 1) // If the current char is in the end of the string, there are no normals
+										{
+											tempVertexNormalIndex = 0; // Sets default normal value
+										}
+									}
+
+									else if (partCheck == 2) // vn
+									{
+										std::wistringstream wStoi(vertexPart);
+										wStoi >> tempVertexNormalIndex;
+										tempVertexNormalIndex -= 1; // Subtract 1
+									}
+									vertexPart = L""; // Clear string and go to next part
+									partCheck++; // Go on to next vertex part
 
 								}
 							}
+							// TODO: WRITE CODE FOR STORING FACES HERE!!!
+
+							// MODEL SUBSET
 
 						}
 

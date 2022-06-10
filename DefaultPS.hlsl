@@ -39,7 +39,7 @@ float4 main(PixelInputType input) : SV_TARGET
     lightDir = -lightDirection;
 
     // Calculate the amount of light on this pixel.
-    lightIntensity = dot(input.normal, lightDir);
+    lightIntensity = dot(lightDir, input.normal);
     
     if (lightIntensity > 0.0f)
     {
@@ -59,7 +59,7 @@ float4 main(PixelInputType input) : SV_TARGET
     // Multiply the texture pixel and the input color to get the textured result.
     color = color * textureColor;
     
-    // Set secular component as the last calculation so it displays correctly.
+    // Set specular component as the last calculation.
     color = saturate(color + specular);
 
     return color;

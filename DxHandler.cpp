@@ -302,7 +302,6 @@ void DxHandler::BeginScene(float red, float green, float blue, float alpha)
 {
 	float color[4];
 
-
 	// Setup the color to clear the buffer to.
 	color[0] = red;
 	color[1] = green;
@@ -321,7 +320,6 @@ void DxHandler::BeginScene(float red, float green, float blue, float alpha)
 
 void DxHandler::EndScene()
 {
-	// Present as fast as possible.
 	swapChain->Present(0, 0);
 }
 

@@ -2,6 +2,8 @@
 
 #include <d3d11.h>
 #include <directxmath.h>
+#include <iostream>
+#include <string>
 
 #include "Texture.h"
 
@@ -24,6 +26,7 @@ class Model
 {
 public:
 	Model();
+	Model(std::string name);
 	~Model();
 
 	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, LPCWSTR);

@@ -43,13 +43,13 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Set the initial position of the camera.
-	camera->SetPosition(0.0f, 0.0f, -6.0f);
+	camera->SetPosition(0.0f, 0.0f, -5.0f);
 
 	testCube = new Model;
 	if (!testCube)
 		return false;
 
-	result = testCube->InitializeCube(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/bathTiles.jpg");
+	result = testCube->InitializeCube(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/iceWall.png");
 	if (!result)
 	{
 		MessageBox(NULL, L"Couldn't initialize cube. Check path to texture", L"MODEL ERROR", MB_OK);
@@ -74,11 +74,11 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	if (!light)
 		return false;
 
-	light->SetAmbientColor(0.1f, 0.1f, 0.1f, 1.0f);
+	light->SetAmbientColor(0.2f, 0.2f, 0.2f, 1.0f);
 	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light->SetDirection(0.0f, -1.0f, 1.0f);
-	light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light->SetSpecularPower(8.0f);
+	light->SetDirection(-5.0f, 20.0f, 20.0f);
+	light->SetSpecularColor(1.0f, 0.0f, 0.0f, 1.0f);
+	light->SetSpecularPower(16.0f);
 
 
 	return true;
@@ -170,7 +170,7 @@ bool Graphics::Render(float dt)
 	dxHandler->GetProjectionMatrix(projectionMatrix);
 
 	// Rotation n stuff
-	rotCubeAngle += 1.5f * dt;
+	rotCubeAngle += 0.4f * dt;
 	if (rotCubeAngle > 2 * XM_PI)
 		rotCubeAngle = 0.0f;
 
