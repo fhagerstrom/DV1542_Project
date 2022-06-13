@@ -15,6 +15,7 @@ public:
 	bool Initialize(ID3D11Device* device, LPCWSTR textureFile);
 	void Shutdown();
 
+	void SetTexture(ID3D11ShaderResourceView* resource) { this->textureSrv = resource; }
 	ID3D11ShaderResourceView* GetTexture() { return textureSrv; };
 
 };

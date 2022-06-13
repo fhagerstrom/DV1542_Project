@@ -16,7 +16,7 @@ Model::~Model()
 {
 }
 
-bool Model::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, LPCWSTR textureFilename)
+bool Model::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, LPCWSTR textureFile)
 {
 	bool result;
 
@@ -24,13 +24,15 @@ bool Model::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
 	result = InitializeBuffers(device);
 	if(!result)
 	{
+		MessageBox(NULL, L"Couldn't initialize buffers for model!", L"MODEL ERROR", MB_OK);
 		return false;
 	}
 
 	// Load the texture for this model.
-	result = LoadTexture(device, deviceContext, textureFilename);
+	result = LoadTexture(device, deviceContext, textureFile);
 	if (!result)
 	{
+		MessageBox(NULL, L"Couldn't initialize texture for model!", L"´MODEL ERROR", MB_OK);
 		return false;
 	}
 
@@ -71,18 +73,6 @@ void Model::Render(ID3D11DeviceContext* deviceContext)
 	RenderBuffers(deviceContext);
 
 	return;
-}
-
-
-int Model::GetIndexCount()
-{
-	return indexCount;
-}
-
-
-ID3D11ShaderResourceView* Model::GetTexture()
-{
-	return texture->GetTexture();
 }
 
 bool Model::InitializeBuffers(ID3D11Device* device)

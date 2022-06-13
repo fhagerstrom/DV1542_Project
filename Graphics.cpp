@@ -170,7 +170,7 @@ bool Graphics::Render(float dt)
 	dxHandler->GetProjectionMatrix(projectionMatrix);
 
 	// Rotation n stuff
-	rotCubeAngle += 0.4f * dt;
+	rotCubeAngle += 0.8f * dt;
 	if (rotCubeAngle > 2 * XM_PI)
 		rotCubeAngle = 0.0f;
 
