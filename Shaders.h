@@ -13,9 +13,9 @@ ALIGN16
 struct CBPerObject
 {
 	XMMATRIX world;
-	/*XMMATRIX view;
-	XMMATRIX projection;*/
-	XMMATRIX wvp;
+	XMMATRIX view;
+	XMMATRIX projection;
+	// XMMATRIX wvp;
 
 };
 

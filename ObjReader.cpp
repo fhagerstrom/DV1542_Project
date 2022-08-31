@@ -632,7 +632,7 @@ bool ObjReader::LoadObj(ID3D11Device* device, Model* model, std::wstring modelFi
 	}
 
 	// TODO:
-	// CALCULATE NORMALS
+	// * CALCULATE NORMALS
 
 
 
@@ -652,9 +652,9 @@ bool ObjReader::LoadObj(ID3D11Device* device, Model* model, std::wstring modelFi
 	ID3D11Buffer* indexBuffer;
 	ID3D11Buffer* vertexBuffer;
 
-	D3D11_SUBRESOURCE_DATA iinitData;
-	iinitData.pSysMem = &model->GetIndices()[0];
-	this->hr = device->CreateBuffer(&indexBufferDesc, &iinitData, &indexBuffer);
+	D3D11_SUBRESOURCE_DATA initData;
+	initData.pSysMem = &model->GetIndices()[0];
+	this->hr = device->CreateBuffer(&indexBufferDesc, &initData, &indexBuffer);
 	assert(SUCCEEDED(this->hr));
 
 	// Create vertex buffer

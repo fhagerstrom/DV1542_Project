@@ -44,25 +44,33 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Set the initial position of the camera.
-	camera->SetPosition(0.0f, 0.0f, -6.0f);
+	camera->SetPosition(0.0f, 0.0f, -8.0f);
 	// camera->SetRotation(0.0f, 2.0f, 0.0f);
 
 	testCube = new Model;
 	if (!testCube)
 		return false;
 
-	result = testCube->InitializeCube(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/iceWall.png");
+	result = testCube->InitializeCube(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/gold.jpg");
 	if (!result)
 	{
 		MessageBox(NULL, L"Couldn't initialize cube. Check the file paths!", L"MODEL ERROR", MB_OK);
 		return false;
 	}
 
-	objTest = new Model;
-	reader.LoadObj(dxHandler->GetDevice(), objTest, L"assets/models/monkey.obj", true, false);
-	//objTest->GetMaterials()[0].hasTexture = false;
-	//objTest->GetMaterials()[0].hasReflection = false;
-	allModels.push_back(objTest);
+	torusRing = new Model;
+	reader.LoadObj(dxHandler->GetDevice(), torusRing, L"assets/models/torusDonut.obj", true, false);
+	// torusRing->GetTextureStruct()->SetName("ice");
+	// torusRing->GetMaterials()[0].hasTexture = false;
+	//torusRing->GetMaterials()[0].hasReflection = false;
+	allModels.push_back(torusRing);
+
+	suzanne = new Model;
+	reader.LoadObj(dxHandler->GetDevice(), suzanne, L"assets/models/monkey_triangulated.obj", true, false);
+	// torusRing->GetTextureStruct()->SetName("ice");
+	// torusRing->GetMaterials()[0].hasTexture = false;
+	//torusRing->GetMaterials()[0].hasReflection = false;
+	allModels.push_back(suzanne);
 
 	// Set model material
 	//modelMtl.ambientMtl = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -99,9 +107,9 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	light->SetAmbientColor(0.25f, 0.25f, 0.25f, 1.0f);
 	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light->SetDirection(0.0f, 10.0f, 20.0f);
+	light->SetSpecularColor(0.2f, 0.8f, 0.2f, 0.0f); // TODO: FIX BUG WITH SPECULAR COLOR, DOESNT CHANGE OR DISAPPPEAR WHEN COMMENTED
+	light->SetDirection(10.0f, 20.0f, 30.0f);
 	light->SetSpecularPower(32.0f);
-	light->SetSpecularColor(0.0f, 0.0f, 0.0f, 0.0f); // TODO: FIX BUG WITH SPECULAR COLOR, DOESNT CHANGE OR DISAPPPEAR WHEN COMMENTED
 
 
 	return true;
@@ -187,7 +195,7 @@ bool Graphics::Render(float dt)
 	bool result;
 
 	// Clear the buffers to begin the scene.
-	dxHandler->BeginScene(0.2f, 0.2f, 0.2f, 1.0f);
+	dxHandler->BeginScene(0.2f, 0.5f, 0.2f, 1.0f);
 
 	// PUT RENDERS BELOW HERE
 	//___________________________________________________________________________________________________
@@ -201,34 +209,42 @@ bool Graphics::Render(float dt)
 	dxHandler->GetProjectionMatrix(projectionMatrix);
 
 	// Rotation n stuff
-	rotCubeAngle += 1.0f * dt;
-	if (rotCubeAngle > 2 * XM_PI)
-		rotCubeAngle = 0.0f;
+	rotModelAngle += 1.0f * dt;
+	if (rotModelAngle > 2 * XM_PI)
+		rotModelAngle = 0.0f;
 
-	XMVECTOR rotCubeAxis = DirectX::XMVectorSet(0.0f, rotCubeAngle, rotCubeAngle, 0.0f);
-	XMMATRIX rotCubeRotation = DirectX::XMMatrixRotationRollPitchYawFromVector(rotCubeAxis);
+	XMVECTOR rotModelAxis = DirectX::XMVectorSet(0.0f, rotModelAngle, 0.0f, 0.0f);
+	XMMATRIX rotModelRotation = DirectX::XMMatrixRotationRollPitchYawFromVector(rotModelAxis);
 
-	rotQuadAngle += 0.4f * dt;
+	/*rotQuadAngle += 0.4f * dt;
 	if (rotQuadAngle > 2 * XM_PI)
 		rotQuadAngle = 0.0f;
 
 	XMVECTOR rotQuadAxis = DirectX::XMVectorSet(0.0f, rotQuadAngle, 0.0f, 0.0f);
-	XMMATRIX rotQuadRotation = DirectX::XMMatrixRotationRollPitchYawFromVector(rotQuadAxis);
+	XMMATRIX rotQuadRotation = DirectX::XMMatrixRotationRollPitchYawFromVector(rotQuadAxis);*/
 
 	// TODO: Make a SetWorldMatrix function for the Model class.
-	worldMatrix = rotCubeRotation * XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+	worldMatrix = rotModelRotation * XMMatrixTranslation(0.0f, 0.0f, 0.0f);
 
 
 	// CALL RENDER FUNCTION FOR MODELS
 	//___________________________________________________________________________________________________
 
-	// Put the testCube vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	// Put the testCube vertex and index buffers on the graphics pipeline to prepare them for drawing
 	testCube->Render(dxHandler->GetDeviceContext());
 	// testQuad->Render(dxHandler->GetDeviceContext());
 
-	// Render the testCube using the texture shader.
-	result = textureShader->Render(dxHandler->GetDeviceContext(), objTest->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, testCube->GetTexture(), 
+	// torusRing->Render(dxHandler->GetDeviceContext());
+	suzanne->Render(dxHandler->GetDeviceContext());
+
+	// Render model using the texture shader
+	result = textureShader->Render(dxHandler->GetDeviceContext(), suzanne->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, testCube->GetTexture(), 
 									light->GetDirection(), light->GetAmbientColor(), light->GetDiffuseColor(), camera->GetPosition(), light->GetSpecularColor(), light->GetSpecularPower());
+
+	/*result = textureShader->Render(dxHandler->GetDeviceContext(), suzanne->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, testCube->GetTexture(),
+		light->GetDirection(), light->GetAmbientColor(), light->GetDiffuseColor(), camera->GetPosition(), light->GetSpecularColor(), light->GetSpecularPower());*/
+
+
 
 	/*for (int i = 0; i < allModels.size(); i++) 
 	{

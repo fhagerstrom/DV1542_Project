@@ -2,7 +2,6 @@
 
 Texture::Texture()
 {
-	texture = 0;
 	textureSrv = 0;
 }
 
@@ -31,13 +30,6 @@ void Texture::Shutdown()
 	{
 		textureSrv->Release();
 		textureSrv = 0;
-	}
-
-	// Release the texture.
-	if(texture)
-	{
-		texture->Release();
-		texture = 0;
 	}
 
 	return;

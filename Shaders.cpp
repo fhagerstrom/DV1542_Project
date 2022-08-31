@@ -124,7 +124,7 @@ bool Shader::InitializeShader(ID3D11Device* device, HWND hwnd, LPCWSTR vsFilenam
 
     // Setup the description of the matrix constant buffer that is in the vertex shader.
     matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	matrixBufferDesc.ByteWidth = sizeof(MatrixBuffer);
+	matrixBufferDesc.ByteWidth = sizeof(CBPerObject);
     matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     matrixBufferDesc.MiscFlags = 0;
@@ -139,7 +139,7 @@ bool Shader::InitializeShader(ID3D11Device* device, HWND hwnd, LPCWSTR vsFilenam
 
 	// Setup the description of the camera dynamic constant buffer that is in the vertex shader.
 	cameraBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	cameraBufferDesc.ByteWidth = sizeof(CameraBuffer);
+	cameraBufferDesc.ByteWidth = sizeof(CBCamera);
 	cameraBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	cameraBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	cameraBufferDesc.MiscFlags = 0;
@@ -155,7 +155,7 @@ bool Shader::InitializeShader(ID3D11Device* device, HWND hwnd, LPCWSTR vsFilenam
 	// Setup the description of the light dynamic constant buffer that is in the pixel shader.
 	// Note that ByteWidth always needs to be a multiple of 16 if using D3D11_BIND_CONSTANT_BUFFER or CreateBuffer will fail.
 	lightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	lightBufferDesc.ByteWidth = sizeof(LightBuffer);
+	lightBufferDesc.ByteWidth = sizeof(CBLight);
 	lightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	lightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	lightBufferDesc.MiscFlags = 0;
@@ -253,9 +253,9 @@ bool Shader::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX wo
 {
 	HRESULT result;
     D3D11_MAPPED_SUBRESOURCE mappedResource;
-	MatrixBuffer* dataPtr;
-	LightBuffer* dataPtr2;
-	CameraBuffer* dataPtr3;
+	CBPerObject* dataPtr;
+	CBLight* dataPtr2;
+	CBCamera* dataPtr3;
 
 	// Transpose the matrices to prepare them for the shader.
 	worldMatrix = XMMatrixTranspose(worldMatrix);
@@ -270,7 +270,7 @@ bool Shader::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX wo
 	}
 
 	// Get a pointer to the data in the constant buffer.
-	dataPtr = (MatrixBuffer*)mappedResource.pData;
+	dataPtr = (CBPerObject*)mappedResource.pData;
 
 	// Copy the matrices into the constant buffer.
 	dataPtr->world = worldMatrix;
@@ -291,7 +291,7 @@ bool Shader::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX wo
 	}
 
 	// Get a pointer to the data in the constant buffer.
-	dataPtr3 = (CameraBuffer*)mappedResource.pData;
+	dataPtr3 = (CBCamera*)mappedResource.pData;
 
 	// Copy the camera position into the constant buffer.
 	dataPtr3->cameraPos = cameraPos;
@@ -314,7 +314,7 @@ bool Shader::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX wo
 	}
 
 	// Get a pointer to the data in the constant buffer.
-	dataPtr2 = (LightBuffer*)mappedResource.pData;
+	dataPtr2 = (CBLight*)mappedResource.pData;
 
 	// Copy the lighting variables into the constant buffer.
 	dataPtr2->ambientColor = ambient;
