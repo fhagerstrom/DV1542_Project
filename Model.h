@@ -33,8 +33,15 @@ struct Material
 
 	float shine = 1;
 
+	int textureArrayIndex = 0;
+
 	bool hasTexture = false;
 	bool hasReflection = false;
+	bool hasNormalMap = false;
+
+	bool isTransparent = false;
+
+	XMFLOAT4 translation = { 0.0f, 0.0f, 0.0f, 0.0f };
 };
 
 class Model
@@ -44,8 +51,11 @@ public:
 	Model(std::string name);
 	~Model();
 
-	bool Initialize(ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR textureFile);
 	bool InitializeCube(ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR textureFile);
+	bool InitializeQuad(ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR textureFile);
+
+	bool LoadNormalMap(ID3D11Device*, LPCWSTR);
+	void LoadTextureObj(ID3D11ShaderResourceView* textureSrv);
 
 	void Shutdown();
 	void Render(ID3D11DeviceContext*);
@@ -55,17 +65,22 @@ public:
 	int GetVertexCount() { return this->vertexCount; }
 	int GetIndexCount() { return this->indexCount; };
 	int& GetSubsetCount() { return this->subsetCount; };
-
-	ID3D11Buffer& GetVertexBuffer() { return *this->vertexBuffer; }
-	ID3D11Buffer& GetIndexBuffer() { return *this->indexBuffer; }
+	std::vector<int>& GetSubsetIndexVector() { return subsetIndexStart; }
 
 	std::vector<Vertex>& GetVertices() { return vertices; }
+	std::vector<DWORD>& GetIndices() { return indices; }
+	std::vector<XMFLOAT3>& GetVerticesArray() { return vertexPosArray; }
 	std::vector<Material>& GetMaterials() { return materials; }
-	std::vector<int>& GetSubsetIndex() { return this->subsetIndexStart; };
-	std::vector<int>& GetSubsetMaterial() { return this->subsetMaterial; };
+	std::vector<int>& GetSubsetIndex() { return this->subsetIndexStart; }
+	std::vector<int>& GetSubsetMaterialVector() { return this->subsetMaterial; }
 
-	XMMATRIX GetWorldMatrix() { return this->world; }
-	ID3D11ShaderResourceView* GetTexture() { return texture->GetTexture(); };
+	ID3D11ShaderResourceView* GetTexture() { return texture->GetTexture(); }
+	std::vector<std::wstring>& GetTextureNameVector() { return this->textureNames; }
+	Texture* GetTextureStruct() { return this->texture; }
+	ID3D11Buffer& GetVertexBuffer() { return *this->vertexBuffer; }
+	ID3D11Buffer& GetIndexBuffer() { return *this->indexBuffer; }
+	DirectX::XMMATRIX GetWorldMatrix() { return this->world; }
+
 	// ---------------------------------------------------------------------------------
 
 
@@ -80,12 +95,12 @@ public:
 	// ---------------------------------------------------------------------------------
 
 private:
-	bool InitializeBuffers(ID3D11Device*);
 	void ShutdownBuffers();
 	void RenderBuffers(ID3D11DeviceContext*);
 
 	bool CreateCube(ID3D11Device* device);
-	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, LPCWSTR);
+	bool CreateQuad(ID3D11Device* device);
+	bool LoadTexture(ID3D11Device* device, ID3D11DeviceContext* deviceContext, LPCWSTR filename);
 	void ReleaseTexture();
 
 	HRESULT hr;
@@ -96,10 +111,16 @@ private:
 
 	std::string modelName;
 	Texture* texture;
+	Texture* normalMap;
 
 	std::vector<Vertex> vertices;
 	std::vector<DWORD> indices;
+
+	std::vector<XMFLOAT3> vertexPosArray;			// Used for CPU to do calculations on the Geometry
+	std::vector<DWORD> vertexIndexArray;			// Also used for CPU calculations on geometry
+
 	std::vector<Material> materials;
+	std::vector<std::wstring> textureNames;
 	std::vector<int> subsetIndexStart;
 	std::vector<int> subsetMaterial;
 

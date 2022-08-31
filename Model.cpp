@@ -16,29 +16,6 @@ Model::~Model()
 {
 }
 
-bool Model::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, LPCWSTR textureFile)
-{
-	bool result;
-
-	// Initialize the vertex and index buffers.
-	result = InitializeBuffers(device);
-	if(!result)
-	{
-		MessageBox(NULL, L"Couldn't initialize buffers for model!", L"MODEL ERROR", MB_OK);
-		return false;
-	}
-
-	// Load the texture for this model.
-	result = LoadTexture(device, deviceContext, textureFile);
-	if (!result)
-	{
-		MessageBox(NULL, L"Couldn't initialize texture for model!", L"´MODEL ERROR", MB_OK);
-		return false;
-	}
-
-	return true;
-}
-
 bool Model::InitializeCube(ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR textureFile)
 {
 	bool result;
@@ -52,6 +29,43 @@ bool Model::InitializeCube(ID3D11Device* device, ID3D11DeviceContext* context, L
 		return false;
 
 	return true;
+}
+
+bool Model::InitializeQuad(ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR textureFile)
+{
+	bool result;
+
+	result = CreateQuad(device);
+	if (!result)
+		return false;
+
+	result = LoadTexture(device, context, textureFile);
+	if (!result)
+		return false;
+
+	return true;
+}
+
+bool Model::LoadNormalMap(ID3D11Device* device, LPCWSTR textureFile)
+{
+	bool result;
+
+	normalMap = new Texture;
+	if (!normalMap)
+		return false;
+
+	result = normalMap->Initialize(device, textureFile);
+	if (!result)
+		return false;
+
+	return true;
+}
+
+void Model::LoadTextureObj(ID3D11ShaderResourceView* textureSrv)
+{
+	texture = new Texture;
+
+	texture->SetTexture(textureSrv);
 }
 
 
@@ -74,99 +88,6 @@ void Model::Render(ID3D11DeviceContext* deviceContext)
 
 	return;
 }
-
-bool Model::InitializeBuffers(ID3D11Device* device)
-{
-	Vertex* vertices;
-	unsigned long* indices;
-	D3D11_BUFFER_DESC vertexBufferDesc, indexBufferDesc;
-    D3D11_SUBRESOURCE_DATA vertexData, indexData;
-
-	// Set the number of vertices in the vertex array.
-	vertexCount = 3;
-
-	// Set the number of indices in the index array.
-	indexCount = 3;
-
-	// Create the vertex array.
-	vertices = new Vertex[vertexCount];
-	if(!vertices)
-	{
-		return false;
-	}
-
-	// Create the index array.
-	indices = new unsigned long[indexCount];
-	if(!indices)
-	{
-		return false;
-	}
-
-	// Load the vertex array with data.
-	vertices[0].position = XMFLOAT3(-1.0f, -1.0f, 0.0f);  // Bottom left.
-	vertices[0].texCoord = XMFLOAT2(0.0f, 1.0f);
-
-	vertices[1].position = XMFLOAT3(0.0f, 1.0f, 0.0f);  // Top middle.
-	vertices[1].texCoord = XMFLOAT2(0.5f, 0.0f);
-
-	vertices[2].position = XMFLOAT3(1.0f, -1.0f, 0.0f);  // Bottom right.
-	vertices[2].texCoord = XMFLOAT2(1.0f, 1.0f);
-
-	// Load the index array with data.
-	indices[0] = 0;  // Bottom left.
-	indices[1] = 1;  // Top middle.
-	indices[2] = 2;  // Bottom right.
-
-	// Set up the description of the static vertex buffer.
-    vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-    vertexBufferDesc.ByteWidth = sizeof(Vertex) * vertexCount;
-    vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    vertexBufferDesc.CPUAccessFlags = 0;
-    vertexBufferDesc.MiscFlags = 0;
-	vertexBufferDesc.StructureByteStride = 0;
-
-	// Give the subresource structure a pointer to the vertex data.
-    vertexData.pSysMem = vertices;
-	vertexData.SysMemPitch = 0;
-	vertexData.SysMemSlicePitch = 0;
-
-	// Now create the vertex buffer.
-    hr = device->CreateBuffer(&vertexBufferDesc, &vertexData, &vertexBuffer);
-	if(FAILED(hr))
-	{
-		return false;
-	}
-
-	// Set up the description of the static index buffer.
-    indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-    indexBufferDesc.ByteWidth = sizeof(unsigned long) * indexCount;
-    indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    indexBufferDesc.CPUAccessFlags = 0;
-    indexBufferDesc.MiscFlags = 0;
-	indexBufferDesc.StructureByteStride = 0;
-
-	// Give the subresource structure a pointer to the index data.
-    indexData.pSysMem = indices;
-	indexData.SysMemPitch = 0;
-	indexData.SysMemSlicePitch = 0;
-
-	// Create the index buffer.
-	hr = device->CreateBuffer(&indexBufferDesc, &indexData, &indexBuffer);
-	if(FAILED(hr))
-	{
-		return false;
-	}
-
-	// Release the arrays now that the vertex and index buffers have been created and loaded.
-	delete [] vertices;
-	vertices = 0;
-
-	delete [] indices;
-	indices = 0;
-
-	return true;
-}
-
 
 void Model::ShutdownBuffers()
 {
@@ -282,7 +203,7 @@ bool Model::CreateCube(ID3D11Device* device)
 	indexCount = ARRAYSIZE(cubeIndices);
 	vertexCount = ARRAYSIZE(cube);
 
-	// Vertexbuffer description for cube
+	// Vertexbuffer description for quad
 	D3D11_BUFFER_DESC bufferDesc;
 	ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
 	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -296,14 +217,14 @@ bool Model::CreateCube(ID3D11Device* device)
 	ZeroMemory(&resourceData, sizeof(D3D11_SUBRESOURCE_DATA));
 	resourceData.pSysMem = cube;
 
-	// Create vertexbuffer for cube
+	// Create vertexbuffer for quad
 	hr = device->CreateBuffer(&bufferDesc, &resourceData, &vertexBuffer);
 	if (FAILED(hr)) {
 		MessageBox(0, L"Failed to create vertex buffer", L"MODEL ERROR", MB_ICONERROR);
 		return false;
 	}
 
-	// Indexbuffer description for cube
+	// Indexbuffer description for quad
 	ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
 	bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -315,11 +236,79 @@ bool Model::CreateCube(ID3D11Device* device)
 	ZeroMemory(&resourceData, sizeof(D3D11_SUBRESOURCE_DATA));
 	resourceData.pSysMem = cubeIndices;
 
-	// Create indexbuffer for cube
+	// Create indexbuffer for quad
 	hr = device->CreateBuffer(&bufferDesc, &resourceData, &indexBuffer);
 	if (FAILED(hr)) 
 	{
 		MessageBox(0, L"Failed to create index buffer", L"MODEL ERROR", MB_ICONERROR);
+		return false;
+	}
+
+	return true;
+}
+
+bool Model::CreateQuad(ID3D11Device* device)
+{
+	// Create own vertexbuffer and indices
+	Vertex quad[] = 
+	{
+
+		Vertex(-1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, -1.0f),
+		Vertex(-1.0f,  1.0f, 0.0f, 0.0f, 0.0f,-1.0f,  1.0f, -1.0f),
+		Vertex(1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 1.0f,  1.0f, -1.0f),
+		Vertex(1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f),
+
+	};
+
+	DWORD quadIndices[] =
+	{
+		// Front Face
+		0,  1,  2,
+		0,  2,  3,
+
+	};
+
+	indexCount = ARRAYSIZE(quadIndices);
+	vertexCount = ARRAYSIZE(quad);
+
+	// Vertexbuffer description for quad
+	D3D11_BUFFER_DESC bufferDesc;
+	ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
+	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	bufferDesc.CPUAccessFlags = 0u;
+	bufferDesc.MiscFlags = 0u;
+	bufferDesc.ByteWidth = sizeof(Vertex) * vertexCount;
+	bufferDesc.StructureByteStride = sizeof(Vertex);
+
+	D3D11_SUBRESOURCE_DATA resourceData;
+	ZeroMemory(&resourceData, sizeof(D3D11_SUBRESOURCE_DATA));
+	resourceData.pSysMem = quad;
+
+	// Create vertexbuffer for quad
+	hr = device->CreateBuffer(&bufferDesc, &resourceData, &vertexBuffer);
+	if (FAILED(hr)) {
+		MessageBox(0, L"Failed to create vertex buffer for quad!", L"MODEL ERROR", MB_OK);
+		return false;
+	}
+
+	// Indexbuffer description for quad
+	ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
+	bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	bufferDesc.CPUAccessFlags = 0u;
+	bufferDesc.MiscFlags = 0u;
+	bufferDesc.ByteWidth = sizeof(DWORD) * indexCount;
+	bufferDesc.StructureByteStride = sizeof(DWORD);
+
+	ZeroMemory(&resourceData, sizeof(D3D11_SUBRESOURCE_DATA));
+	resourceData.pSysMem = quadIndices;
+
+	// Create indexbuffer for quad
+	hr = device->CreateBuffer(&bufferDesc, &resourceData, &indexBuffer);
+	if (FAILED(hr)) 
+	{
+		MessageBox(0, L"Failed to create index buffer for quad!", L"MODEL ERROR", MB_OK);
 		return false;
 	}
 

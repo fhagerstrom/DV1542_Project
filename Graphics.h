@@ -2,6 +2,7 @@
 
 #include "DxHandler.h"
 #include "Camera.h"
+#include "ObjReader.h"
 #include "Model.h"
 #include "Shaders.h"
 #include "Light.h"
@@ -26,13 +27,22 @@ private:
 
 	DxHandler* dxHandler;
 	Camera* camera;
+
 	Model* testCube;
+	Model* testQuad;
+	Model* objTest;
+	Material modelMtl;
+
 	Shader* textureShader;
 	Light* light;
+	ObjReader reader;
+
+	std::vector<Model*> allModels;
 
 	XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
 
 	// Rotation related variables for models that will rotate.
 	float rotCubeAngle = 0.0f;
+	float rotQuadAngle = 0.0f;
 	float rotSpeed = 0.0005f;
 };

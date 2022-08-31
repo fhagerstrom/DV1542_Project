@@ -6,6 +6,7 @@ Graphics::Graphics()
 	dxHandler = 0;
 	camera = 0;
 	testCube = 0;
+	testQuad = 0;
 	textureShader = 0;
 	light = 0;
 }
@@ -43,7 +44,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Set the initial position of the camera.
-	camera->SetPosition(0.0f, 0.0f, -5.0f);
+	camera->SetPosition(0.0f, 0.0f, -6.0f);
+	// camera->SetRotation(0.0f, 2.0f, 0.0f);
 
 	testCube = new Model;
 	if (!testCube)
@@ -52,9 +54,30 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	result = testCube->InitializeCube(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/iceWall.png");
 	if (!result)
 	{
-		MessageBox(NULL, L"Couldn't initialize cube. Check path to texture", L"MODEL ERROR", MB_OK);
+		MessageBox(NULL, L"Couldn't initialize cube. Check the file paths!", L"MODEL ERROR", MB_OK);
 		return false;
 	}
+
+	objTest = new Model;
+	reader.LoadObj(dxHandler->GetDevice(), objTest, L"assets/models/monkey.obj", true, false);
+	//objTest->GetMaterials()[0].hasTexture = false;
+	//objTest->GetMaterials()[0].hasReflection = false;
+	allModels.push_back(objTest);
+
+	// Set model material
+	//modelMtl.ambientMtl = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+
+	/*testQuad = new Model;
+	if (!testQuad)
+		return false;
+
+	result = testQuad->InitializeQuad(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/spaceWallpaper.jpg");
+	if (!result)
+	{
+		MessageBox(NULL, L"Couldn't initialize quad. Check the file paths!", L"MODEL ERROR", MB_OK);
+		return false;
+	}*/
+
 	// Create the texture shader object.
 	textureShader = new Shader;
 	if (!textureShader)
@@ -74,11 +97,11 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	if (!light)
 		return false;
 
-	light->SetAmbientColor(0.2f, 0.2f, 0.2f, 1.0f);
+	light->SetAmbientColor(0.25f, 0.25f, 0.25f, 1.0f);
 	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light->SetDirection(-5.0f, 20.0f, 20.0f);
-	light->SetSpecularColor(1.0f, 0.0f, 0.0f, 1.0f);
-	light->SetSpecularPower(16.0f);
+	light->SetDirection(0.0f, 10.0f, 20.0f);
+	light->SetSpecularPower(32.0f);
+	light->SetSpecularColor(0.0f, 0.0f, 0.0f, 0.0f); // TODO: FIX BUG WITH SPECULAR COLOR, DOESNT CHANGE OR DISAPPPEAR WHEN COMMENTED
 
 
 	return true;
@@ -108,6 +131,14 @@ void Graphics::Shutdown()
 		testCube->Shutdown();
 		delete testCube;
 		testCube = 0;
+	}
+
+	// Release the testCube object.
+	if (testQuad)
+	{
+		testQuad->Shutdown();
+		delete testQuad;
+		testQuad = 0;
 	}
 
 	// Release the camera object.
@@ -170,22 +201,40 @@ bool Graphics::Render(float dt)
 	dxHandler->GetProjectionMatrix(projectionMatrix);
 
 	// Rotation n stuff
-	rotCubeAngle += 0.8f * dt;
+	rotCubeAngle += 1.0f * dt;
 	if (rotCubeAngle > 2 * XM_PI)
 		rotCubeAngle = 0.0f;
 
-	XMVECTOR rotCubeAxis = DirectX::XMVectorSet(0.0f, rotCubeAngle, 0.0f, 0.0f);
+	XMVECTOR rotCubeAxis = DirectX::XMVectorSet(0.0f, rotCubeAngle, rotCubeAngle, 0.0f);
 	XMMATRIX rotCubeRotation = DirectX::XMMatrixRotationRollPitchYawFromVector(rotCubeAxis);
+
+	rotQuadAngle += 0.4f * dt;
+	if (rotQuadAngle > 2 * XM_PI)
+		rotQuadAngle = 0.0f;
+
+	XMVECTOR rotQuadAxis = DirectX::XMVectorSet(0.0f, rotQuadAngle, 0.0f, 0.0f);
+	XMMATRIX rotQuadRotation = DirectX::XMMatrixRotationRollPitchYawFromVector(rotQuadAxis);
 
 	// TODO: Make a SetWorldMatrix function for the Model class.
 	worldMatrix = rotCubeRotation * XMMatrixTranslation(0.0f, 0.0f, 0.0f);
 
+
+	// CALL RENDER FUNCTION FOR MODELS
+	//___________________________________________________________________________________________________
+
 	// Put the testCube vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	testCube->Render(dxHandler->GetDeviceContext());
+	// testQuad->Render(dxHandler->GetDeviceContext());
 
 	// Render the testCube using the texture shader.
-	result = textureShader->Render(dxHandler->GetDeviceContext(), testCube->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, testCube->GetTexture(), 
+	result = textureShader->Render(dxHandler->GetDeviceContext(), objTest->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, testCube->GetTexture(), 
 									light->GetDirection(), light->GetAmbientColor(), light->GetDiffuseColor(), camera->GetPosition(), light->GetSpecularColor(), light->GetSpecularPower());
+
+	/*for (int i = 0; i < allModels.size(); i++) 
+	{
+		allModels[i]->Render(dxHandler->GetDeviceContext());
+	}*/
+
 	if (!result)
 	{
 		return false;

@@ -15,7 +15,10 @@ bool Texture::Initialize(ID3D11Device* device, LPCWSTR textureFile)
 {
 	hr = DirectX::CreateWICTextureFromFile(device, textureFile, nullptr, &textureSrv);
 	if (FAILED(hr))
+	{
+		MessageBox(NULL, L"Couldn't create texture from file!", L"TEXTURE ERROR", MB_OK);
 		return false;
+	}
 
 	return true;
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#define ALIGN16 __declspec(align(16))
+
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <directxmath.h>
@@ -7,14 +9,18 @@
 
 using namespace DirectX;
 
-struct MatrixBuffer
+ALIGN16
+struct CBPerObject
 {
 	XMMATRIX world;
-	XMMATRIX view;
-	XMMATRIX projection;
+	/*XMMATRIX view;
+	XMMATRIX projection;*/
+	XMMATRIX wvp;
+
 };
 
-struct LightBuffer
+ALIGN16
+struct CBLight
 {
 	XMFLOAT4 ambientColor;
 	XMFLOAT4 diffuseColor;
@@ -23,7 +29,8 @@ struct LightBuffer
 	XMFLOAT4 specularColor;
 };
 
-struct CameraBuffer
+ALIGN16
+struct CBCamera
 {
 	XMFLOAT3 cameraPos;
 	float padding;
