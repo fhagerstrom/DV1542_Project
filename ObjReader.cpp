@@ -82,7 +82,7 @@ bool ObjReader::LoadObj(ID3D11Device* device, Model* model, std::wstring modelFi
 				else
 					vertexTexCoord.push_back(XMFLOAT2(vtu, vtv)); // Insert values into vector without conversion
 
-				hasTexCoord = true; // The model does have texture coordinates.
+				hasTexCoord = true; // The model does have textureSRV coordinates.
 			}
 
 			if (charCheck == 'n')
@@ -315,7 +315,7 @@ bool ObjReader::LoadObj(ID3D11Device* device, Model* model, std::wstring modelFi
 		model->GetSubsetCount()--;
 	}
 
-	// Default values for normals and texture coords if they're not specified
+	// Default values for normals and textureSRV coords if they're not specified
 	if (!hasNormals)
 	{
 		vertexNormal.push_back(XMFLOAT3(0.0f, 0.0f, 0.0f));
@@ -513,7 +513,7 @@ bool ObjReader::LoadObj(ID3D11Device* device, Model* model, std::wstring modelFi
 												filePathEnded = true;
 											}
 										}
-										// Check if this texture has already been loaded
+										// Check if this textureSRV has already been loaded
 										bool alreadyLoaded = false;
 										for (int i = 0; (unsigned)i < model->GetTextureNameVector().size(); i++)
 										{

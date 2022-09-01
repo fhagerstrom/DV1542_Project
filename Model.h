@@ -75,10 +75,14 @@ public:
 	std::vector<int>& GetSubsetMaterialVector() { return this->subsetMaterial; }
 
 	ID3D11ShaderResourceView* GetTexture() { return texture->GetTexture(); }
+	ID3D11ShaderResourceView* GetNormalMap() {return this->normalMap->GetTexture();}
+
 	std::vector<std::wstring>& GetTextureNameVector() { return this->textureNames; }
 	Texture* GetTextureStruct() { return this->texture; }
+
 	ID3D11Buffer& GetVertexBuffer() { return *this->vertexBuffer; }
 	ID3D11Buffer& GetIndexBuffer() { return *this->indexBuffer; }
+
 	DirectX::XMMATRIX GetWorldMatrix() { return this->world; }
 
 	// ---------------------------------------------------------------------------------

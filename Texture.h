@@ -7,7 +7,7 @@ class Texture
 {
 private:
 	HRESULT hr;
-	// ID3D11Texture2D* texture;
+	// ID3D11Texture2D* textureSRV;
 	ID3D11ShaderResourceView* textureSrv;
 	std::string name;
 

@@ -32,6 +32,8 @@ private:
 	Model* testQuad;
 	Model* torusRing;
 	Model* suzanne;
+	Model* sphere;
+	Model* triforce;
 
 	Material modelMtl;
 

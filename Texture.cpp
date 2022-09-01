@@ -25,7 +25,7 @@ bool Texture::Initialize(ID3D11Device* device, LPCWSTR textureFile)
 
 void Texture::Shutdown()
 {
-	// Release the texture view resource.
+	// Release the textureSRV view resource.
 	if(textureSrv)
 	{
 		textureSrv->Release();

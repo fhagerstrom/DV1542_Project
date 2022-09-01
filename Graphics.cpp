@@ -72,6 +72,20 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	//torusRing->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(suzanne);
 
+	sphere = new Model;
+	reader.LoadObj(dxHandler->GetDevice(), sphere, L"assets/models/icoSphere.obj", true, false);
+	// torusRing->GetTextureStruct()->SetName("ice");
+	// torusRing->GetMaterials()[0].hasTexture = false;
+	//torusRing->GetMaterials()[0].hasReflection = false;
+	allModels.push_back(sphere);
+
+	triforce = new Model;
+	reader.LoadObj(dxHandler->GetDevice(), triforce, L"assets/models/triforce.obj", true, false);
+	// torusRing->GetTextureStruct()->SetName("ice");
+	// torusRing->GetMaterials()[0].hasTexture = false;
+	//torusRing->GetMaterials()[0].hasReflection = false;
+	allModels.push_back(triforce);
+
 	// Set model material
 	//modelMtl.ambientMtl = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -86,7 +100,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}*/
 
-	// Create the texture shader object.
+	// Create the textureSRV shader object.
 	textureShader = new Shader;
 	if (!textureShader)
 	{
@@ -108,7 +122,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	light->SetAmbientColor(0.25f, 0.25f, 0.25f, 1.0f);
 	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetSpecularColor(0.2f, 0.8f, 0.2f, 0.0f); // TODO: FIX BUG WITH SPECULAR COLOR, DOESNT CHANGE OR DISAPPPEAR WHEN COMMENTED
-	light->SetDirection(10.0f, 20.0f, 30.0f);
+	light->SetDirection(-5.0f, 1.0f, 1.0f);
 	light->SetSpecularPower(32.0f);
 
 
@@ -118,7 +132,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 void Graphics::Shutdown()
 {
-	// Release the texture shader object.
+	// Release the textureSRV shader object.
 	if (textureShader)
 	{
 		textureShader->Shutdown();
@@ -195,7 +209,7 @@ bool Graphics::Render(float dt)
 	bool result;
 
 	// Clear the buffers to begin the scene.
-	dxHandler->BeginScene(0.2f, 0.5f, 0.2f, 1.0f);
+	dxHandler->BeginScene(0.1f, 0.5f, 0.5f, 1.0f);
 
 	// PUT RENDERS BELOW HERE
 	//___________________________________________________________________________________________________
@@ -231,14 +245,16 @@ bool Graphics::Render(float dt)
 	//___________________________________________________________________________________________________
 
 	// Put the testCube vertex and index buffers on the graphics pipeline to prepare them for drawing
-	testCube->Render(dxHandler->GetDeviceContext());
+	// testCube->Render(dxHandler->GetDeviceContext());
 	// testQuad->Render(dxHandler->GetDeviceContext());
 
 	// torusRing->Render(dxHandler->GetDeviceContext());
-	suzanne->Render(dxHandler->GetDeviceContext());
+	triforce->Render(dxHandler->GetDeviceContext());
+	// suzanne->Render(dxHandler->GetDeviceContext());
+	// sphere->Render(dxHandler->GetDeviceContext());
 
-	// Render model using the texture shader
-	result = textureShader->Render(dxHandler->GetDeviceContext(), suzanne->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, testCube->GetTexture(), 
+	// Render model using the textureSRV shader
+	result = textureShader->Render(dxHandler->GetDeviceContext(), triforce->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, testCube->GetTexture(), 
 									light->GetDirection(), light->GetAmbientColor(), light->GetDiffuseColor(), camera->GetPosition(), light->GetSpecularColor(), light->GetSpecularPower());
 
 	/*result = textureShader->Render(dxHandler->GetDeviceContext(), suzanne->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, testCube->GetTexture(),

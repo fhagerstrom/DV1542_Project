@@ -129,7 +129,7 @@ bool DxHandler::Initialize(int screenWidth, int screenHeight, HWND hwnd, float s
 	depthBufferDesc.CPUAccessFlags = 0;
 	depthBufferDesc.MiscFlags = 0;
 
-	// Create the texture for the depth buffer using the filled out description.
+	// Create the textureSRV for the depth buffer using the filled out description.
 	hr = devicePtr->CreateTexture2D(&depthBufferDesc, NULL, &m_depthStencilBuffer);
 	if (FAILED(hr))
 	{

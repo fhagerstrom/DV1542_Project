@@ -71,7 +71,7 @@ void Model::LoadTextureObj(ID3D11ShaderResourceView* textureSrv)
 
 void Model::Shutdown()
 {
-	// Release the model texture.
+	// Release the model textureSRV.
 	ReleaseTexture();
 
 	// Shutdown the vertex and index buffers.
@@ -319,14 +319,14 @@ bool Model::LoadTexture(ID3D11Device* device, ID3D11DeviceContext* deviceContext
 {
 	bool result;
 
-	// Create the texture object.
+	// Create the textureSRV object.
 	texture = new Texture;
 	if (!texture)
 	{
 		return false;
 	}
 
-	// Initialize the texture object.
+	// Initialize the textureSRV object.
 	result = texture->Initialize(device, filename);
 	if (!result)
 	{
@@ -339,7 +339,7 @@ bool Model::LoadTexture(ID3D11Device* device, ID3D11DeviceContext* deviceContext
 
 void Model::ReleaseTexture()
 {
-	// Release the texture object.
+	// Release the textureSRV object.
 	if (texture)
 	{
 		texture->Shutdown();
