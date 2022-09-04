@@ -44,14 +44,14 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Set the initial position of the camera.
-	camera->SetPosition(0.0f, 0.0f, -8.0f);
+	camera->SetPosition(0.0f, 0.0f, -10.0f);
 	// camera->SetRotation(0.0f, 2.0f, 0.0f);
 
 	testCube = new Model;
 	if (!testCube)
 		return false;
 
-	result = testCube->InitializeCube(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/gold.jpg");
+	result = testCube->InitializeCube(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/spaceWallpaper.jpg");
 	if (!result)
 	{
 		MessageBox(NULL, L"Couldn't initialize cube. Check the file paths!", L"MODEL ERROR", MB_OK);
@@ -60,6 +60,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	torusRing = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), torusRing, L"assets/models/torusDonut.obj", true, false);
+	torusRing->SetWorldMatrix(XMMatrixTranslation(-2.0f, 0.0f, 0.0f));
 	// torusRing->GetTextureStruct()->SetName("ice");
 	// torusRing->GetMaterials()[0].hasTexture = false;
 	//torusRing->GetMaterials()[0].hasReflection = false;
@@ -67,6 +68,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	suzanne = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), suzanne, L"assets/models/monkey_triangulated.obj", true, false);
+	torusRing->SetWorldMatrix(XMMatrixTranslation(2.0f, 0.0f, 0.0f));
 	// torusRing->GetTextureStruct()->SetName("ice");
 	// torusRing->GetMaterials()[0].hasTexture = false;
 	//torusRing->GetMaterials()[0].hasReflection = false;
@@ -81,6 +83,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	triforce = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), triforce, L"assets/models/triforce.obj", true, false);
+	torusRing->SetWorldMatrix(XMMatrixTranslation(0.0f, 0.0f, 0.0f));
 	// torusRing->GetTextureStruct()->SetName("ice");
 	// torusRing->GetMaterials()[0].hasTexture = false;
 	//torusRing->GetMaterials()[0].hasReflection = false;
@@ -115,13 +118,28 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	// REWRITTEN SHADER HANDLING TEST
+	/*result = textureShader->InitializeShaders(dxHandler->GetDevice(), hwnd, L"DefaultVS.hlsl", L"DefaultPS.hlsl", "main", "main");
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the shader object.", L"SHADER ERROR", MB_OK);
+		return false;
+	}*/
+
+	/*result = textureShader->CreateDefaultInputLayout(dxHandler->GetDevice());
+	if (!result)
+		return false;*/
+
+
+
+
 	light = new Light;
 	if (!light)
 		return false;
 
 	light->SetAmbientColor(0.25f, 0.25f, 0.25f, 1.0f);
 	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light->SetSpecularColor(0.2f, 0.8f, 0.2f, 0.0f); // TODO: FIX BUG WITH SPECULAR COLOR, DOESNT CHANGE OR DISAPPPEAR WHEN COMMENTED
+	light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f); // TODO: FIX BUG WITH SPECULAR COLOR, DOESNT CHANGE OR DISAPPPEAR WHEN COMMENTED
 	light->SetDirection(-5.0f, 1.0f, 1.0f);
 	light->SetSpecularPower(32.0f);
 
@@ -207,9 +225,10 @@ bool Graphics::Frame(float dt)
 bool Graphics::Render(float dt)
 {
 	bool result;
+	XMMATRIX view, projection;
 
 	// Clear the buffers to begin the scene.
-	dxHandler->BeginScene(0.1f, 0.5f, 0.5f, 1.0f);
+	dxHandler->BeginScene(0.2f, 0.2f, 0.2f, 1.0f);
 
 	// PUT RENDERS BELOW HERE
 	//___________________________________________________________________________________________________
@@ -219,7 +238,6 @@ bool Graphics::Render(float dt)
 
 	// Get the world, view, and projection matrices from the camera and DX objects.
 	camera->GetViewMatrix(viewMatrix);
-	dxHandler->GetWorldMatrix(worldMatrix);
 	dxHandler->GetProjectionMatrix(projectionMatrix);
 
 	// Rotation n stuff
@@ -262,10 +280,13 @@ bool Graphics::Render(float dt)
 
 
 
-	/*for (int i = 0; i < allModels.size(); i++) 
-	{
-		allModels[i]->Render(dxHandler->GetDeviceContext());
-	}*/
+	//for (int i = 0; i < allModels.size(); i++) 
+	//{
+	//	allModels[i]->Render(dxHandler->GetDeviceContext());
+	//	//result = textureShader->NewRender(dxHandler->GetDeviceContext(), allModels[i], view, projection, camera, light, dxHandler->GetMinMagMipSampler());
+	//	if (!result)
+	//		return false;
+	//}
 
 	if (!result)
 	{

@@ -56,6 +56,19 @@ bool Shader::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMMATRIX
 	return true;
 }
 
+bool Shader::NewRender(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light, ID3D11SamplerState* sampler)
+{
+	bool result;
+	result = SetCBuffers(context, model, view, projection, camera, light);
+	if (!result) {
+		return false;
+	}
+
+	NewRenderShader(context, model->GetIndexCount(), sampler);
+
+	return true;
+}
+
 
 bool Shader::InitializeShader(ID3D11Device* device, HWND hwnd, LPCWSTR vsFilename, LPCWSTR psFilename)
 {
@@ -498,7 +511,22 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 		context->PSSetShaderResources(2, 1, &normalMapSRV);
 	}
 
+	/* Set Camera buffer - Vertex shader */
+	cameraCb.cameraPos = camera->GetPosition();
 
+	context->UpdateSubresource(cameraBuffer, 0, nullptr, &cameraCb, 0, 0);
+	context->VSSetConstantBuffers(1, 1, &cameraBuffer);
+	
+	/* Set Light buffer	- Pixel shader */
+	lightCb.ambientColor = light->GetAmbientColor();
+	lightCb.diffuseColor = light->GetDiffuseColor();
+	lightCb.specularColor = light->GetSpecularColor();
+	lightCb.lightDirection = light->GetDirection();
+
+	context->UpdateSubresource(lightBuffer, 0, nullptr, &lightCb, 0, 0);
+	context->PSSetConstantBuffers(0, 1, &lightBuffer);
+
+	// TODO: Set material buffer - Pixel shader
 
 	return true;
 }
@@ -514,6 +542,24 @@ void Shader::RenderShader(ID3D11DeviceContext* deviceContext, int indexCount)
 
 	// Set the sampler state in the pixel shader.
 	deviceContext->PSSetSamplers(0, 1, &samplerState);
+
+	// Render the object.
+	deviceContext->DrawIndexed(indexCount, 0, 0);
+
+	return;
+}
+
+void Shader::NewRenderShader(ID3D11DeviceContext* deviceContext, int indexCount, ID3D11SamplerState* sampler)
+{
+	// Set the vertex input layout.
+	deviceContext->IASetInputLayout(defaultLayout);
+
+	// Set the vertex and pixel shaders that will be used to render this triangle.
+	deviceContext->VSSetShader(vertexShader, NULL, 0);
+	deviceContext->PSSetShader(pixelShader, NULL, 0);
+
+	// Set the sampler state in the pixel shader.
+	deviceContext->PSSetSamplers(0, 1, &sampler);
 
 	// Render the object.
 	deviceContext->DrawIndexed(indexCount, 0, 0);
