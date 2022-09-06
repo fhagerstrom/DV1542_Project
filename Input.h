@@ -1,19 +1,27 @@
 #pragma once
+#include "dinput.h"
+
 
 class Input
 {
 public:
-	Input();
-	Input(const Input&);
+	Input(HWND hwnd);
 	~Input();
 
-	void Initialize();
+	bool Initialize(HINSTANCE hInstance, HWND hwnd);
+	void Shutdown();
 
-	void KeyDown(unsigned int);
-	void KeyUp(unsigned int);
-
-	bool IsKeyDown(unsigned int);
+	IDirectInput8* GetDirectInput8() { return directInput; }
+	IDirectInputDevice8* GetDirectInput8Keyboard() { return keyboard; }
+	IDirectInputDevice8* GetDirectInput8Mouse() { return mouse; }
+	DIMOUSESTATE GetlastState() { return this->mouseState; }
 
 private:
-	bool keys[256];
+	IDirectInput8* directInput;
+	IDirectInputDevice8* keyboard;
+	IDirectInputDevice8* mouse;
+
+	unsigned char keyboardState[256];
+	DIMOUSESTATE mouseState;
+	HWND hwnd;
 };

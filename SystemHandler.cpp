@@ -24,17 +24,18 @@ bool SystemHandler::Initialize()
 	InitializeWindows(screenWidth, screenHeight);
 
 	// Create the input object. This object will be used to handle reading the keyboard input from the user.
-	input = new Input;
-	if(!input)
-	{
+	input = new Input(hwnd);
+	if (!input)
+		return false;
+
+	result = input->Initialize(hInstance, hwnd);
+	if (!result) {
+		MessageBox(hwnd, L"Could not initialize the input object.", L"Error", MB_OK);
 		return false;
 	}
 
-	// Initialize the input object.
-	input->Initialize();
-
 	// Create the graphics object.  This object will handle rendering all the graphics for this application.
-	graphics = new Graphics;
+	graphics = new Graphics(input);
 	if(!graphics)
 	{
 		return false;
@@ -123,7 +124,7 @@ bool SystemHandler::Frame()
 
 
 	// Check if the user pressed escape and wants to exit the application.
-	if(input->IsKeyDown(VK_ESCAPE))
+	if(GetAsyncKeyState(VK_ESCAPE))
 	{
 		return false;
 	}
@@ -150,7 +151,7 @@ LRESULT CALLBACK SystemHandler::MessageHandler(HWND hwnd, UINT umsg, WPARAM wpar
 		case WM_KEYDOWN:
 		{
 			// If a key is pressed send it to the input object so it can record that state.
-			input->KeyDown((unsigned int)wparam);
+			// input->KeyDown((unsigned int)wparam);
 			return 0;
 		}
 
@@ -158,7 +159,7 @@ LRESULT CALLBACK SystemHandler::MessageHandler(HWND hwnd, UINT umsg, WPARAM wpar
 		case WM_KEYUP:
 		{
 			// If a key is released then send it to the input object so it can unset the state for that key.
-			input->KeyUp((unsigned int)wparam);
+			// input->KeyUp((unsigned int)wparam);
 			return 0;
 		}
 

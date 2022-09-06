@@ -14,7 +14,7 @@ const float SCREEN_NEAR = 0.1f;
 class Graphics
 {
 public:
-	Graphics();
+	Graphics(Input* input);
 	~Graphics();
 
 	bool Initialize(int, int, HWND);
@@ -43,10 +43,14 @@ private:
 
 	std::vector<Model*> allModels;
 
+	/* Input devices */
+	Input* input;
+	IDirectInput8* directInput;
+	IDirectInputDevice8* keyboard;
+	IDirectInputDevice8* mouse;
+
 	XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
 
 	// Rotation related variables for models that will rotate.
 	float rotModelAngle = 0.0f;
-	float rotQuadAngle = 0.0f;
-	float rotSpeed = 0.0005f;
 };

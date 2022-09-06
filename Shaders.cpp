@@ -320,8 +320,6 @@ bool Shader::InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileNa
 		return false;
 	}
 
-
-
 	return true;
 }
 
@@ -430,8 +428,8 @@ bool Shader::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX wo
 
 	// Copy the matrices into the constant buffer.
 	dataPtr->world = worldMatrix;
-	/*dataPtr->view = viewMatrix;
-	dataPtr->projection = projectionMatrix;*/
+	dataPtr->view = viewMatrix;
+	dataPtr->projection = projectionMatrix;
 
 
 	// Unlock the constant buffer.

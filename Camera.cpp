@@ -12,12 +12,6 @@ Camera::Camera()
 	rotZ = 0.0f;
 }
 
-
-Camera::Camera(const Camera& other)
-{
-}
-
-
 Camera::~Camera()
 {
 }
@@ -25,10 +19,9 @@ Camera::~Camera()
 
 void Camera::SetPosition(float x, float y, float z)
 {
-	posX = x;
-	posY = y;
-	posZ = z;
-	return;
+	eyePosition.m128_f32[0] = x;
+	eyePosition.m128_f32[1] = y;
+	eyePosition.m128_f32[2] = z;
 }
 
 
@@ -40,10 +33,25 @@ void Camera::SetRotation(float x, float y, float z)
 	return;
 }
 
+void Camera::SetTargetPosition(float x, float y, float z)
+{
+	this->lookAt = XMVectorSet(x, y, z, 1.0f);
+}
+
+void Camera::SetUpvector(float x, float y, float z)
+{
+	this->upVector = XMVectorSet(x, y, z, 0.0f);
+}
+
+DirectX::XMFLOAT3 Camera::GetLookAt()
+{
+	return XMFLOAT3(lookAt.m128_f32[0], lookAt.m128_f32[1], lookAt.m128_f32[2]);;
+}
+
 
 XMFLOAT3 Camera::GetPosition()
 {
-	return XMFLOAT3(posX, posY, posZ);
+	return XMFLOAT3(eyePosition.m128_f32[0], eyePosition.m128_f32[1], eyePosition.m128_f32[2]);
 }
 
 
@@ -52,63 +60,117 @@ XMFLOAT3 Camera::GetRotation()
 	return XMFLOAT3(rotX, rotY, rotZ);
 }
 
-
-void Camera::Render()
+void Camera::GetInputs(Input* input)
 {
-	XMFLOAT3 up, position, lookAt;
-	XMVECTOR upVector, positionVector, lookAtVector;
-	float yaw, pitch, roll;
-	XMMATRIX rotationMatrix;
+	this->input = input;
+	this->directInput = input->GetDirectInput8();
+	this->keyboard = input->GetDirectInput8Keyboard();
+	this->mouse = input->GetDirectInput8Mouse();
+}
 
+void Camera::DetectInputs(double deltaTime)
+{
+	DIMOUSESTATE mouseCurrState;
+	BYTE keyboardState[256];
 
-	// Setup the vector that points upwards.
-	up.x = 0.0f;
-	up.y = 1.0f;
-	up.z = 0.0f;
+	keyboard->Acquire();
+	mouse->Acquire();
 
-	// Load it into a XMVECTOR structure.
-	upVector = XMLoadFloat3(&up);
+	mouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseCurrState);
+	keyboard->GetDeviceState(sizeof(keyboardState), (LPVOID)&keyboardState);
 
-	// Setup the position of the camera in the world.
-	position.x = posX;
-	position.y = posY;
-	position.z = posZ;
+	float speed = (float)(15.0f * deltaTime);
 
-	// Load it into a XMVECTOR structure.
-	positionVector = XMLoadFloat3(&position);
+	// LEFT
+	if (keyboardState[DIK_A] & 0x80)
+	{
+		moveLeftRight -= speed;
+	}
 
-	// Setup where the camera is looking by default.
-	lookAt.x = 0.0f;
-	lookAt.y = 0.0f;
-	lookAt.z = 1.0f;
+	// RIGHT
+	if (keyboardState[DIK_D] & 0x80)
+	{
+		moveLeftRight += speed;
+	}
 
-	// Load it into a XMVECTOR structure.
-	lookAtVector = XMLoadFloat3(&lookAt);
+	// FORWARDS
+	if (keyboardState[DIK_W] & 0x80)
+	{
+		moveBackForward += speed;
+	}
 
-	// Set the yaw (Y axis), pitch (X axis), and roll (Z axis) rotations in radians.
-	pitch = rotX * 0.0174532925f;
-	yaw = rotY * 0.0174532925f;
-	roll = rotZ * 0.0174532925f;
+	// BACKWARDS
+	if (keyboardState[DIK_S] & 0x80)
+	{
+		moveBackForward -= speed;
+	}
 
-	// Create the rotation matrix from the yaw, pitch, and roll values.
-	rotationMatrix = XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
+	// ASCEND
+	if (keyboardState[DIK_SPACE] & 0x80)
+	{
+		eyePosition += XMVectorSet(0.0f, speed, 0.0f, 1.0f);
+	}
 
-	// Transform the lookAt and up vector by the rotation matrix so the view is correctly rotated at the origin.
-	lookAtVector = XMVector3TransformCoord(lookAtVector, rotationMatrix);
-	upVector = XMVector3TransformCoord(upVector, rotationMatrix);
+	// DESCEND
+	if (keyboardState[DIK_LCONTROL] & 0x80)
+	{
+		eyePosition -= XMVectorSet(0.0f, speed, 0.0f, 1.0f);
+	}
 
-	// Translate the rotated camera position to the location of the viewer.
-	lookAtVector = XMVectorAdd(positionVector, lookAtVector);
+	// Reset camera position
+	if (keyboardState[DIK_R] & 0x80)
+	{
+		SetPosition(0.0f, 0.0f, -10.0f);
+		camYaw = 0.0f;
+		camPitch = 0.0f;
+	}
 
-	// Finally create the view matrix from the three updated vectors.
-	viewMatrix = XMMatrixLookAtLH(positionVector, lookAtVector, upVector);
+	if ((mouseCurrState.lX != mouseLastState.lX) || (mouseCurrState.lY != mouseLastState.lY))
+	{
+		camYaw += mouseLastState.lX * 0.001f;
+		camPitch += mouseCurrState.lY * 0.001f;
 
-	return;
+		mouseLastState = mouseCurrState;
+	}
+
+	UpdateCam();
 }
 
 
-void Camera::GetViewMatrix(XMMATRIX& viewMatrix)
+void Camera::UpdateCam()
 {
-	viewMatrix = this->viewMatrix;
-	return;
+	// Set standard definition for main camera
+	rotationMatrix = XMMatrixRotationRollPitchYaw(camPitch, camYaw, 0.0f);
+	lookAt = XMVector3TransformCoord(defaultForward, rotationMatrix);
+	lookAt = XMVector3Normalize(lookAt);
+
+	// Set new value based on mouse movement
+	XMMATRIX RotateYTempMatrix = XMMatrixRotationY(camYaw);
+
+	camRight = XMVector3TransformCoord(defaultRight, RotateYTempMatrix);
+	upVector = XMVector3TransformCoord(upVector, RotateYTempMatrix);
+	camForward = XMVector3TransformCoord(defaultForward, RotateYTempMatrix);
+
+	// Move cameraposition to left and right based on keyboard and mouse inputs
+	float camRightX = XMVectorGetX(camRight) * moveLeftRight;
+	float camRightY = XMVectorGetY(camRight) * moveLeftRight;
+	float camRightZ = XMVectorGetZ(camRight) * moveLeftRight;
+	camRight = XMVectorSet(camRightX, camRightY, camRightZ, 0.0f);
+	eyePosition += camRight;
+
+	// Move camera position up and down based on keyboard and mouse inputs
+	float camForwardX = XMVectorGetX(camForward) * moveBackForward;
+	float camForwardY = XMVectorGetY(camForward) * moveBackForward;
+	float camForwardZ = XMVectorGetZ(camForward) * moveBackForward;
+	camForward = XMVectorSet(camForwardX, camForwardY, camForwardZ, 0.0f);
+	eyePosition += camForward;
+
+	// Reset values before next frame
+	moveLeftRight = 0.0f;
+	moveBackForward = 0.0f;
+
+	lookAt = eyePosition + lookAt;
+
+	// Create view matrix based of movment
+	viewMatrix = XMMatrixLookAtLH(eyePosition, lookAt, upVector);
 }

@@ -1,8 +1,13 @@
 #include "Graphics.h"
 
 
-Graphics::Graphics()
+Graphics::Graphics(Input* input)
 {
+	this->input = input;
+	this->directInput = input->GetDirectInput8();
+	this->keyboard = input->GetDirectInput8Keyboard();
+	this->mouse = input->GetDirectInput8Mouse();
+
 	dxHandler = 0;
 	camera = 0;
 	testCube = 0;
@@ -45,13 +50,13 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	// Set the initial position of the camera.
 	camera->SetPosition(0.0f, 0.0f, -10.0f);
-	// camera->SetRotation(0.0f, 2.0f, 0.0f);
+	camera->GetInputs(input);
 
 	testCube = new Model;
 	if (!testCube)
 		return false;
 
-	result = testCube->InitializeCube(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/newGold.jpg");
+	result = testCube->InitializeCube(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/iceGlass.jpg");
 	if (!result)
 	{
 		MessageBox(NULL, L"Couldn't initialize cube. Check the file paths!", L"MODEL ERROR", MB_OK);
@@ -92,17 +97,6 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	// Set model material
 	//modelMtl.ambientMtl = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
-	/*testQuad = new Model;
-	if (!testQuad)
-		return false;
-
-	result = testQuad->InitializeQuad(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/spaceWallpaper.jpg");
-	if (!result)
-	{
-		MessageBox(NULL, L"Couldn't initialize quad. Check the file paths!", L"MODEL ERROR", MB_OK);
-		return false;
-	}*/
-
 	// Create the texture shader object.
 	textureShader = new Shader;
 	if (!textureShader)
@@ -111,15 +105,15 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Initialize the color shader object.
-	/*result = textureShader->Initialize(dxHandler->GetDevice(), hwnd);
+	result = textureShader->Initialize(dxHandler->GetDevice(), hwnd);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the shader object.", L"SHADER ERROR", MB_OK);
 		return false;
-	}*/
+	}
 
 	// REWRITTEN SHADER HANDLING TEST
-	result = textureShader->InitializeShaders(dxHandler->GetDevice(), hwnd, L"DefaultVS.hlsl", L"DefaultPS.hlsl", "main", "main");
+	/*result = textureShader->InitializeShaders(dxHandler->GetDevice(), hwnd, L"DefaultVS.hlsl", L"DefaultPS.hlsl", "main", "main");
 	if (!result)
 	{
 		MessageBox(hwnd, L"Couldn't initialize the shader object.", L"SHADER ERROR", MB_OK);
@@ -131,16 +125,16 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	{
 		MessageBox(hwnd, L"Couldn't create input layout!", L"INPUT LAYOUT ERROR", MB_OK);
 		return false;
-	}
+	}*/
 
 	light = new Light;
 	if (!light)
 		return false;
 
 	light->SetAmbientColor(0.15f, 0.15f, 0.15f, 1.0f);
-	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light->SetDirection(0.0f, -1.0f, 1.0f);
+	light->SetDiffuseColor(0.0f, 0.0f, 0.0f, 1.0f);
+	light->SetSpecularColor(1.0f, 1.0f, 0.0f, 1.0f);
+	light->SetDirection(1.0f, 0.0f, 1.0f);
 	light->SetSpecularPower(16.0f);
 
 
@@ -206,6 +200,9 @@ bool Graphics::Frame(float dt)
 	// Update models and other moving objects
 	// Update(dt);
 
+	// "Render" and update camera position
+	camera->DetectInputs(dt);
+
 	// Render the graphics scene.
 	result = Render(dt);
 	if (!result)
@@ -234,7 +231,7 @@ bool Graphics::Render(float dt)
 	//___________________________________________________________________________________________________
 
 	// Generate the view matrix based on the camera's position.
-	camera->Render();
+	camera->UpdateCam();
 
 	// Get the world, view, and projection matrices from the camera and DX objects.
 	camera->GetViewMatrix(view);
@@ -256,7 +253,7 @@ bool Graphics::Render(float dt)
 	XMMATRIX rotQuadRotation = DirectX::XMMatrixRotationRollPitchYawFromVector(rotQuadAxis);*/
 
 	// TODO: Make a SetWorldMatrix function for the Model class.
-	worldMatrix = rotModelRotation * XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+	worldMatrix = rotModelRotation * triforce->GetWorldMatrix();
 
 
 	// CALL RENDER FUNCTION FOR MODELS
@@ -267,32 +264,25 @@ bool Graphics::Render(float dt)
 	// testQuad->Render(dxHandler->GetDeviceContext());
 
 	// torusRing->Render(dxHandler->GetDeviceContext());
-	// triforce->Render(dxHandler->GetDeviceContext());
+	triforce->Render(dxHandler->GetDeviceContext());
 	// suzanne->Render(dxHandler->GetDeviceContext());
 	// sphere->Render(dxHandler->GetDeviceContext());
 
 	// Render model using the texture shader
-	/*result = textureShader->Render(dxHandler->GetDeviceContext(), triforce->GetIndexCount(), worldMatrix, view, projection, testCube->GetTexture(), 
-									light->GetDirection(), light->GetAmbientColor(), light->GetDiffuseColor(), camera->GetPosition(), light->GetSpecularColor(), light->GetSpecularPower());*/
+	result = textureShader->Render(dxHandler->GetDeviceContext(), triforce->GetIndexCount(), worldMatrix, view, projection, testCube->GetTexture(),
+									light->GetDirection(), light->GetAmbientColor(), light->GetDiffuseColor(), camera->GetPosition(), light->GetSpecularColor(), light->GetSpecularPower());
 
-	/*result = textureShader->Render(dxHandler->GetDeviceContext(), suzanne->GetIndexCount(), worldMatrix, view, projection, testCube->GetTexture(),
-		light->GetDirection(), light->GetAmbientColor(), light->GetDiffuseColor(), camera->GetPosition(), light->GetSpecularColor(), light->GetSpecularPower());*/
 
 	// REWRITTEN SHADER RENDER FUNCTION TEST
 	// result = textureShader->NewRender(dxHandler->GetDeviceContext(), triforce, view, projection, camera, light, dxHandler->GetMinMagMipSampler());
 
-	for (int i = 0; i < allModels.size(); i++) 
+	/*for (int i = 0; i < allModels.size(); i++) 
 	{
 		allModels[i]->Render(dxHandler->GetDeviceContext());
 		result = textureShader->NewRender(dxHandler->GetDeviceContext(), allModels[i], view, projection, camera, light, dxHandler->GetMinMagMipSampler());
 		if (!result)
 			return false;
-	}
-
-	if (!result)
-	{
-		return false;
-	}
+	}*/
 
 	//___________________________________________________________________________________________________
 
