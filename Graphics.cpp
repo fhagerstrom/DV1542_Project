@@ -51,7 +51,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	if (!testCube)
 		return false;
 
-	result = testCube->InitializeCube(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/spaceWallpaper.jpg");
+	result = testCube->InitializeCube(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/newGold.jpg");
 	if (!result)
 	{
 		MessageBox(NULL, L"Couldn't initialize cube. Check the file paths!", L"MODEL ERROR", MB_OK);
@@ -63,30 +63,30 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	torusRing->SetWorldMatrix(XMMatrixTranslation(-2.0f, 0.0f, 0.0f));
 	// torusRing->GetTextureStruct()->SetName("ice");
 	// torusRing->GetMaterials()[0].hasTexture = false;
-	//torusRing->GetMaterials()[0].hasReflection = false;
+	// torusRing->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(torusRing);
 
 	suzanne = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), suzanne, L"assets/models/monkey_triangulated.obj", true, false);
-	torusRing->SetWorldMatrix(XMMatrixTranslation(2.0f, 0.0f, 0.0f));
-	// torusRing->GetTextureStruct()->SetName("ice");
-	// torusRing->GetMaterials()[0].hasTexture = false;
-	//torusRing->GetMaterials()[0].hasReflection = false;
+	suzanne->SetWorldMatrix(XMMatrixTranslation(2.0f, 0.0f, 0.0f));
+	// suzanne->GetTextureStruct()->SetName("ice");
+	// suzanne->GetMaterials()[0].hasTexture = false;
+	// suzanne->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(suzanne);
 
 	sphere = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), sphere, L"assets/models/icoSphere.obj", true, false);
-	// torusRing->GetTextureStruct()->SetName("ice");
-	// torusRing->GetMaterials()[0].hasTexture = false;
-	//torusRing->GetMaterials()[0].hasReflection = false;
+	// sphere->GetTextureStruct()->SetName("ice");
+	// sphere->GetMaterials()[0].hasTexture = false;
+	// sphere->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(sphere);
 
 	triforce = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), triforce, L"assets/models/triforce.obj", true, false);
-	torusRing->SetWorldMatrix(XMMatrixTranslation(0.0f, 0.0f, 0.0f));
-	// torusRing->GetTextureStruct()->SetName("ice");
-	// torusRing->GetMaterials()[0].hasTexture = false;
-	//torusRing->GetMaterials()[0].hasReflection = false;
+	triforce->SetWorldMatrix(XMMatrixTranslation(0.0f, 0.0f, 0.0f));
+	// triforce->GetTextureStruct()->SetName("ice");
+	// triforce->GetMaterials()[0].hasTexture = false;
+	// triforce->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(triforce);
 
 	// Set model material
@@ -103,7 +103,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}*/
 
-	// Create the textureSRV shader object.
+	// Create the texture shader object.
 	textureShader = new Shader;
 	if (!textureShader)
 	{
@@ -111,36 +111,36 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Initialize the color shader object.
-	result = textureShader->Initialize(dxHandler->GetDevice(), hwnd);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the shader object.", L"SHADER ERROR", MB_OK);
-		return false;
-	}
-
-	// REWRITTEN SHADER HANDLING TEST
-	/*result = textureShader->InitializeShaders(dxHandler->GetDevice(), hwnd, L"DefaultVS.hlsl", L"DefaultPS.hlsl", "main", "main");
+	/*result = textureShader->Initialize(dxHandler->GetDevice(), hwnd);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the shader object.", L"SHADER ERROR", MB_OK);
 		return false;
 	}*/
 
-	/*result = textureShader->CreateDefaultInputLayout(dxHandler->GetDevice());
+	// REWRITTEN SHADER HANDLING TEST
+	result = textureShader->InitializeShaders(dxHandler->GetDevice(), hwnd, L"DefaultVS.hlsl", L"DefaultPS.hlsl", "main", "main");
 	if (!result)
-		return false;*/
+	{
+		MessageBox(hwnd, L"Couldn't initialize the shader object.", L"SHADER ERROR", MB_OK);
+		return false;
+	}
 
-
-
+	result = textureShader->CreateDefaultInputLayout(dxHandler->GetDevice());
+	if (!result)
+	{
+		MessageBox(hwnd, L"Couldn't create input layout!", L"INPUT LAYOUT ERROR", MB_OK);
+		return false;
+	}
 
 	light = new Light;
 	if (!light)
 		return false;
 
-	light->SetAmbientColor(0.25f, 0.25f, 0.25f, 1.0f);
+	light->SetAmbientColor(0.15f, 0.15f, 0.15f, 1.0f);
 	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f); // TODO: FIX BUG WITH SPECULAR COLOR, DOESNT CHANGE OR DISAPPPEAR WHEN COMMENTED
-	light->SetDirection(-5.0f, 1.0f, 1.0f);
+	light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
+	light->SetDirection(0.0f, -1.0f, 1.0f);
 	light->SetSpecularPower(16.0f);
 
 
@@ -150,7 +150,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 void Graphics::Shutdown()
 {
-	// Release the textureSRV shader object.
+	// Release the texture shader object.
 	if (textureShader)
 	{
 		textureShader->Shutdown();
@@ -237,11 +237,11 @@ bool Graphics::Render(float dt)
 	camera->Render();
 
 	// Get the world, view, and projection matrices from the camera and DX objects.
-	camera->GetViewMatrix(viewMatrix);
-	dxHandler->GetProjectionMatrix(projectionMatrix);
+	camera->GetViewMatrix(view);
+	dxHandler->GetProjectionMatrix(projection);
 
 	// Rotation n stuff
-	rotModelAngle += 1.0f * dt;
+	rotModelAngle += 2.0f * dt;
 	if (rotModelAngle > 2 * XM_PI)
 		rotModelAngle = 0.0f;
 
@@ -267,26 +267,27 @@ bool Graphics::Render(float dt)
 	// testQuad->Render(dxHandler->GetDeviceContext());
 
 	// torusRing->Render(dxHandler->GetDeviceContext());
-	triforce->Render(dxHandler->GetDeviceContext());
+	// triforce->Render(dxHandler->GetDeviceContext());
 	// suzanne->Render(dxHandler->GetDeviceContext());
 	// sphere->Render(dxHandler->GetDeviceContext());
 
-	// Render model using the textureSRV shader
-	result = textureShader->Render(dxHandler->GetDeviceContext(), triforce->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, testCube->GetTexture(), 
-									light->GetDirection(), light->GetAmbientColor(), light->GetDiffuseColor(), camera->GetPosition(), light->GetSpecularColor(), light->GetSpecularPower());
+	// Render model using the texture shader
+	/*result = textureShader->Render(dxHandler->GetDeviceContext(), triforce->GetIndexCount(), worldMatrix, view, projection, testCube->GetTexture(), 
+									light->GetDirection(), light->GetAmbientColor(), light->GetDiffuseColor(), camera->GetPosition(), light->GetSpecularColor(), light->GetSpecularPower());*/
 
-	/*result = textureShader->Render(dxHandler->GetDeviceContext(), suzanne->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, testCube->GetTexture(),
+	/*result = textureShader->Render(dxHandler->GetDeviceContext(), suzanne->GetIndexCount(), worldMatrix, view, projection, testCube->GetTexture(),
 		light->GetDirection(), light->GetAmbientColor(), light->GetDiffuseColor(), camera->GetPosition(), light->GetSpecularColor(), light->GetSpecularPower());*/
 
+	// REWRITTEN SHADER RENDER FUNCTION TEST
+	// result = textureShader->NewRender(dxHandler->GetDeviceContext(), triforce, view, projection, camera, light, dxHandler->GetMinMagMipSampler());
 
-
-	//for (int i = 0; i < allModels.size(); i++) 
-	//{
-	//	allModels[i]->Render(dxHandler->GetDeviceContext());
-	//	//result = textureShader->NewRender(dxHandler->GetDeviceContext(), allModels[i], view, projection, camera, light, dxHandler->GetMinMagMipSampler());
-	//	if (!result)
-	//		return false;
-	//}
+	for (int i = 0; i < allModels.size(); i++) 
+	{
+		allModels[i]->Render(dxHandler->GetDeviceContext());
+		result = textureShader->NewRender(dxHandler->GetDeviceContext(), allModels[i], view, projection, camera, light, dxHandler->GetMinMagMipSampler());
+		if (!result)
+			return false;
+	}
 
 	if (!result)
 	{

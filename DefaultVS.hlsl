@@ -1,8 +1,9 @@
-cbuffer matrixBuffer
+cbuffer CBPerObject
 {
-	matrix worldMatrix;
-	matrix viewMatrix;
-	matrix projectionMatrix;
+	matrix world;
+	//matrix viewMatrix;
+	//matrix projectionMatrix;
+    matrix wvp;
 };
 
 cbuffer cameraBuffer
@@ -34,21 +35,23 @@ PixelInputType main(VertexInputType input)
 	// Change the position vector to be 4 units for proper matrix calculations.
     input.position.w = 1.0f;
 
-	// Calculate the position of the vertex against the world, view, and projection matrices.
-    output.position = mul(input.position, worldMatrix);
-    output.position = mul(output.position, viewMatrix);
-    output.position = mul(output.position, projectionMatrix);
+	// Calculate the position of the vertex against the world View Projection (WVP) matrix
+    //output.position = mul(input.position, worldMatrix);
+    //output.position = mul(output.position, viewMatrix);
+    //output.position = mul(output.position, projectionMatrix);
+    
+    output.position = mul(input.position, wvp);
     
 	// Store the texture coordinates for the pixel shader.
     output.tex = input.tex;
     
-    output.normal = mul(input.normal, (float3x3)worldMatrix);
+    output.normal = mul(input.normal, (float3x3)world);
     
     // Same goes for normals.
     output.normal = normalize(output.normal);
     
     // Calculate the position of the vertex in the world.
-    worldPos = mul(input.position, worldMatrix);
+    worldPos = mul(input.position, world);
 
     // Determine the viewing direction based on the position of the camera and the position of the vertex in the world.
     output.viewDirection = cameraPos.xyz - worldPos.xyz;

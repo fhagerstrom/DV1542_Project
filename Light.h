@@ -7,9 +7,9 @@ class Light
 private:
 	XMFLOAT4 ambientColor;
 	XMFLOAT4 diffuseColor;
+	XMFLOAT4 specularColor;
 	XMFLOAT3 lightDirection;
 	float specularPower;
-	XMFLOAT4 specularColor;
 
 public:
 	Light() {};

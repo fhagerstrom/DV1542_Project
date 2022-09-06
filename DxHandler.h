@@ -19,25 +19,28 @@ public:
 	ID3D11Device* GetDevice();
 	ID3D11DeviceContext* GetDeviceContext();
 
-	void GetProjectionMatrix(XMMATRIX&);
-	void GetWorldMatrix(XMMATRIX&);
-	void GetOrthoMatrix(XMMATRIX&);
+	/* GET FUNCTIONS */
+	ID3D11SamplerState* GetMinMagMipSampler() { return this->minMagMipSampler; }
+
+	void GetProjectionMatrix(XMMATRIX& projectionMatrix) { projectionMatrix = this->projectionMatrix; }
+	void GetWorldMatrix(XMMATRIX& worldMatrix) { worldMatrix = this->worldMatrix; }
+	void GetOrthoMatrix(XMMATRIX& orthoMatrix) { orthoMatrix = this->orthoMatrix; }
 
 private:
 	IDXGISwapChain* swapChain;
 	ID3D11Device* devicePtr;
 	ID3D11DeviceContext* contextPtr;
 	ID3D11RenderTargetView* renderTargetView;
-	ID3D11Texture2D* m_depthStencilBuffer;
-	ID3D11DepthStencilState* m_depthStencilState;
-	ID3D11DepthStencilView* m_depthStencilView;
-	ID3D11RasterizerState* m_rasterState;
+	ID3D11Texture2D* depthStencilBuffer;
+	ID3D11DepthStencilState* depthStencilState;
+	ID3D11DepthStencilView* depthStencilView;
+	ID3D11RasterizerState* rasterState;
 
 	ID3D11SamplerState* minMagMipSampler;
 
-	XMMATRIX m_projectionMatrix;
-	XMMATRIX m_worldMatrix;
-	XMMATRIX m_orthoMatrix;
+	XMMATRIX projectionMatrix;
+	XMMATRIX worldMatrix;
+	XMMATRIX orthoMatrix;
 
 	// TODO: RENAME VARIABLES
 };

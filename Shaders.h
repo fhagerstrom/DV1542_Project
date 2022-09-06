@@ -14,11 +14,19 @@ ALIGN16
 struct CBPerObject
 {
 	XMMATRIX world;
-	XMMATRIX view;
-	XMMATRIX projection;
+	/*XMMATRIX view;
+	XMMATRIX projection;*/
 	XMMATRIX wvp;
-	XMMATRIX inverseWorld;
+};
 
+ALIGN16
+struct CBLight
+{
+	XMFLOAT4 ambientLight;
+	XMFLOAT4 diffuseLight;
+	XMFLOAT4 specularLight;
+	XMFLOAT3 lightDirection;
+	float specularPower;
 };
 
 ALIGN16
@@ -35,16 +43,6 @@ struct CBMaterial
 	int padding;
 
 	XMFLOAT4 translation;
-};
-
-ALIGN16
-struct CBLight
-{
-	XMFLOAT4 ambientColor;
-	XMFLOAT4 diffuseColor;
-	XMFLOAT3 lightDirection;
-	float specularPower;
-	XMFLOAT4 specularColor;
 };
 
 ALIGN16

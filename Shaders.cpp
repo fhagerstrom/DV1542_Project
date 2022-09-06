@@ -181,7 +181,7 @@ bool Shader::InitializeShader(ID3D11Device* device, HWND hwnd, LPCWSTR vsFilenam
 		return false;
 	}
 
-	// Create a textureSRV sampler state description.
+	// Create a texture sampler state description.
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -196,7 +196,7 @@ bool Shader::InitializeShader(ID3D11Device* device, HWND hwnd, LPCWSTR vsFilenam
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-	// Create the textureSRV sampler state.
+	// Create the texture sampler state.
 	hr = device->CreateSamplerState(&samplerDesc, &samplerState);
 	if (FAILED(hr))
 	{
@@ -305,7 +305,7 @@ bool Shader::InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileNa
 		return false;
 	}
 
-	// Setup the description of the light constant buffer that is in the vertex shader.
+	// Setup the description of the material constant buffer that is in the pixel shader.
 	ZeroMemory(&cBufferDescription, sizeof(cBufferDescription));
 	cBufferDescription.Usage = D3D11_USAGE_DEFAULT;
 	cBufferDescription.ByteWidth = static_cast<uint32_t>(sizeof(CBMaterial) + (16 - (sizeof(CBMaterial) % 16)));
@@ -319,6 +319,8 @@ bool Shader::InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileNa
 	{
 		return false;
 	}
+
+
 
 	return true;
 }
@@ -428,8 +430,9 @@ bool Shader::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX wo
 
 	// Copy the matrices into the constant buffer.
 	dataPtr->world = worldMatrix;
-	dataPtr->view = viewMatrix;
-	dataPtr->projection = projectionMatrix;
+	/*dataPtr->view = viewMatrix;
+	dataPtr->projection = projectionMatrix;*/
+
 
 	// Unlock the constant buffer.
     deviceContext->Unmap(perObjectBuffer, 0);
@@ -457,7 +460,7 @@ bool Shader::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX wo
 	// Now set the camera constant buffer in the vertex shader with the updated values.
 	deviceContext->VSSetConstantBuffers(1, 1, &cameraBuffer);
 
-	// Set shader textureSRV resource in the pixel shader.
+	// Set shader texture resource in the pixel shader.
 	deviceContext->PSSetShaderResources(0, 1, &texture);
 
 	// Lock the light constant buffer so it can be written to.
@@ -471,10 +474,10 @@ bool Shader::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX wo
 	dataPtr2 = (CBLight*)mappedResource.pData;
 
 	// Copy the lighting variables into the constant buffer.
-	dataPtr2->ambientColor = ambient;
-	dataPtr2->diffuseColor = diffuse;
+	dataPtr2->ambientLight = ambient;
+	dataPtr2->diffuseLight = diffuse;
+	dataPtr2->specularLight = specular;
 	dataPtr2->lightDirection = lightDirection;
-	dataPtr2->specularColor = specular;
 	dataPtr2->specularPower = specularPower;
 
 	// Unlock the constant buffer.
@@ -494,22 +497,16 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 	worldViewProjection = model->GetWorldMatrix() * view * projection;
 
 	objectCb.wvp = XMMatrixTranspose(worldViewProjection);
-	objectCb.view = XMMatrixTranspose(view);
-	objectCb.inverseWorld = XMMatrixInverse(NULL, model->GetWorldMatrix());
+	objectCb.world = DirectX::XMMatrixTranspose(model->GetWorldMatrix());
 
 	context->UpdateSubresource(perObjectBuffer, 0, nullptr, &perObjectBuffer, 0, 0);
 	context->VSSetConstantBuffers(0, 1, &perObjectBuffer);
 
-	// Set shader textureSRV resource in the pixel shader	
-	if (model->GetMaterials()[0].hasTexture) {
+	// Set shader texture resource in the pixel shader	
+	/*if (model->GetMaterials()[0].hasTexture) {
 		textureSRV = model->GetTexture();
 		context->PSSetShaderResources(0, 1, &textureSRV);
-	}
-
-	if (model->GetMaterials()[0].hasNormalMap) {
-		normalMapSRV = model->GetNormalMap();
-		context->PSSetShaderResources(2, 1, &normalMapSRV);
-	}
+	}*/
 
 	/* Set Camera buffer - Vertex shader */
 	cameraCb.cameraPos = camera->GetPosition();
@@ -518,15 +515,26 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 	context->VSSetConstantBuffers(1, 1, &cameraBuffer);
 	
 	/* Set Light buffer	- Pixel shader */
-	lightCb.ambientColor = light->GetAmbientColor();
-	lightCb.diffuseColor = light->GetDiffuseColor();
-	lightCb.specularColor = light->GetSpecularColor();
+	lightCb.ambientLight = light->GetAmbientColor();
+	lightCb.diffuseLight = light->GetDiffuseColor();
+	lightCb.specularLight = light->GetSpecularColor();
 	lightCb.lightDirection = light->GetDirection();
 
 	context->UpdateSubresource(lightBuffer, 0, nullptr, &lightCb, 0, 0);
 	context->PSSetConstantBuffers(0, 1, &lightBuffer);
 
-	// TODO: Set material buffer - Pixel shader
+	/* Material buffer - Pixel shader */
+	/*materialCb.ambientMtl = model->GetMaterials()[0].ambientMtl;
+	materialCb.diffuseMtl = model->GetMaterials()[0].diffuseMtl;
+	materialCb.specularMtl = model->GetMaterials()[0].specularMtl;
+	materialCb.reflectionColor = model->GetMaterials()[0].reflectionMtl;
+	materialCb.shine = model->GetMaterials()[0].shine;
+	materialCb.hasTexture = model->GetMaterials()[0].hasTexture;
+	materialCb.hasReflection = model->GetMaterials()[0].hasReflection;
+	materialCb.translation = model->GetMaterials()[0].translation;*/
+
+	context->UpdateSubresource(materialBuffer, 0, nullptr, &materialCb, 0, 0);
+	context->PSSetConstantBuffers(1, 1, &materialBuffer);
 
 	return true;
 }

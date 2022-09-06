@@ -6,10 +6,10 @@ DxHandler::DxHandler()
 	devicePtr = 0;
 	contextPtr = 0;
 	renderTargetView = 0;
-	m_depthStencilBuffer = 0;
-	m_depthStencilState = 0;
-	m_depthStencilView = 0;
-	m_rasterState = 0;
+	depthStencilBuffer = 0;
+	depthStencilState = 0;
+	depthStencilView = 0;
+	rasterState = 0;
 }
 
 
@@ -129,8 +129,8 @@ bool DxHandler::Initialize(int screenWidth, int screenHeight, HWND hwnd, float s
 	depthBufferDesc.CPUAccessFlags = 0;
 	depthBufferDesc.MiscFlags = 0;
 
-	// Create the textureSRV for the depth buffer using the filled out description.
-	hr = devicePtr->CreateTexture2D(&depthBufferDesc, NULL, &m_depthStencilBuffer);
+	// Create the texture for the depth buffer using the filled out description.
+	hr = devicePtr->CreateTexture2D(&depthBufferDesc, NULL, &depthStencilBuffer);
 	if (FAILED(hr))
 	{
 		return false;
@@ -161,14 +161,14 @@ bool DxHandler::Initialize(int screenWidth, int screenHeight, HWND hwnd, float s
 	depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 
 	// Create the depth stencil state.
-	hr = devicePtr->CreateDepthStencilState(&depthStencilDesc, &m_depthStencilState);
+	hr = devicePtr->CreateDepthStencilState(&depthStencilDesc, &depthStencilState);
 	if (FAILED(hr))
 	{
 		return false;
 	}
 
 	// Set the depth stencil state.
-	contextPtr->OMSetDepthStencilState(m_depthStencilState, 1);
+	contextPtr->OMSetDepthStencilState(depthStencilState, 1);
 
 	// Initialize the depth stencil view.
 	ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
@@ -179,14 +179,14 @@ bool DxHandler::Initialize(int screenWidth, int screenHeight, HWND hwnd, float s
 	depthStencilViewDesc.Texture2D.MipSlice = 0;
 
 	// Create the depth stencil view.
-	hr = devicePtr->CreateDepthStencilView(m_depthStencilBuffer, &depthStencilViewDesc, &m_depthStencilView);
+	hr = devicePtr->CreateDepthStencilView(depthStencilBuffer, &depthStencilViewDesc, &depthStencilView);
 	if (FAILED(hr))
 	{
 		return false;
 	}
 
 	// Bind the render target view and depth stencil buffer to the output render pipeline.
-	contextPtr->OMSetRenderTargets(1, &renderTargetView, m_depthStencilView);
+	contextPtr->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
 
 	// Setup the raster description which will determine how and what polygons will be drawn.
 	rasterDesc.AntialiasedLineEnable = false;
@@ -201,14 +201,14 @@ bool DxHandler::Initialize(int screenWidth, int screenHeight, HWND hwnd, float s
 	rasterDesc.SlopeScaledDepthBias = 0.0f;
 
 	// Create the rasterizer state from the description we just filled out.
-	hr = devicePtr->CreateRasterizerState(&rasterDesc, &m_rasterState);
+	hr = devicePtr->CreateRasterizerState(&rasterDesc, &rasterState);
 	if (FAILED(hr))
 	{
 		return false;
 	}
 
 	// Now set the rasterizer state.
-	contextPtr->RSSetState(m_rasterState);
+	contextPtr->RSSetState(rasterState);
 
 	// Setup the viewport for rendering.
 	viewport.Width = (float)screenWidth;
@@ -226,13 +226,13 @@ bool DxHandler::Initialize(int screenWidth, int screenHeight, HWND hwnd, float s
 	screenAspect = (float)screenWidth / (float)screenHeight;
 
 	// Create the projection matrix for 3D rendering.
-	m_projectionMatrix = XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);
+	projectionMatrix = XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);
 
 	// Initialize the world matrix to the identity matrix.
-	m_worldMatrix = XMMatrixIdentity();
+	worldMatrix = XMMatrixIdentity();
 
 	// Create an orthographic projection matrix for 2D rendering.
-	m_orthoMatrix = XMMatrixOrthographicLH((float)screenWidth, (float)screenHeight, screenNear, screenDepth);
+	orthoMatrix = XMMatrixOrthographicLH((float)screenWidth, (float)screenHeight, screenNear, screenDepth);
 
 	D3D11_SAMPLER_DESC samplerDesc;
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -249,7 +249,7 @@ bool DxHandler::Initialize(int screenWidth, int screenHeight, HWND hwnd, float s
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-	// Create the textureSRV sampler state.
+	// Create the texture sampler state.
 	hr = devicePtr->CreateSamplerState(&samplerDesc, &minMagMipSampler);
 	if (FAILED(hr))
 	{
@@ -268,28 +268,28 @@ void DxHandler::Shutdown()
 		swapChain->SetFullscreenState(false, NULL);
 	}
 
-	if (m_rasterState)
+	if (rasterState)
 	{
-		m_rasterState->Release();
-		m_rasterState = 0;
+		rasterState->Release();
+		rasterState = 0;
 	}
 
-	if (m_depthStencilView)
+	if (depthStencilView)
 	{
-		m_depthStencilView->Release();
-		m_depthStencilView = 0;
+		depthStencilView->Release();
+		depthStencilView = 0;
 	}
 
-	if (m_depthStencilState)
+	if (depthStencilState)
 	{
-		m_depthStencilState->Release();
-		m_depthStencilState = 0;
+		depthStencilState->Release();
+		depthStencilState = 0;
 	}
 
-	if (m_depthStencilBuffer)
+	if (depthStencilBuffer)
 	{
-		m_depthStencilBuffer->Release();
-		m_depthStencilBuffer = 0;
+		depthStencilBuffer->Release();
+		depthStencilBuffer = 0;
 	}
 
 	if (renderTargetView)
@@ -334,7 +334,7 @@ void DxHandler::BeginScene(float red, float green, float blue, float alpha)
 	contextPtr->ClearRenderTargetView(renderTargetView, color);
 
 	// Clear the depth buffer.
-	contextPtr->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	contextPtr->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	return;
 }
@@ -355,25 +355,4 @@ ID3D11Device* DxHandler::GetDevice()
 ID3D11DeviceContext* DxHandler::GetDeviceContext()
 {
 	return contextPtr;
-}
-
-
-void DxHandler::GetProjectionMatrix(XMMATRIX& projectionMatrix)
-{
-	projectionMatrix = m_projectionMatrix;
-	return;
-}
-
-
-void DxHandler::GetWorldMatrix(XMMATRIX& worldMatrix)
-{
-	worldMatrix = m_worldMatrix;
-	return;
-}
-
-
-void DxHandler::GetOrthoMatrix(XMMATRIX& orthoMatrix)
-{
-	orthoMatrix = m_orthoMatrix;
-	return;
 }
