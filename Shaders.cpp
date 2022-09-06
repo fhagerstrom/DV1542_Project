@@ -226,7 +226,7 @@ bool Shader::InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileNa
 	}
 
 	// Compile pixel shader
-	hr = D3DCompileFromFile(vsFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, PSEntry, "vs_5_0", D3DCOMPILE_ENABLE_STRICTNESS, NULL, &pixelShaderBlob, &errorBlob);
+	hr = D3DCompileFromFile(psFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, PSEntry, "ps_5_0", D3DCOMPILE_ENABLE_STRICTNESS, NULL, &pixelShaderBlob, &errorBlob);
 	if (FAILED(hr))
 	{
 		if (errorBlob)

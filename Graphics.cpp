@@ -141,7 +141,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f); // TODO: FIX BUG WITH SPECULAR COLOR, DOESNT CHANGE OR DISAPPPEAR WHEN COMMENTED
 	light->SetDirection(-5.0f, 1.0f, 1.0f);
-	light->SetSpecularPower(32.0f);
+	light->SetSpecularPower(16.0f);
 
 
 	return true;

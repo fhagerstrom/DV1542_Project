@@ -1,13 +1,13 @@
 Texture2D shaderTexture : register(t0);
 SamplerState SampleType : register(s0);
 
-cbuffer lightBuffer : register(b0)
+cbuffer CBLight : register(b0)
 {
     float4 ambientColor;
     float4 diffuseColor;
+    float4 specularColor;
     float3 lightDirection;
     float specularPower;
-    float4 specularColor;
 };
 
 struct PixelInputType
