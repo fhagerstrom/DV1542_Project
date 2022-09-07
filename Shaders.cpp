@@ -352,6 +352,11 @@ void Shader::ShutdownShader()
 		lightBuffer = 0;
 	}
 
+	if (materialBuffer)
+	{
+		materialBuffer->Release();
+		materialBuffer = 0;
+	}
 
 	// Release the layout.
 	if(defaultLayout)
@@ -428,8 +433,8 @@ bool Shader::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX wo
 
 	// Copy the matrices into the constant buffer.
 	dataPtr->world = worldMatrix;
-	dataPtr->view = viewMatrix;
-	dataPtr->projection = projectionMatrix;
+	/*dataPtr->view = viewMatrix;
+	dataPtr->projection = projectionMatrix;*/
 
 
 	// Unlock the constant buffer.
@@ -531,8 +536,8 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 	materialCb.hasReflection = model->GetMaterials()[0].hasReflection;
 	materialCb.translation = model->GetMaterials()[0].translation;*/
 
-	context->UpdateSubresource(materialBuffer, 0, nullptr, &materialCb, 0, 0);
-	context->PSSetConstantBuffers(1, 1, &materialBuffer);
+	/*context->UpdateSubresource(materialBuffer, 0, nullptr, &materialCb, 0, 0);
+	context->PSSetConstantBuffers(1, 1, &materialBuffer);*/
 
 	return true;
 }

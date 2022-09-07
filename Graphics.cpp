@@ -95,7 +95,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	allModels.push_back(triforce);
 
 	// Set model material
-	//modelMtl.ambientMtl = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	// modelMtl.ambientMtl = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	// Create the texture shader object.
 	textureShader = new Shader;
@@ -105,15 +105,15 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Initialize the color shader object.
-	result = textureShader->Initialize(dxHandler->GetDevice(), hwnd);
+	/*result = textureShader->Initialize(dxHandler->GetDevice(), hwnd);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the shader object.", L"SHADER ERROR", MB_OK);
 		return false;
-	}
+	}*/
 
 	// REWRITTEN SHADER HANDLING TEST
-	/*result = textureShader->InitializeShaders(dxHandler->GetDevice(), hwnd, L"DefaultVS.hlsl", L"DefaultPS.hlsl", "main", "main");
+	result = textureShader->InitializeShaders(dxHandler->GetDevice(), hwnd, L"DefaultVS.hlsl", L"DefaultPS.hlsl", "main", "main");
 	if (!result)
 	{
 		MessageBox(hwnd, L"Couldn't initialize the shader object.", L"SHADER ERROR", MB_OK);
@@ -125,7 +125,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	{
 		MessageBox(hwnd, L"Couldn't create input layout!", L"INPUT LAYOUT ERROR", MB_OK);
 		return false;
-	}*/
+	}
 
 	light = new Light;
 	if (!light)
@@ -198,7 +198,7 @@ bool Graphics::Frame(float dt)
 	bool result;
 
 	// Update models and other moving objects
-	// Update(dt);
+	Update(dt);
 
 	// "Render" and update camera position
 	camera->DetectInputs(dt);
@@ -213,11 +213,19 @@ bool Graphics::Frame(float dt)
 	return true;
 }
 
-//void Graphics::Update(float dt)
-//{
-//
-//
-//}
+void Graphics::Update(float dt)
+{
+
+	// Rotate model(s)
+	rotTriforceAngle += 1.5f * dt;
+	if (rotTriforceAngle > 2 * XM_PI)
+		rotTriforceAngle = 0.0f;
+
+	XMVECTOR rotTriforceAxis = XMVectorSet(0.0f, rotTriforceAngle, 0.0f, 0.0f);
+	XMMATRIX rotTriforceRotation = XMMatrixRotationRollPitchYawFromVector(rotTriforceAxis);
+	XMMATRIX triforceTranslation = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+	triforce->SetWorldMatrix(rotTriforceRotation * triforceTranslation);
+}
 
 bool Graphics::Render(float dt)
 {
@@ -237,25 +245,6 @@ bool Graphics::Render(float dt)
 	camera->GetViewMatrix(view);
 	dxHandler->GetProjectionMatrix(projection);
 
-	// Rotation n stuff
-	rotModelAngle += 2.0f * dt;
-	if (rotModelAngle > 2 * XM_PI)
-		rotModelAngle = 0.0f;
-
-	XMVECTOR rotModelAxis = DirectX::XMVectorSet(0.0f, rotModelAngle, 0.0f, 0.0f);
-	XMMATRIX rotModelRotation = DirectX::XMMatrixRotationRollPitchYawFromVector(rotModelAxis);
-
-	/*rotQuadAngle += 0.4f * dt;
-	if (rotQuadAngle > 2 * XM_PI)
-		rotQuadAngle = 0.0f;
-
-	XMVECTOR rotQuadAxis = DirectX::XMVectorSet(0.0f, rotQuadAngle, 0.0f, 0.0f);
-	XMMATRIX rotQuadRotation = DirectX::XMMatrixRotationRollPitchYawFromVector(rotQuadAxis);*/
-
-	// TODO: Make a SetWorldMatrix function for the Model class.
-	worldMatrix = rotModelRotation * triforce->GetWorldMatrix();
-
-
 	// CALL RENDER FUNCTION FOR MODELS
 	//___________________________________________________________________________________________________
 
@@ -269,12 +258,12 @@ bool Graphics::Render(float dt)
 	// sphere->Render(dxHandler->GetDeviceContext());
 
 	// Render model using the texture shader
-	result = textureShader->Render(dxHandler->GetDeviceContext(), triforce->GetIndexCount(), worldMatrix, view, projection, testCube->GetTexture(),
-									light->GetDirection(), light->GetAmbientColor(), light->GetDiffuseColor(), camera->GetPosition(), light->GetSpecularColor(), light->GetSpecularPower());
+	/*result = textureShader->Render(dxHandler->GetDeviceContext(), triforce->GetIndexCount(), worldMatrix, view, projection, testCube->GetTexture(),
+									light->GetDirection(), light->GetAmbientColor(), light->GetDiffuseColor(), camera->GetPosition(), light->GetSpecularColor(), light->GetSpecularPower());*/
 
 
 	// REWRITTEN SHADER RENDER FUNCTION TEST
-	// result = textureShader->NewRender(dxHandler->GetDeviceContext(), triforce, view, projection, camera, light, dxHandler->GetMinMagMipSampler());
+	result = textureShader->NewRender(dxHandler->GetDeviceContext(), triforce, view, projection, camera, light, dxHandler->GetMinMagMipSampler());
 
 	/*for (int i = 0; i < allModels.size(); i++) 
 	{

@@ -30,6 +30,7 @@ cbuffer CBMaterial : register(b1)
 struct PixelInputType
 {
     float4 position : SV_POSITION;
+    float4 worldPos : POSITIONWS;
     float2 tex : TEXCOORD0;
     float3 normal : NORMAL;
     float3 viewDirection : TEXCOORD1;
@@ -45,7 +46,7 @@ float4 main(PixelInputType input) : SV_TARGET
     float4 specular = float4(0.0f, 0.0f, 0.0f, 0.0f);
     
     // Calc ambient
-    ambient = ambientLight /*ambientMtl*/;
+    ambient = ambientLight /** ambientMtl*/;
     
     // Sample the pixel color from the texture using the sampler at this texture coordinate location.
     textureColor = shaderTexture.Sample(SampleType, input.tex);
@@ -54,7 +55,7 @@ float4 main(PixelInputType input) : SV_TARGET
     float3 normalizedNormal = normalize(input.normal);
     
     // Vector from lightsource to point thats going to be shaded, take distance from that vector
-    float3 lightVector = -lightDirection.xyz;
+    float3 lightVector = lightDirection.xyz - input.worldPos.xyz;
     float distance = length(lightVector);
     
     // Normalize lightvector
@@ -74,18 +75,6 @@ float4 main(PixelInputType input) : SV_TARGET
 		// Set diffuse and specular
         diffuse = diffuseFactor * diffuseLight; // MULTIPLY BY MATERIAL
         specular = specularFactor * specularLight; // MULTIPLY BY MATERIAL
-        
-        //// Determine the final diffuseLight color based on the diffuseLight color and the amount of light intensity.
-        //color += (diffuseLight * lightIntensity);
-        
-        //// Saturate the ambientLight and diffuseLight color.
-        //color = saturate(color);
-        
-        //// Calculate the reflection vector based on the light intensity, normal vector, and light direction.
-        //reflection = normalize(2 * lightIntensity * input.normal - lightDir);
-        
-        //// Determine the amount of specular light based on the reflection vector, viewing direction, and specular power.
-        //specular = pow(saturate(dot(reflection, input.viewDirection)), specularPower);
     }
     
     diffuse = saturate(diffuse);

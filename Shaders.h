@@ -13,10 +13,10 @@ using namespace DirectX;
 ALIGN16
 struct CBPerObject
 {
-	XMMATRIX world;
-	XMMATRIX view;
-	XMMATRIX projection;
 	XMMATRIX wvp;
+	XMMATRIX world;
+	/*XMMATRIX view;
+	XMMATRIX projection;*/
 };
 
 ALIGN16
