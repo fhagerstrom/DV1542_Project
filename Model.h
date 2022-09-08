@@ -55,6 +55,7 @@ public:
 	bool InitializeQuad(ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR textureFile);
 
 	bool LoadNormalMap(ID3D11Device*, LPCWSTR);
+	bool LoadTexture(ID3D11Device* device, ID3D11DeviceContext* deviceContext, LPCWSTR filename);
 	void LoadTextureObj(ID3D11ShaderResourceView* textureSrv);
 
 	void Shutdown();
@@ -104,7 +105,6 @@ private:
 
 	bool CreateCube(ID3D11Device* device);
 	bool CreateQuad(ID3D11Device* device);
-	bool LoadTexture(ID3D11Device* device, ID3D11DeviceContext* deviceContext, LPCWSTR filename);
 	void ReleaseTexture();
 
 	HRESULT hr;

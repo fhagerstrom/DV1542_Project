@@ -535,7 +535,7 @@ bool ObjReader::LoadObj(ID3D11Device* device, Model* model, std::wstring modelFi
 											if (SUCCEEDED(this->hr))
 											{
 												model->GetTextureNameVector().push_back(filePath.c_str());
-												model->GetMaterials()[materialCount - (long long)1].textureArrayIndex = 1; // TESTA DETTA
+												model->GetMaterials()[materialCount - (long long)1].textureArrayIndex = 1;
 												//model->SetTexture(tempMeshSRV);// meshShaderResourceView.push_back(tempMeshSRV);
 												model->LoadTextureObj(tempMeshSRV);
 												model->GetMaterials()[materialCount - (long long)1].hasTexture = true;

@@ -49,7 +49,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Set the initial position of the camera.
-	camera->SetPosition(0.0f, 0.0f, -10.0f);
+	camera->SetPosition(0.0f, 5.0f, -20.0f);
 	camera->GetInputs(input);
 
 	testCube = new Model;
@@ -62,6 +62,14 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		MessageBox(NULL, L"Couldn't initialize cube. Check the file paths!", L"MODEL ERROR", MB_OK);
 		return false;
 	}
+
+	plane = new Model;
+	reader.LoadObj(dxHandler->GetDevice(), plane, L"assets/models/plane.obj", true, false);
+	plane->SetWorldMatrix(XMMatrixTranslation(0.0f, -2.0f, 0.0f));
+	// plane->GetTextureStruct()->SetName("ice");
+	// plane->GetMaterials()[0].hasTexture = false;
+	// plane->GetMaterials()[0].hasReflection = false;
+	allModels.push_back(plane);
 
 	torusRing = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), torusRing, L"assets/models/torusDonut.obj", true, false);
@@ -81,7 +89,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	sphere = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), sphere, L"assets/models/icoSphere.obj", true, false);
-	sphere->SetWorldMatrix(XMMatrixTranslation(0.0f, 4.0f, 0.0f));
+	sphere->SetWorldMatrix(XMMatrixTranslation(0.0f, 0.0f, 0.0f));
 	// sphere->GetTextureStruct()->SetName("ice");
 	// sphere->GetMaterials()[0].hasTexture = false;
 	// sphere->GetMaterials()[0].hasReflection = false;
@@ -89,7 +97,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	triforce = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), triforce, L"assets/models/triforce.obj", true, false);
-	triforce->SetWorldMatrix(XMMatrixTranslation(0.0f, 0.0f, 0.0f));
+	// WORLD MATRIX IS SET IN UPDATE DUE TO ROTATION
+
 	// triforce->GetTextureStruct()->SetName("ice");
 	/*triforce->GetMaterials()[0].hasTexture = false;
 	triforce->GetMaterials()[0].hasReflection = false;*/
@@ -132,10 +141,10 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	if (!light)
 		return false;
 
-	light->SetAmbientColor(0.15f, 0.15f, 0.15f, 1.0f);
+	light->SetAmbientColor(0.5f, 0.5f, 0.5f, 1.0f);
 	light->SetDiffuseColor(0.0f, 0.0f, 0.0f, 1.0f);
 	light->SetSpecularColor(1.0f, 1.0f, 0.0f, 1.0f);
-	light->SetDirection(0.0f, 0.0f, 1.0f);
+	light->SetDirection(1.0f, 0.0f, 1.0f);
 	light->SetSpecularPower(32.0f);
 
 
@@ -224,7 +233,7 @@ void Graphics::Update(float dt)
 
 	XMVECTOR rotTriforceAxis = XMVectorSet(0.0f, rotTriforceAngle, 0.0f, 0.0f);
 	XMMATRIX rotTriforceRotation = XMMatrixRotationRollPitchYawFromVector(rotTriforceAxis);
-	XMMATRIX triforceTranslation = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+	XMMATRIX triforceTranslation = XMMatrixTranslation(0.0f, 5.0f, 0.0f);
 	triforce->SetWorldMatrix(rotTriforceRotation * triforceTranslation);
 }
 

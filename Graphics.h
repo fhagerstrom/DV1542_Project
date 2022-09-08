@@ -30,6 +30,7 @@ private:
 
 	Model* testCube;
 	Model* testQuad;
+	Model* plane;
 	Model* torusRing;
 	Model* suzanne;
 	Model* sphere;

@@ -46,7 +46,7 @@ float4 main(PixelInputType input) : SV_TARGET
     float4 specular = float4(0.0f, 0.0f, 0.0f, 0.0f);
     
     // Calc ambient
-    ambient = ambientLight /** ambientMtl*/;
+    ambient = ambientLight * ambientMtl;
     
     // Sample the pixel color from the texture using the sampler at this texture coordinate location.
     textureColor = shaderTexture.Sample(SampleType, input.tex);
