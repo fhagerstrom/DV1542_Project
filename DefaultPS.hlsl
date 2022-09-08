@@ -55,7 +55,7 @@ float4 main(PixelInputType input) : SV_TARGET
     float3 normalizedNormal = normalize(input.normal);
     
     // Vector from lightsource to point thats going to be shaded, take distance from that vector
-    float3 lightVector = lightDirection.xyz - input.worldPos.xyz;
+    float3 lightVector = -lightDirection.xyz /*- input.worldPos.xyz*/;
     float distance = length(lightVector);
     
     // Normalize lightvector

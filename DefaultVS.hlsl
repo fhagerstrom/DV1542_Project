@@ -1,9 +1,9 @@
 cbuffer CBPerObject
 {
-	row_major matrix worldMatrix;
+    matrix wvp;
+	matrix world;
 	//matrix viewMatrix;
 	//matrix projectionMatrix;
-    row_major matrix wvp;
 };
 
 cbuffer cameraBuffer
@@ -33,18 +33,18 @@ PixelInputType main(VertexInputType input)
     PixelInputType output;
 
 	// Calculate the position of the vertex against the world View Projection (WVP) and world matrix
-    // output.position = mul(input.position, worldMatrix);
+    // output.position = mul(input.position, world);
     //output.position = mul(output.position, viewMatrix);
     //output.position = mul(output.position, projectionMatrix);
     
     output.position = mul(float4(input.position, 1.0f), wvp);
-    output.worldPos = mul(float4(input.position, 1.0f), worldMatrix);
+    output.worldPos = mul(float4(input.position, 1.0f), world);
     
     
 	// Store the texture coordinates for the pixel shader.
     output.tex = input.tex;
     
-    output.normal = mul(input.normal, (float3x3)worldMatrix);
+    output.normal = mul(input.normal, (float3x3)world);
     
     // Same goes for normals.
     output.normal = normalize(output.normal);

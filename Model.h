@@ -70,7 +70,7 @@ public:
 	std::vector<Vertex>& GetVertices() { return vertices; }
 	std::vector<DWORD>& GetIndices() { return indices; }
 	std::vector<XMFLOAT3>& GetVerticesArray() { return vertexPosArray; }
-	std::vector<Material>& GetMaterials() { return materials; }
+	std::vector<Material>& GetMaterials() { return this->materials; }
 	std::vector<int>& GetSubsetIndex() { return this->subsetIndexStart; }
 	std::vector<int>& GetSubsetMaterialVector() { return this->subsetMaterial; }
 

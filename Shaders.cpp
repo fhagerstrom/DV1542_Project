@@ -502,7 +502,7 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 	objectCb.wvp = XMMatrixTranspose(worldViewProjection);
 	objectCb.world = DirectX::XMMatrixTranspose(model->GetWorldMatrix());
 
-	context->UpdateSubresource(perObjectBuffer, 0, nullptr, &perObjectBuffer, 0, 0);
+	context->UpdateSubresource(perObjectBuffer, 0, nullptr, &objectCb, 0, 0);
 	context->VSSetConstantBuffers(0, 1, &perObjectBuffer);
 
 	// Set shader texture resource in the pixel shader	
@@ -534,9 +534,9 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 	materialCb.shine = model->GetMaterials()[0].shine;
 	materialCb.hasTexture = model->GetMaterials()[0].hasTexture;
 	materialCb.hasReflection = model->GetMaterials()[0].hasReflection;
-	materialCb.translation = model->GetMaterials()[0].translation;*/
+	materialCb.translation = model->GetMaterials()[0].translation;
 
-	/*context->UpdateSubresource(materialBuffer, 0, nullptr, &materialCb, 0, 0);
+	context->UpdateSubresource(materialBuffer, 0, nullptr, &materialCb, 0, 0);
 	context->PSSetConstantBuffers(1, 1, &materialBuffer);*/
 
 	return true;

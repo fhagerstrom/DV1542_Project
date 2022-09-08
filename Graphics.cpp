@@ -65,7 +65,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	torusRing = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), torusRing, L"assets/models/torusDonut.obj", true, false);
-	torusRing->SetWorldMatrix(XMMatrixTranslation(-2.0f, 0.0f, 0.0f));
+	torusRing->SetWorldMatrix(XMMatrixTranslation(-4.0f, 0.0f, 0.0f));
 	// torusRing->GetTextureStruct()->SetName("ice");
 	// torusRing->GetMaterials()[0].hasTexture = false;
 	// torusRing->GetMaterials()[0].hasReflection = false;
@@ -73,7 +73,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	suzanne = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), suzanne, L"assets/models/monkey_triangulated.obj", true, false);
-	suzanne->SetWorldMatrix(XMMatrixTranslation(2.0f, 0.0f, 0.0f));
+	suzanne->SetWorldMatrix(XMMatrixTranslation(4.0f, 0.0f, 0.0f));
 	// suzanne->GetTextureStruct()->SetName("ice");
 	// suzanne->GetMaterials()[0].hasTexture = false;
 	// suzanne->GetMaterials()[0].hasReflection = false;
@@ -81,6 +81,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	sphere = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), sphere, L"assets/models/icoSphere.obj", true, false);
+	sphere->SetWorldMatrix(XMMatrixTranslation(0.0f, 4.0f, 0.0f));
 	// sphere->GetTextureStruct()->SetName("ice");
 	// sphere->GetMaterials()[0].hasTexture = false;
 	// sphere->GetMaterials()[0].hasReflection = false;
@@ -90,8 +91,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	reader.LoadObj(dxHandler->GetDevice(), triforce, L"assets/models/triforce.obj", true, false);
 	triforce->SetWorldMatrix(XMMatrixTranslation(0.0f, 0.0f, 0.0f));
 	// triforce->GetTextureStruct()->SetName("ice");
-	// triforce->GetMaterials()[0].hasTexture = false;
-	// triforce->GetMaterials()[0].hasReflection = false;
+	/*triforce->GetMaterials()[0].hasTexture = false;
+	triforce->GetMaterials()[0].hasReflection = false;*/
 	allModels.push_back(triforce);
 
 	// Set model material
@@ -134,8 +135,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	light->SetAmbientColor(0.15f, 0.15f, 0.15f, 1.0f);
 	light->SetDiffuseColor(0.0f, 0.0f, 0.0f, 1.0f);
 	light->SetSpecularColor(1.0f, 1.0f, 0.0f, 1.0f);
-	light->SetDirection(1.0f, 0.0f, 1.0f);
-	light->SetSpecularPower(16.0f);
+	light->SetDirection(0.0f, 0.0f, 1.0f);
+	light->SetSpecularPower(32.0f);
 
 
 	return true;
@@ -233,13 +234,10 @@ bool Graphics::Render(float dt)
 	XMMATRIX view, projection;
 
 	// Clear the buffers to begin the scene.
-	dxHandler->BeginScene(0.2f, 0.2f, 0.2f, 1.0f);
+	dxHandler->BeginScene(0.2f, 0.8f, 0.8f, 1.0f);
 
 	// PUT RENDERS BELOW HERE
 	//___________________________________________________________________________________________________
-
-	// Generate the view matrix based on the camera's position.
-	camera->UpdateCam();
 
 	// Get the world, view, and projection matrices from the camera and DX objects.
 	camera->GetViewMatrix(view);
@@ -253,7 +251,7 @@ bool Graphics::Render(float dt)
 	// testQuad->Render(dxHandler->GetDeviceContext());
 
 	// torusRing->Render(dxHandler->GetDeviceContext());
-	triforce->Render(dxHandler->GetDeviceContext());
+	// triforce->Render(dxHandler->GetDeviceContext());
 	// suzanne->Render(dxHandler->GetDeviceContext());
 	// sphere->Render(dxHandler->GetDeviceContext());
 
@@ -263,15 +261,15 @@ bool Graphics::Render(float dt)
 
 
 	// REWRITTEN SHADER RENDER FUNCTION TEST
-	result = textureShader->NewRender(dxHandler->GetDeviceContext(), triforce, view, projection, camera, light, dxHandler->GetMinMagMipSampler());
+	// result = textureShader->NewRender(dxHandler->GetDeviceContext(), triforce, view, projection, camera, light, dxHandler->GetMinMagMipSampler());
 
-	/*for (int i = 0; i < allModels.size(); i++) 
+	for (int i = 0; i < allModels.size(); i++) 
 	{
 		allModels[i]->Render(dxHandler->GetDeviceContext());
 		result = textureShader->NewRender(dxHandler->GetDeviceContext(), allModels[i], view, projection, camera, light, dxHandler->GetMinMagMipSampler());
 		if (!result)
 			return false;
-	}*/
+	}
 
 	//___________________________________________________________________________________________________
 

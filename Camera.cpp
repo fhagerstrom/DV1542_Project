@@ -79,42 +79,43 @@ void Camera::DetectInputs(double deltaTime)
 	mouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseCurrState);
 	keyboard->GetDeviceState(sizeof(keyboardState), (LPVOID)&keyboardState);
 
-	float speed = (float)(15.0f * deltaTime);
+	float moveSpeed = (float)(15.0f * deltaTime);
+	float lookSpeed = (float)(5.0f * deltaTime);
 
 	// LEFT
 	if (keyboardState[DIK_A] & 0x80)
 	{
-		moveLeftRight -= speed;
+		moveLeftRight -= moveSpeed;
 	}
 
 	// RIGHT
 	if (keyboardState[DIK_D] & 0x80)
 	{
-		moveLeftRight += speed;
+		moveLeftRight += moveSpeed;
 	}
 
 	// FORWARDS
 	if (keyboardState[DIK_W] & 0x80)
 	{
-		moveBackForward += speed;
+		moveBackForward += moveSpeed;
 	}
 
 	// BACKWARDS
 	if (keyboardState[DIK_S] & 0x80)
 	{
-		moveBackForward -= speed;
+		moveBackForward -= moveSpeed;
 	}
 
 	// ASCEND
 	if (keyboardState[DIK_SPACE] & 0x80)
 	{
-		eyePosition += XMVectorSet(0.0f, speed, 0.0f, 1.0f);
+		eyePosition += XMVectorSet(0.0f, moveSpeed, 0.0f, 1.0f);
 	}
 
 	// DESCEND
 	if (keyboardState[DIK_LCONTROL] & 0x80)
 	{
-		eyePosition -= XMVectorSet(0.0f, speed, 0.0f, 1.0f);
+		eyePosition -= XMVectorSet(0.0f, moveSpeed, 0.0f, 1.0f);
 	}
 
 	// Reset camera position
@@ -125,12 +126,34 @@ void Camera::DetectInputs(double deltaTime)
 		camPitch = 0.0f;
 	}
 
+	// LOOK AROUND (MOUSE)
 	if ((mouseCurrState.lX != mouseLastState.lX) || (mouseCurrState.lY != mouseLastState.lY))
 	{
 		camYaw += mouseLastState.lX * 0.001f;
 		camPitch += mouseCurrState.lY * 0.001f;
 
 		mouseLastState = mouseCurrState;
+	}
+
+	// LOKK AROUND (KEYBOARD)
+	if (keyboardState[DIK_UPARROW] & 0x80)
+	{
+		camPitch -= lookSpeed;
+	}
+
+	if (keyboardState[DIK_DOWNARROW] & 0x80)
+	{
+		camPitch += lookSpeed;
+	}
+
+	if (keyboardState[DIK_RIGHTARROW] & 0x80)
+	{
+		camYaw += lookSpeed;
+	}
+
+	if (keyboardState[DIK_LEFTARROW] & 0x80)
+	{
+		camYaw -= lookSpeed;
 	}
 
 	UpdateCam();
