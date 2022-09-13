@@ -32,10 +32,10 @@ struct CBLight
 ALIGN16
 struct CBMaterial
 {
-	XMFLOAT4 ambientMtl;
 	XMFLOAT4 diffuseMtl;
+	XMFLOAT4 ambientMtl;
 	XMFLOAT4 specularMtl;
-	XMFLOAT4 reflectionColor;
+	XMFLOAT4 reflectionMtl;
 
 	float shine;
 	int hasTexture;

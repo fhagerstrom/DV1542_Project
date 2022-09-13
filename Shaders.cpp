@@ -506,10 +506,10 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 	context->VSSetConstantBuffers(0, 1, &perObjectBuffer);
 
 	// Set shader texture resource in the pixel shader	
-	/*if (model->GetMaterials()[0].hasTexture) {
+	if (model->GetMaterials()[0].hasTexture) {
 		textureSRV = model->GetTexture();
 		context->PSSetShaderResources(0, 1, &textureSRV);
-	}*/
+	}
 
 	/* Set Camera buffer - Vertex shader */
 	cameraCb.cameraPos = camera->GetPosition();
@@ -527,17 +527,17 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 	context->PSSetConstantBuffers(0, 1, &lightBuffer);
 
 	/* Material buffer - Pixel shader */
-	/*materialCb.ambientMtl = model->GetMaterials()[0].ambientMtl;
+	materialCb.ambientMtl = model->GetMaterials()[0].ambientMtl;
 	materialCb.diffuseMtl = model->GetMaterials()[0].diffuseMtl;
 	materialCb.specularMtl = model->GetMaterials()[0].specularMtl;
-	materialCb.reflectionColor = model->GetMaterials()[0].reflectionMtl;
+	materialCb.reflectionMtl = model->GetMaterials()[0].reflectionMtl;
 	materialCb.shine = model->GetMaterials()[0].shine;
 	materialCb.hasTexture = model->GetMaterials()[0].hasTexture;
 	materialCb.hasReflection = model->GetMaterials()[0].hasReflection;
 	materialCb.translation = model->GetMaterials()[0].translation;
 
 	context->UpdateSubresource(materialBuffer, 0, nullptr, &materialCb, 0, 0);
-	context->PSSetConstantBuffers(1, 1, &materialBuffer);*/
+	context->PSSetConstantBuffers(1, 1, &materialBuffer);
 
 	return true;
 }

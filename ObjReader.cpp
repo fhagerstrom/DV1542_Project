@@ -55,7 +55,16 @@ bool ObjReader::LoadObj(ID3D11Device* device, Model* model, std::wstring modelFi
 
 		switch (charCheck)
 		{
-			// Case for vertex info
+		// CASE FOR COMMENTS IN THE FILE
+		case '#':
+			charCheck = fileRead.get();
+			while (charCheck != '\n') // While the file is at the same comment line, it keeps getting the next character until a new line
+			{
+				charCheck = fileRead.get();
+			}
+			break;
+
+		// Case for vertex info
 		case 'v':
 		{
 			charCheck = fileRead.get();
@@ -105,9 +114,13 @@ bool ObjReader::LoadObj(ID3D11Device* device, Model* model, std::wstring modelFi
 		// Groups / Submeshes
 		case 'g':
 		{
-			// Push back subset index into a vector with the vIndex
+			// Push back vIndex into subset index vector
 			// Increment subset count
+
+			model->GetSubsetIndexVector().push_back(vIndex);
+			model->GetSubsetCount()++;
 		}
+		break;
 
 		case 'f':
 		{
@@ -330,7 +343,8 @@ bool ObjReader::LoadObj(ID3D11Device* device, Model* model, std::wstring modelFi
 	fileRead.close();
 
 	// Open mtl file
-	fileRead.open(mtlLib.c_str());
+	std::wstring objPath = L"assets/models/";
+	fileRead.open(objPath + mtlLib.c_str());
 
 	std::wstring lastStringRead;
 	int materialCount = (int)model->GetMaterials().size(); // Amount of materials
@@ -358,15 +372,6 @@ bool ObjReader::LoadObj(ID3D11Device* device, Model* model, std::wstring modelFi
 					// Diffuse
 				case 'K':
 					charCheck = fileRead.get();
-					if (charCheck == 'd')
-					{
-						charCheck = fileRead.get(); // Remove space
-						fileRead >> model->GetMaterials()[materialCount - (long long)1].diffuseMtl.x;
-						fileRead >> model->GetMaterials()[materialCount - (long long)1].diffuseMtl.y;
-						fileRead >> model->GetMaterials()[materialCount - (long long)1].diffuseMtl.z;
-
-						setDiffuse = true;
-					}
 
 					// Set the ambient color as diffuse if there was no diffuse
 					if (charCheck == 'a')
@@ -378,13 +383,23 @@ bool ObjReader::LoadObj(ID3D11Device* device, Model* model, std::wstring modelFi
 							fileRead >> model->GetMaterials()[materialCount - (long long)1].diffuseMtl.y;
 							fileRead >> model->GetMaterials()[materialCount - (long long)1].diffuseMtl.z;
 						}
+
+						else
+						{
+							fileRead >> model->GetMaterials()[materialCount - (long long)1].ambientMtl.x;
+							fileRead >> model->GetMaterials()[materialCount - (long long)1].ambientMtl.y;
+							fileRead >> model->GetMaterials()[materialCount - (long long)1].ambientMtl.z;
+						}
 					}
 
-					else
+					if (charCheck == 'd')
 					{
-						fileRead >> model->GetMaterials()[materialCount - (long long)1].ambientMtl.x;
-						fileRead >> model->GetMaterials()[materialCount - (long long)1].ambientMtl.y;
-						fileRead >> model->GetMaterials()[materialCount - (long long)1].ambientMtl.z;
+						charCheck = fileRead.get(); // Remove space
+						fileRead >> model->GetMaterials()[materialCount - (long long)1].diffuseMtl.x;
+						fileRead >> model->GetMaterials()[materialCount - (long long)1].diffuseMtl.y;
+						fileRead >> model->GetMaterials()[materialCount - (long long)1].diffuseMtl.z;
+
+						setDiffuse = true;
 					}
 
 					// Specular
@@ -495,7 +510,7 @@ bool ObjReader::LoadObj(ID3D11Device* device, Model* model, std::wstring modelFi
 									charCheck = fileRead.get();
 									if (charCheck == 'd')
 									{
-										std::wstring filePath;
+										std::wstring texturePath = L"assets/textures/";
 										fileRead.get(); // Removes the whitespace between map_kd and file
 
 										// Get the file path by reading char by char
@@ -503,12 +518,12 @@ bool ObjReader::LoadObj(ID3D11Device* device, Model* model, std::wstring modelFi
 										while (filePathEnded == false)
 										{
 											charCheck = fileRead.get();
-											filePath += charCheck;
+											texturePath += charCheck;
 											if (charCheck == '.')
 											{
 												for (int i = 0; i < 3; i++)
 												{
-													filePath += fileRead.get();
+													texturePath += fileRead.get();
 												}
 												filePathEnded = true;
 											}
@@ -518,7 +533,7 @@ bool ObjReader::LoadObj(ID3D11Device* device, Model* model, std::wstring modelFi
 										for (int i = 0; (unsigned)i < model->GetTextureNameVector().size(); i++)
 										{
 											MessageBox(0, L"Error", L"Error", MB_OK);
-											if (filePath == model->GetTextureNameVector()[i])
+											if (texturePath == model->GetTextureNameVector()[i])
 											{
 												alreadyLoaded = true;
 												model->GetMaterials()[materialCount - (long long)1].textureArrayIndex = i;
@@ -530,11 +545,11 @@ bool ObjReader::LoadObj(ID3D11Device* device, Model* model, std::wstring modelFi
 										if (alreadyLoaded == false)
 										{
 											ID3D11ShaderResourceView* tempMeshSRV;
-											this->hr = DirectX::CreateWICTextureFromFile(device, filePath.c_str(), nullptr, &tempMeshSRV);
+											this->hr = DirectX::CreateWICTextureFromFile(device, texturePath.c_str(), nullptr, &tempMeshSRV);
 											assert(SUCCEEDED(hr));
 											if (SUCCEEDED(this->hr))
 											{
-												model->GetTextureNameVector().push_back(filePath.c_str());
+												model->GetTextureNameVector().push_back(texturePath.c_str());
 												model->GetMaterials()[materialCount - (long long)1].textureArrayIndex = 1;
 												//model->SetTexture(tempMeshSRV);// meshShaderResourceView.push_back(tempMeshSRV);
 												model->LoadTextureObj(tempMeshSRV);

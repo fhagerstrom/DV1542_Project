@@ -20,11 +20,10 @@ cbuffer CBMaterial : register(b1)
     float shine;
     bool hasTexture;
     bool hasReflection;
-
-    float4 translation;
+    int padding;
 
     bool hasNormMap;
-    float3 padding;
+    float3 padding2;
 }
 
 struct PixelInputType
@@ -45,9 +44,6 @@ float4 main(PixelInputType input) : SV_TARGET
     float4 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
     float4 specular = float4(0.0f, 0.0f, 0.0f, 0.0f);
     
-    // Calc ambient
-    ambient = ambientLight * ambientMtl;
-    
     // Sample the pixel color from the texture using the sampler at this texture coordinate location.
     textureColor = shaderTexture.Sample(SampleType, input.tex);
     
@@ -61,6 +57,9 @@ float4 main(PixelInputType input) : SV_TARGET
     // Normalize lightvector
     lightVector /= distance;
     
+     // Calc ambient
+    ambient = ambientLight * ambientMtl;
+    
     // Diffuse factor
     float diffuseFactor = saturate(dot(lightVector, normalizedNormal));
     
@@ -73,8 +72,8 @@ float4 main(PixelInputType input) : SV_TARGET
         float specularFactor = pow(specularShade, specularPower);
 
 		// Set diffuse and specular
-        diffuse = diffuseFactor * diffuseLight; // MULTIPLY BY MATERIAL
-        specular = specularFactor * specularLight; // MULTIPLY BY MATERIAL
+        diffuse = diffuseFactor * diffuseMtl * diffuseLight; // MULTIPLY BY MATERIAL
+        specular = specularFactor * specularMtl * specularLight; // MULTIPLY BY MATERIAL
     }
     
     diffuse = saturate(diffuse);

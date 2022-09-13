@@ -99,9 +99,10 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	reader.LoadObj(dxHandler->GetDevice(), triforce, L"assets/models/triforce.obj", true, false);
 	// WORLD MATRIX IS SET IN UPDATE DUE TO ROTATION
 
-	// triforce->GetTextureStruct()->SetName("ice");
-	/*triforce->GetMaterials()[0].hasTexture = false;
-	triforce->GetMaterials()[0].hasReflection = false;*/
+	triforce->GetMaterials()[0].ambientMtl = XMFLOAT4(0.5f, 0.5f, 0.0f, 1.0f);
+	triforce->GetTextureStruct()->SetName("triforce");
+	triforce->GetMaterials()[0].hasTexture = false;
+	triforce->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(triforce);
 
 	// Set model material
@@ -141,11 +142,11 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	if (!light)
 		return false;
 
-	light->SetAmbientColor(0.5f, 0.5f, 0.5f, 1.0f);
-	light->SetDiffuseColor(0.0f, 0.0f, 0.0f, 1.0f);
+	light->SetAmbientColor(1.0f, 1.0f, 1.0f, 1.0f);
+	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetSpecularColor(1.0f, 1.0f, 0.0f, 1.0f);
 	light->SetDirection(1.0f, 0.0f, 1.0f);
-	light->SetSpecularPower(32.0f);
+	light->SetSpecularPower(16.0f);
 
 
 	return true;
@@ -259,6 +260,7 @@ bool Graphics::Render(float dt)
 	// testCube->Render(dxHandler->GetDeviceContext());
 	// testQuad->Render(dxHandler->GetDeviceContext());
 
+	// INDIVIDUAL MODEL RENDERS
 	// torusRing->Render(dxHandler->GetDeviceContext());
 	// triforce->Render(dxHandler->GetDeviceContext());
 	// suzanne->Render(dxHandler->GetDeviceContext());
