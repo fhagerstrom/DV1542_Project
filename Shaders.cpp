@@ -37,25 +37,6 @@ void Shader::Shutdown()
 	return;
 }
 
-bool Shader::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix, 
-					ID3D11ShaderResourceView* texture, XMFLOAT3 lightDirection, XMFLOAT4 ambient, XMFLOAT4 diffuse, 
-					XMFLOAT3 cameraPos, XMFLOAT4 specular, float specularPower)
-{
-	bool result;
-
-	// Set the shader parameters that it will use for rendering.
-	result = SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix, texture, lightDirection, ambient, diffuse, cameraPos, specular, specularPower);
-	if(!result)
-	{
-		return false;
-	}
-
-	// Now render the prepared buffers with the shader.
-	RenderShader(deviceContext, indexCount);
-
-	return true;
-}
-
 bool Shader::NewRender(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light, ID3D11SamplerState* sampler)
 {
 	bool result;
@@ -406,93 +387,6 @@ bool Shader::CreateDefaultInputLayout(ID3D11Device* device)
 	return true;
 }
 
-bool Shader::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix, XMMATRIX viewMatrix,
-								XMMATRIX projectionMatrix, ID3D11ShaderResourceView* texture, XMFLOAT3 lightDirection, XMFLOAT4 ambient, XMFLOAT4 diffuse, 
-								XMFLOAT3 cameraPos, XMFLOAT4 specular, float specularPower)
-{
-	HRESULT result;
-    D3D11_MAPPED_SUBRESOURCE mappedResource;
-	CBPerObject* dataPtr;
-	CBLight* dataPtr2;
-	CBCamera* dataPtr3;
-
-	// Transpose the matrices to prepare them for the shader.
-	worldMatrix = XMMatrixTranspose(worldMatrix);
-	viewMatrix = XMMatrixTranspose(viewMatrix);
-	projectionMatrix = XMMatrixTranspose(projectionMatrix);
-
-	// Lock the constant buffer so it can be written to.
-	result = deviceContext->Map(perObjectBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	if(FAILED(result))
-	{
-		return false;
-	}
-
-	// Get a pointer to the data in the constant buffer.
-	dataPtr = (CBPerObject*)mappedResource.pData;
-
-	// Copy the matrices into the constant buffer.
-	dataPtr->world = worldMatrix;
-	/*dataPtr->view = viewMatrix;
-	dataPtr->projection = projectionMatrix;*/
-
-
-	// Unlock the constant buffer.
-    deviceContext->Unmap(perObjectBuffer, 0);
-
-	// Finanly set the constant buffer in the vertex shader with the updated values.
-	deviceContext->VSSetConstantBuffers(0, 1, &perObjectBuffer);
-
-	// Lock the camera constant buffer so it can be written to.
-	result = deviceContext->Map(cameraBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	if (FAILED(result))
-	{
-		return false;
-	}
-
-	// Get a pointer to the data in the constant buffer.
-	dataPtr3 = (CBCamera*)mappedResource.pData;
-
-	// Copy the camera position into the constant buffer.
-	dataPtr3->cameraPos = cameraPos;
-	dataPtr3->padding = 0.0f;
-
-	// Unlock the camera constant buffer.
-	deviceContext->Unmap(cameraBuffer, 0);
-
-	// Now set the camera constant buffer in the vertex shader with the updated values.
-	deviceContext->VSSetConstantBuffers(1, 1, &cameraBuffer);
-
-	// Set shader texture resource in the pixel shader.
-	deviceContext->PSSetShaderResources(0, 1, &texture);
-
-	// Lock the light constant buffer so it can be written to.
-	result = deviceContext->Map(lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	if (FAILED(result))
-	{
-		return false;
-	}
-
-	// Get a pointer to the data in the constant buffer.
-	dataPtr2 = (CBLight*)mappedResource.pData;
-
-	// Copy the lighting variables into the constant buffer.
-	dataPtr2->ambientLight = ambient;
-	dataPtr2->diffuseLight = diffuse;
-	dataPtr2->specularLight = specular;
-	dataPtr2->lightDirection = lightDirection;
-	dataPtr2->specularPower = specularPower;
-
-	// Unlock the constant buffer.
-	deviceContext->Unmap(lightBuffer, 0);
-
-	// Finally set the light constant buffer in the pixel shader with the updated values.
-	deviceContext->PSSetConstantBuffers(0, 1, &lightBuffer);
-
-	return true;
-}
-
-
 bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XMMATRIX view, DirectX::XMMATRIX projection, Camera* camera, Light* light)
 {
 	// OBJECT / MATRIX BUFFERS
@@ -521,7 +415,9 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 	lightCb.ambientLight = light->GetAmbientColor();
 	lightCb.diffuseLight = light->GetDiffuseColor();
 	lightCb.specularLight = light->GetSpecularColor();
-	lightCb.lightDirection = light->GetDirection();
+	lightCb.lightPosition = light->GetLightPosition();
+	lightCb.lightRange = light->GetLightRange();
+	lightCb.attenuation = light->GetAttenuation();
 
 	context->UpdateSubresource(lightBuffer, 0, nullptr, &lightCb, 0, 0);
 	context->PSSetConstantBuffers(0, 1, &lightBuffer);
@@ -540,24 +436,6 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 	context->PSSetConstantBuffers(1, 1, &materialBuffer);
 
 	return true;
-}
-
-void Shader::RenderShader(ID3D11DeviceContext* deviceContext, int indexCount)
-{
-	// Set the vertex input layout.
-	deviceContext->IASetInputLayout(defaultLayout);
-
-    // Set the vertex and pixel shaders that will be used to render this triangle.
-    deviceContext->VSSetShader(vertexShader, NULL, 0);
-    deviceContext->PSSetShader(pixelShader, NULL, 0);
-
-	// Set the sampler state in the pixel shader.
-	deviceContext->PSSetSamplers(0, 1, &samplerState);
-
-	// Render the object.
-	deviceContext->DrawIndexed(indexCount, 0, 0);
-
-	return;
 }
 
 void Shader::NewRenderShader(ID3D11DeviceContext* deviceContext, int indexCount, ID3D11SamplerState* sampler)

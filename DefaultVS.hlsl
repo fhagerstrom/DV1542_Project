@@ -1,4 +1,4 @@
-cbuffer CBPerObject
+cbuffer CBPerObject : register(b0)
 {
     matrix wvp;
 	matrix world;
@@ -6,7 +6,7 @@ cbuffer CBPerObject
 	//matrix projectionMatrix;
 };
 
-cbuffer cameraBuffer
+cbuffer cameraBuffer : register(b1)
 {
     float3 cameraPos;
     float padding;
@@ -33,10 +33,6 @@ PixelInputType main(VertexInputType input)
     PixelInputType output;
 
 	// Calculate the position of the vertex against the world View Projection (WVP) and world matrix
-    // output.position = mul(input.position, world);
-    //output.position = mul(output.position, viewMatrix);
-    //output.position = mul(output.position, projectionMatrix);
-    
     output.position = mul(float4(input.position, 1.0f), wvp);
     output.worldPos = mul(float4(input.position, 1.0f), world);
     

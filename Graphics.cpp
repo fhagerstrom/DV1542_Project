@@ -68,8 +68,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	plane->SetWorldMatrix(XMMatrixTranslation(0.0f, -2.0f, 0.0f));
 	plane->GetMaterials()[0].ambientMtl = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
 	// plane->GetTextureStruct()->SetName("ice");
-	// plane->GetMaterials()[0].hasTexture = false;
-	// plane->GetMaterials()[0].hasReflection = false;
+	plane->GetMaterials()[0].hasTexture = true;
+	plane->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(plane);
 
 	torusRing = new Model;
@@ -83,14 +83,16 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	suzanne = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), suzanne, L"assets/models/monkey_triangulated.obj", true, false);
 	suzanne->SetWorldMatrix(XMMatrixTranslation(4.0f, 0.0f, 0.0f));
+	suzanne->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
 	// suzanne->GetTextureStruct()->SetName("ice");
 	// suzanne->GetMaterials()[0].hasTexture = false;
 	// suzanne->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(suzanne);
 
 	sphere = new Model;
-	reader.LoadObj(dxHandler->GetDevice(), sphere, L"assets/models/icoSphere.obj", true, false);
+	reader.LoadObj(dxHandler->GetDevice(), sphere, L"assets/models/sphere.obj", true, false);
 	sphere->SetWorldMatrix(XMMatrixTranslation(0.0f, 0.0f, 0.0f));
+	sphere->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
 	// sphere->GetTextureStruct()->SetName("ice");
 	// sphere->GetMaterials()[0].hasTexture = false;
 	// sphere->GetMaterials()[0].hasReflection = false;
@@ -99,8 +101,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	triforce = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), triforce, L"assets/models/triforce.obj", true, false);
 	// WORLD MATRIX IS SET IN UPDATE DUE TO ROTATION
-
-	triforce->GetMaterials()[0].ambientMtl = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f);
+	triforce->GetMaterials()[0].ambientMtl = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	triforce->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
 	// triforce->GetTextureStruct()->SetName("iceGlass");
 	triforce->GetMaterials()[0].hasTexture = true;
 	triforce->GetMaterials()[0].hasReflection = false;
@@ -116,15 +118,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	// Initialize the color shader object.
-	/*result = textureShader->Initialize(dxHandler->GetDevice(), hwnd);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the shader object.", L"SHADER ERROR", MB_OK);
-		return false;
-	}*/
-
-	// REWRITTEN SHADER HANDLING TEST
+	// Initialize texture shader
 	result = textureShader->InitializeShaders(dxHandler->GetDevice(), hwnd, L"DefaultVS.hlsl", L"DefaultPS.hlsl", "main", "main");
 	if (!result)
 	{
@@ -145,9 +139,10 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	light->SetAmbientColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light->SetSpecularColor(1.0f, 1.0f, 0.0f, 1.0f);
-	light->SetDirection(5.0f, -10.0f, 20.0f);
-	light->SetSpecularPower(8.0f);
+	light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
+	light->SetLightPosition(-5.0f, 10.0f, -5.0f);
+	light->SetAttenuation(1.0f, 0.002f, 0.0f);
+	light->SetLightRange(250.0f);
 
 
 	return true;
@@ -229,7 +224,7 @@ void Graphics::Update(float dt)
 {
 
 	// Rotate model(s)
-	rotTriforceAngle += 1.5f * dt;
+	rotTriforceAngle += 1.0f * dt;
 	if (rotTriforceAngle > 2 * XM_PI)
 		rotTriforceAngle = 0.0f;
 
@@ -266,11 +261,6 @@ bool Graphics::Render(float dt)
 	// triforce->Render(dxHandler->GetDeviceContext());
 	// suzanne->Render(dxHandler->GetDeviceContext());
 	// sphere->Render(dxHandler->GetDeviceContext());
-
-	// Render model using the texture shader
-	/*result = textureShader->Render(dxHandler->GetDeviceContext(), triforce->GetIndexCount(), worldMatrix, view, projection, testCube->GetTexture(),
-									light->GetDirection(), light->GetAmbientColor(), light->GetDiffuseColor(), camera->GetPosition(), light->GetSpecularColor(), light->GetSpecularPower());*/
-
 
 	// REWRITTEN SHADER RENDER FUNCTION TEST
 	// result = textureShader->NewRender(dxHandler->GetDeviceContext(), triforce, view, projection, camera, light, dxHandler->GetMinMagMipSampler());

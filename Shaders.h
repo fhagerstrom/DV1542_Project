@@ -25,8 +25,11 @@ struct CBLight
 	XMFLOAT4 ambientLight;
 	XMFLOAT4 diffuseLight;
 	XMFLOAT4 specularLight;
-	XMFLOAT3 lightDirection;
-	float specularPower;
+	XMFLOAT3 lightPosition;
+	float lightRange;
+
+	XMFLOAT3 attenuation;
+	float padding;
 };
 
 ALIGN16
@@ -58,11 +61,7 @@ private:
 	bool InitializeShader(ID3D11Device*, HWND, LPCWSTR, LPCWSTR);
 	void ShutdownShader();
 
-	bool SetShaderParameters(ID3D11DeviceContext* context, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* textureSrv, 
-		XMFLOAT3 lightDirection, XMFLOAT4 ambient, XMFLOAT4 diffuse, XMFLOAT3 cameraPos, XMFLOAT4 specular, float specularPower);
-
 	bool SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XMMATRIX view, DirectX::XMMATRIX projection, Camera* camera, Light* light);
-	void RenderShader(ID3D11DeviceContext* context, int indexCount);
 	void NewRenderShader(ID3D11DeviceContext* context, int indexCount, ID3D11SamplerState* sampler);
 
 	ID3D11VertexShader* vertexShader;
@@ -106,7 +105,5 @@ public:
 	bool CreateDefaultInputLayout(ID3D11Device* device);
 
 	void Shutdown();
-	bool Render(ID3D11DeviceContext* context, int indexCount, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* textureSrv, 
-		XMFLOAT3 lightDirection, XMFLOAT4 ambient, XMFLOAT4 diffuse, XMFLOAT3 cameraPos, XMFLOAT4 specular, float specularPower);
 	bool NewRender(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light, ID3D11SamplerState* sampler);
 };

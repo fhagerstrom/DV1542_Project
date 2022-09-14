@@ -6,8 +6,11 @@ cbuffer CBLight : register(b0)
     float4 ambientLight;
     float4 diffuseLight;
     float4 specularLight;
-    float3 lightDirection;
-    float specularPower;
+    float3 lightPosition;
+    float lightRange;
+    
+    float3 attenuation;
+    float padding;
 };
 
 cbuffer CBMaterial : register(b1)
@@ -20,10 +23,10 @@ cbuffer CBMaterial : register(b1)
     float shine;
     bool hasTexture;
     bool hasReflection;
-    int padding;
+    int padding2;
 
     bool hasNormMap;
-    float3 padding2;
+    float3 padding3;
 }
 
 struct PixelInputType
@@ -51,7 +54,7 @@ float4 main(PixelInputType input) : SV_TARGET
     float3 normalizedNormal = normalize(input.normal);
     
     // Vector from lightsource to point thats going to be shaded, take distance from that vector
-    float3 lightVector = -lightDirection.xyz /*- input.worldPos.xyz*/;
+    float3 lightVector = lightPosition.xyz - input.worldPos.xyz;
     float distance = length(lightVector);
     
     // Normalize lightvector
@@ -59,6 +62,9 @@ float4 main(PixelInputType input) : SV_TARGET
     
      // Calc ambient
     ambient = ambientLight * ambientMtl;
+    
+    if (distance > lightRange)
+        return 0;
     
     // Diffuse factor
     float diffuseFactor = saturate(dot(lightVector, normalizedNormal));
@@ -69,12 +75,19 @@ float4 main(PixelInputType input) : SV_TARGET
         float3 lightReflection = reflect(-lightVector, normalizedNormal);
 
         float specularShade = max(dot(lightReflection, input.viewDirection), 0.0f);
-        float specularFactor = pow(specularShade, specularMtl.w);
+        float specularFactor = pow(specularShade, specularMtl.w); // w channel is the specular power
 
 		// Set diffuse and specular
-        diffuse = diffuseFactor * diffuseMtl * diffuseLight; // MULTIPLY BY MATERIAL
-        specular = specularFactor * specularMtl * specularLight; // MULTIPLY BY MATERIAL
+        diffuse = diffuseFactor * diffuseMtl * diffuseLight;
+        specular = specularFactor * specularMtl * specularLight;
     }
+    
+    // Calc attenuation factor
+    float attenuationFactor = 1.0f / attenuation[0] + attenuation[1] * distance + attenuation[2] * distance * distance;
+
+	// Multiply attenuation to diffuse and specular
+    diffuse *= attenuationFactor;
+    specular *= attenuationFactor;
     
     diffuse = saturate(diffuse);
     specular = saturate(specular);
