@@ -2,6 +2,7 @@
 
 Texture::Texture()
 {
+	hr = 0;
 	textureSrv = 0;
 }
 

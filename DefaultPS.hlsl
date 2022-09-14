@@ -69,7 +69,7 @@ float4 main(PixelInputType input) : SV_TARGET
         float3 lightReflection = reflect(-lightVector, normalizedNormal);
 
         float specularShade = max(dot(lightReflection, input.viewDirection), 0.0f);
-        float specularFactor = pow(specularShade, specularPower);
+        float specularFactor = pow(specularShade, specularMtl.w);
 
 		// Set diffuse and specular
         diffuse = diffuseFactor * diffuseMtl * diffuseLight; // MULTIPLY BY MATERIAL

@@ -66,6 +66,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	plane = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), plane, L"assets/models/plane.obj", true, false);
 	plane->SetWorldMatrix(XMMatrixTranslation(0.0f, -2.0f, 0.0f));
+	plane->GetMaterials()[0].ambientMtl = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
 	// plane->GetTextureStruct()->SetName("ice");
 	// plane->GetMaterials()[0].hasTexture = false;
 	// plane->GetMaterials()[0].hasReflection = false;
@@ -99,9 +100,9 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	reader.LoadObj(dxHandler->GetDevice(), triforce, L"assets/models/triforce.obj", true, false);
 	// WORLD MATRIX IS SET IN UPDATE DUE TO ROTATION
 
-	triforce->GetMaterials()[0].ambientMtl = XMFLOAT4(0.5f, 0.5f, 0.0f, 1.0f);
-	triforce->GetTextureStruct()->SetName("triforce");
-	triforce->GetMaterials()[0].hasTexture = false;
+	triforce->GetMaterials()[0].ambientMtl = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f);
+	// triforce->GetTextureStruct()->SetName("iceGlass");
+	triforce->GetMaterials()[0].hasTexture = true;
 	triforce->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(triforce);
 
@@ -145,8 +146,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	light->SetAmbientColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetSpecularColor(1.0f, 1.0f, 0.0f, 1.0f);
-	light->SetDirection(1.0f, 0.0f, 1.0f);
-	light->SetSpecularPower(16.0f);
+	light->SetDirection(5.0f, -10.0f, 20.0f);
+	light->SetSpecularPower(8.0f);
 
 
 	return true;
