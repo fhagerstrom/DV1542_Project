@@ -10,21 +10,20 @@ public:
 	DxHandler(const DxHandler&);
 	~DxHandler();
 
-	bool Initialize(int, int, HWND, float, float);
+	bool Initialize(int screenWidth, int screenHeight, HWND hwnd, float screenDepth, float screenNear);
 	void Shutdown();
 
 	void BeginScene(float, float, float, float);
 	void EndScene();
 
-	ID3D11Device* GetDevice();
-	ID3D11DeviceContext* GetDeviceContext();
-
 	/* GET FUNCTIONS */
+	ID3D11Device* GetDevice() { return devicePtr; }
+	ID3D11DeviceContext* GetDeviceContext() { return contextPtr; }
+
 	ID3D11SamplerState* GetMinMagMipSampler() { return this->minMagMipSampler; }
 
 	void GetProjectionMatrix(XMMATRIX& projectionMatrix) { projectionMatrix = this->projectionMatrix; }
 	void GetWorldMatrix(XMMATRIX& worldMatrix) { worldMatrix = this->worldMatrix; }
-	void GetOrthoMatrix(XMMATRIX& orthoMatrix) { orthoMatrix = this->orthoMatrix; }
 
 private:
 	IDXGISwapChain* swapChain;
@@ -40,7 +39,6 @@ private:
 
 	XMMATRIX projectionMatrix;
 	XMMATRIX worldMatrix;
-	XMMATRIX orthoMatrix;
 
 	// TODO: RENAME VARIABLES
 };

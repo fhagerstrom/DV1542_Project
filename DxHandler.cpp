@@ -231,9 +231,6 @@ bool DxHandler::Initialize(int screenWidth, int screenHeight, HWND hwnd, float s
 	// Initialize the world matrix to the identity matrix.
 	worldMatrix = XMMatrixIdentity();
 
-	// Create an orthographic projection matrix for 2D rendering.
-	orthoMatrix = XMMatrixOrthographicLH((float)screenWidth, (float)screenHeight, screenNear, screenDepth);
-
 	D3D11_SAMPLER_DESC samplerDesc;
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -343,16 +340,4 @@ void DxHandler::BeginScene(float red, float green, float blue, float alpha)
 void DxHandler::EndScene()
 {
 	swapChain->Present(0, 0);
-}
-
-
-ID3D11Device* DxHandler::GetDevice()
-{
-	return devicePtr;
-}
-
-
-ID3D11DeviceContext* DxHandler::GetDeviceContext()
-{
-	return contextPtr;
 }

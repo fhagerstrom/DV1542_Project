@@ -47,8 +47,9 @@ float4 main(PixelInputType input) : SV_TARGET
     float4 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
     float4 specular = float4(0.0f, 0.0f, 0.0f, 0.0f);
     
-    // Sample the pixel color from the texture using the sampler at this texture coordinate location.
-    textureColor = shaderTexture.Sample(SampleType, input.tex);
+    // Sample the pixel color from the texture using the sampler at this texture coordinate location if it has a texture.
+    if(hasTexture)
+        textureColor = shaderTexture.Sample(SampleType, input.tex);
     
     // Normalize normals
     float3 normalizedNormal = normalize(input.normal);

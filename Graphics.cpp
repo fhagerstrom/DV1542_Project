@@ -52,7 +52,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	camera->SetPosition(0.0f, 5.0f, -20.0f);
 	camera->GetInputs(input);
 
-	testCube = new Model;
+	/*testCube = new Model;
 	if (!testCube)
 		return false;
 
@@ -61,7 +61,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	{
 		MessageBox(NULL, L"Couldn't initialize cube. Check the file paths!", L"MODEL ERROR", MB_OK);
 		return false;
-	}
+	}*/
 
 	plane = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), plane, L"assets/models/plane.obj", true, false);
@@ -75,6 +75,9 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	torusRing = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), torusRing, L"assets/models/torusDonut.obj", true, false);
 	torusRing->SetWorldMatrix(XMMatrixTranslation(-4.0f, 0.0f, 0.0f));
+	torusRing->GetMaterials()[0].ambientMtl = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f);
+	torusRing->GetMaterials()[0].diffuseMtl = XMFLOAT4(0.5f, 0.0f, 0.0f, 1.0f);
+	torusRing->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
 	// torusRing->GetTextureStruct()->SetName("ice");
 	// torusRing->GetMaterials()[0].hasTexture = false;
 	// torusRing->GetMaterials()[0].hasReflection = false;
@@ -83,6 +86,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	suzanne = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), suzanne, L"assets/models/monkey_triangulated.obj", true, false);
 	suzanne->SetWorldMatrix(XMMatrixTranslation(4.0f, 0.0f, 0.0f));
+	suzanne->GetMaterials()[0].diffuseMtl = XMFLOAT4(0.0f, 0.0f, 0.5f, 1.0f);
 	suzanne->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
 	// suzanne->GetTextureStruct()->SetName("ice");
 	// suzanne->GetMaterials()[0].hasTexture = false;
@@ -92,6 +96,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	sphere = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), sphere, L"assets/models/sphere.obj", true, false);
 	sphere->SetWorldMatrix(XMMatrixTranslation(0.0f, 0.0f, 0.0f));
+	sphere->GetMaterials()[0].diffuseMtl = XMFLOAT4(0.0f, 0.5f, 0.0f, 1.0f);
 	sphere->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
 	// sphere->GetTextureStruct()->SetName("ice");
 	// sphere->GetMaterials()[0].hasTexture = false;
@@ -140,9 +145,9 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	light->SetAmbientColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light->SetLightPosition(-5.0f, 10.0f, -5.0f);
-	light->SetAttenuation(1.0f, 0.002f, 0.0f);
-	light->SetLightRange(250.0f);
+	light->SetLightPosition(0.0f, 5.0f, -5.0f);
+	light->SetAttenuation(1.0f, 0.02f, 0.0f);
+	light->SetLightRange(500.0f);
 
 
 	return true;
