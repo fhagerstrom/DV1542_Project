@@ -121,19 +121,19 @@ void Camera::DetectInputs(double deltaTime)
 	// Reset camera position
 	if (keyboardState[DIK_R] & 0x80)
 	{
-		SetPosition(0.0f, 0.0f, -10.0f);
+		SetPosition(0.0f, 10.0f, -50.0f);
 		camYaw = 0.0f;
 		camPitch = 0.0f;
 	}
 
-	// LOOK AROUND (MOUSE)
-	if ((mouseCurrState.lX != mouseLastState.lX) || (mouseCurrState.lY != mouseLastState.lY))
-	{
-		camYaw += mouseLastState.lX * 0.001f;
-		camPitch += mouseCurrState.lY * 0.001f;
+	//// LOOK AROUND (MOUSE)
+	//if ((mouseCurrState.lX != mouseLastState.lX) || (mouseCurrState.lY != mouseLastState.lY))
+	//{
+	//	camYaw += mouseLastState.lX * 0.001f;
+	//	camPitch += mouseCurrState.lY * 0.001f;
 
-		mouseLastState = mouseCurrState;
-	}
+	//	mouseLastState = mouseCurrState;
+	//}
 
 	// LOKK AROUND (KEYBOARD)
 	if (keyboardState[DIK_UPARROW] & 0x80)

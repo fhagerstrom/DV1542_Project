@@ -8,6 +8,11 @@
 #include "Light.h"
 #include "Timer.h"
 
+// IMGUI INCLUDES
+#include "assets/imgui/imgui.h"
+#include "assets/imgui/imgui_impl_dx11.h"
+#include "assets/imgui/imgui_impl_win32.h"
+
 const float SCREEN_DEPTH = 1000.0f;
 const float SCREEN_NEAR = 0.1f;
 
@@ -22,6 +27,11 @@ public:
 	bool Frame(float dt);
 	void Update(float dt);
 
+	// Functions to control ImGui
+	void EnableImgui() { imguiEnabled = true; };
+	void DisableImgui() { imguiEnabled = false; };
+	bool IsImguiEnabled() { return imguiEnabled; };
+
 private:
 	bool Render(float dt);
 
@@ -30,7 +40,7 @@ private:
 
 	Model* testCube;
 	Model* testQuad;
-	Model* plane;
+	Model* cityTerrain;
 	Model* torusRing;
 	Model* suzanne;
 	Model* sphere;
@@ -49,8 +59,17 @@ private:
 	IDirectInput8* directInput;
 	IDirectInputDevice8* keyboard;
 	IDirectInputDevice8* mouse;
+	BYTE keyboardState[256];
 
 	XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
+
+	// ImGui related variables.
+	// Bool to check enable/disable status
+	bool imguiEnabled = true;
+
+
+	// To be able to move light.
+	float movableLightPos[3];
 
 	// Rotation related variables for models that will rotate.
 	float rotTriforceAngle = 0.0f;

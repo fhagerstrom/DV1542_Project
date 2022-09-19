@@ -146,6 +146,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="assets\imgui\imconfig.h" />
+    <ClInclude Include="assets\imgui\imgui.h" />
+    <ClInclude Include="assets\imgui\imgui_impl_dx11.h" />
+    <ClInclude Include="assets\imgui\imgui_impl_win32.h" />
+    <ClInclude Include="assets\imgui\imgui_internal.h" />
+    <ClInclude Include="assets\imgui\imstb_rectpack.h" />
+    <ClInclude Include="assets\imgui\imstb_textedit.h" />
+    <ClInclude Include="assets\imgui\imstb_truetype.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="DeferredBuffers.h" />
     <ClInclude Include="DxHandler.h" />
@@ -175,8 +183,25 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
+    <FxCompile Include="DeferredCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="assets\imgui\imgui.cpp" />
+    <ClCompile Include="assets\imgui\imgui_demo.cpp" />
+    <ClCompile Include="assets\imgui\imgui_draw.cpp" />
+    <ClCompile Include="assets\imgui\imgui_impl_dx11.cpp" />
+    <ClCompile Include="assets\imgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="assets\imgui\imgui_tables.cpp" />
+    <ClCompile Include="assets\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DeferredBuffers.cpp" />
     <ClCompile Include="DxHandler.cpp" />

@@ -48,8 +48,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	// Set the initial position of the camera.
-	camera->SetPosition(0.0f, 5.0f, -20.0f);
+	// Set the initial position of the camera and call input function for movement.
+	camera->SetPosition(0.0f, 10.0f, -50.0f);
 	camera->GetInputs(input);
 
 	/*testCube = new Model;
@@ -63,14 +63,27 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}*/
 
-	plane = new Model;
-	reader.LoadObj(dxHandler->GetDevice(), plane, L"assets/models/plane.obj", true, false);
-	plane->SetWorldMatrix(XMMatrixTranslation(0.0f, -2.0f, 0.0f));
-	plane->GetMaterials()[0].ambientMtl = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
-	// plane->GetTextureStruct()->SetName("ice");
-	plane->GetMaterials()[0].hasTexture = true;
-	plane->GetMaterials()[0].hasReflection = false;
-	allModels.push_back(plane);
+	// Create light object.
+	light = new Light;
+	if (!light)
+		return false;
+
+	// Set lighting values.
+	light->SetAmbientColor(1.0f, 1.0f, 1.0f, 1.0f);
+	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
+	light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
+	light->SetLightPosition(0.0f, 10.0f, -5.0f);
+	light->SetAttenuation(1.0f, 0.02f, 0.0f);
+	light->SetLightRange(500.0f);
+
+	cityTerrain = new Model;
+	reader.LoadObj(dxHandler->GetDevice(), cityTerrain, L"assets/models/scifi_city.obj", true, false);
+	cityTerrain->SetWorldMatrix(XMMatrixTranslation(0.0f, -2.0f, 0.0f));
+	cityTerrain->GetMaterials()[0].ambientMtl = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	// cityTerrain->GetTextureStruct()->SetName("ice");
+	cityTerrain->GetMaterials()[0].hasTexture = true;
+	cityTerrain->GetMaterials()[0].hasReflection = false;
+	allModels.push_back(cityTerrain);
 
 	torusRing = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), torusRing, L"assets/models/torusDonut.obj", true, false);
@@ -138,17 +151,13 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	light = new Light;
-	if (!light)
-		return false;
-
-	light->SetAmbientColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light->SetLightPosition(0.0f, 5.0f, -5.0f);
-	light->SetAttenuation(1.0f, 0.02f, 0.0f);
-	light->SetLightRange(500.0f);
-
+	// ImGui setup.
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	ImGui_ImplWin32_Init(hwnd);
+	ImGui_ImplDX11_Init(dxHandler->GetDevice(), dxHandler->GetDeviceContext());
+	ImGui::StyleColorsDark();
 
 	return true;
 }
@@ -227,6 +236,15 @@ bool Graphics::Frame(float dt)
 
 void Graphics::Update(float dt)
 {
+	// Acquire keyboard for inputs
+	keyboard->Acquire();
+	keyboard->GetDeviceState(sizeof(keyboardState), (LPVOID)&keyboardState);
+
+	/*if (keyboardState[DIK_I] & 0x80)
+		DisableImgui();
+
+	else
+		EnableImgui();*/
 
 	// Rotate model(s)
 	rotTriforceAngle += 1.0f * dt;
@@ -245,7 +263,7 @@ bool Graphics::Render(float dt)
 	XMMATRIX view, projection;
 
 	// Clear the buffers to begin the scene.
-	dxHandler->BeginScene(0.2f, 0.8f, 0.8f, 1.0f);
+	dxHandler->BeginScene(0.3f, 0.3f, 0.3f, 1.0f);
 
 	// PUT RENDERS BELOW HERE
 	//___________________________________________________________________________________________________
@@ -277,6 +295,33 @@ bool Graphics::Render(float dt)
 		if (!result)
 			return false;
 	}
+
+	//___________________________________________________________________________________________________
+
+	// CALL IMGUI FRAME PROPERTIES
+	//___________________________________________________________________________________________________
+
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	// Test window.
+	ImGui::Begin("TEST WINDOW");
+	ImGui::DragFloat3("Light pos (x, y, z): ", movableLightPos, 0.1f, -25.0f, 25.0f);
+	light->SetLightPosition(movableLightPos[0], movableLightPos[1], movableLightPos[2]);
+
+	ImGui::End();
+
+	// Assemble draw data from Imgui and draw window(s).
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+	// TODO: Fix toggling on and off.
+	/*if (imguiEnabled)
+	{
+		ImGui::Render();
+		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	}*/
 
 	//___________________________________________________________________________________________________
 
