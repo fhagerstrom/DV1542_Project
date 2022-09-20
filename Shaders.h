@@ -55,6 +55,12 @@ struct CBCamera
 	float padding;
 };
 
+ALIGN16
+struct CBPixel
+{
+	int color;
+};
+
 class Shader
 {
 private:
@@ -66,6 +72,7 @@ private:
 
 	ID3D11VertexShader* vertexShader;
 	ID3D11PixelShader* pixelShader;
+	ID3D11ComputeShader* computeShader;
 	ID3D11InputLayout* defaultLayout;
 
 	// ID3D11 buffer declarations
@@ -73,6 +80,8 @@ private:
 	ID3D11Buffer* lightBuffer;
 	ID3D11Buffer* cameraBuffer;
 	ID3D11Buffer* materialBuffer;
+	ID3D11Buffer* computeInputBuffer;
+	ID3D11Buffer* computeOutputBuffer;
 
 	// Struct buffer declarations
 	CBPerObject objectCb;
@@ -83,24 +92,36 @@ private:
 	// Textures / Resources
 	ID3D11SamplerState* samplerState;
 	ID3D11ShaderResourceView* textureSRV;
-	ID3D11ShaderResourceView* normalMapSRV;
+
+	// Compute shader related resources
+	ID3D11ShaderResourceView* computeInputSRV;
+	ID3D11UnorderedAccessView* outputUAV;
+
 
 	HRESULT hr;
 	ID3DBlob* vertexShaderBlob;
 	ID3DBlob* pixelShaderBlob;
+	ID3DBlob* computeShaderBlob;
 	ID3DBlob* errorBlob;
 
 	D3D11_BUFFER_DESC matrixBufferDesc;
 	D3D11_BUFFER_DESC lightBufferDesc;
 	D3D11_BUFFER_DESC cameraBufferDesc;
+	D3D11_BUFFER_DESC inputDataDesc;
+	D3D11_BUFFER_DESC outputDataDesc;
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+
+	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+
 	D3D11_SAMPLER_DESC samplerDesc;
 
 public:
 	Shader();
 	~Shader();
 
-	bool Initialize(ID3D11Device*, HWND);
-	bool InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileName, LPCWSTR psFileName, LPCSTR VSEntry, LPCSTR PSEntry);
+	bool InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileName, LPCWSTR psFileName, LPCSTR VSEntry, LPCSTR PSEntry); // ADD COMPUTE SHADER LATER
+	bool InitializeComputeShader(ID3D11Device* device, LPCWSTR csFileName);
 
 	bool CreateDefaultInputLayout(ID3D11Device* device);
 

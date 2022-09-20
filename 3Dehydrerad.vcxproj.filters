@@ -54,7 +54,7 @@
     <ClInclude Include="Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DeferredBuffers.h">
+    <ClInclude Include="DeferredRender.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="assets\imgui\imconfig.h">
@@ -87,6 +87,9 @@
       <Filter>Resource Files</Filter>
     </FxCompile>
     <FxCompile Include="DefaultVS.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="DesaturatedCS.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
     <FxCompile Include="DeferredCS.hlsl">
@@ -127,7 +130,7 @@
     <ClCompile Include="Timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DeferredBuffers.cpp">
+    <ClCompile Include="DeferredRender.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="assets\imgui\imgui.cpp">

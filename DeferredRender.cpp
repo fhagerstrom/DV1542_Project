@@ -1,6 +1,6 @@
-#include "DeferredBuffers.h"
+#include "DeferredRender.h"
 
-DeferredBuffers::DeferredBuffers()
+DeferredRender::DeferredRender()
 {
 	for (int i = 0; i < BUFFER_COUNT; i++)
 	{
@@ -13,11 +13,11 @@ DeferredBuffers::DeferredBuffers()
 	depthStencilView = 0;
 }
 
-DeferredBuffers::~DeferredBuffers()
+DeferredRender::~DeferredRender()
 {
 }
 
-bool DeferredBuffers::Initialize(ID3D11Device* device, int windowWidth, int windowHeight, int screenDepth, int screenNear)
+bool DeferredRender::Initialize(ID3D11Device* device, int windowWidth, int windowHeight, int screenDepth, int screenNear)
 {
 	D3D11_TEXTURE2D_DESC textureDesc;
 	D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
@@ -134,7 +134,7 @@ bool DeferredBuffers::Initialize(ID3D11Device* device, int windowWidth, int wind
 	return true;
 }
 
-void DeferredBuffers::Shutdown()
+void DeferredRender::Shutdown()
 {
 	depthStencilView->Release();
 	depthStencilView = 0;
@@ -156,7 +156,7 @@ void DeferredBuffers::Shutdown()
 	}
 }
 
-void DeferredBuffers::SetRenderTargets(ID3D11DeviceContext* context)
+void DeferredRender::SetRenderTargets(ID3D11DeviceContext* context)
 {
 	// Bind the render target view array and depth stencil buffer to the output render pipeline.
 	context->OMSetRenderTargets(BUFFER_COUNT, renderTargetViewArray, depthStencilView);
@@ -166,6 +166,23 @@ void DeferredBuffers::SetRenderTargets(ID3D11DeviceContext* context)
 
 }
 
-void DeferredBuffers::ClearRenderTargets(ID3D11DeviceContext* context, float r, float g, float b, float a)
+void DeferredRender::ClearRenderTargets(ID3D11DeviceContext* context, float r, float g, float b, float a)
 {
+	float color[4];
+
+	// Setup the color to clear the buffer to.
+	color[0] = r;
+	color[1] = g;
+	color[2] = b;
+	color[3] = a;
+
+	// Clear the render target buffers.
+	for (int i = 0; i < BUFFER_COUNT; i++)
+	{
+		context->ClearRenderTargetView(renderTargetViewArray[i], color);
+	}
+
+	// Clear the depth buffer.
+	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
 }

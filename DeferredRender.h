@@ -10,11 +10,11 @@ using namespace DirectX;
 // Handle the geometry buffer for the deferred pipeline
 // as well as defining texture, render target view and shader resource view arrays.
 
-class DeferredBuffers
+class DeferredRender
 {
 public:
-	DeferredBuffers();
-	~DeferredBuffers();
+	DeferredRender();
+	~DeferredRender();
 	bool Initialize(ID3D11Device* device, int windowWidth, int windowHeight, int screenDepth, int screenNear);
 	void Shutdown();
 

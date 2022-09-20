@@ -14,21 +14,6 @@ Shader::~Shader()
 {
 }
 
-bool Shader::Initialize(ID3D11Device* device, HWND hwnd)
-{
-	bool result;
-
-	// Initialize the vertex and pixel shaders.
-	result = InitializeShader(device, hwnd, L"DefaultVS.hlsl", L"DefaultPS.hlsl");
-	if(!result)
-	{
-		return false;
-	}
-
-	return true;
-}
-
-
 void Shader::Shutdown()
 {
 	// Shutdown the vertex and pixel shaders as well as the related objects.
@@ -50,146 +35,9 @@ bool Shader::NewRender(ID3D11DeviceContext* context, Model* model, XMMATRIX view
 	return true;
 }
 
-
-bool Shader::InitializeShader(ID3D11Device* device, HWND hwnd, LPCWSTR vsFilename, LPCWSTR psFilename)
-{
-	HRESULT hr;
-	ID3DBlob* vertexShaderBuffer;
-	ID3DBlob* pixelShaderBuffer;
-	D3D11_BUFFER_DESC perObjectBufferDesc;
-	D3D11_BUFFER_DESC lightBufferDesc;
-	D3D11_BUFFER_DESC cameraBufferDesc;
-	D3D11_SAMPLER_DESC samplerDesc;
-
-	// Initialize the pointers this function will use to null.
-	vertexShaderBuffer = 0;
-	pixelShaderBuffer = 0;
-
-    // Compile the vertex shader code.
-	hr = D3DCompileFromFile(vsFilename, NULL, NULL, "main", "vs_5_0", NULL, 0, &vertexShaderBuffer, NULL);
-	if(FAILED(hr))
-	{
-		MessageBox(hwnd, vsFilename, L"Missing Shader File", MB_OK);
-		return false;
-	}
-
-    // Compile the pixel shader code.
-	hr = D3DCompileFromFile(psFilename, NULL, NULL, "main", "ps_5_0", NULL, 0, &pixelShaderBuffer, NULL);
-	if(FAILED(hr))
-	{
-		MessageBox(hwnd, psFilename, L"Missing Shader File", MB_OK);
-		return false;
-	}
-
-    // Create the vertex shader from the buffer.
-    hr = device->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), NULL, &vertexShader);
-	if(FAILED(hr))
-	{
-		return false;
-	}
-
-    // Create the pixel shader from the buffer.
-    hr = device->CreatePixelShader(pixelShaderBuffer->GetBufferPointer(), pixelShaderBuffer->GetBufferSize(), NULL, &pixelShader);
-	if(FAILED(hr))
-	{
-		return false;
-	}
-
-	D3D11_INPUT_ELEMENT_DESC inputLayoutPosTexNormal[] =
-	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,	0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-	};
-
-	hr = device->CreateInputLayout(inputLayoutPosTexNormal, ARRAYSIZE(inputLayoutPosTexNormal), vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), &defaultLayout);
-	if (FAILED(hr))
-	{
-		MessageBox(NULL, L"Couldn't create input layout!", L"SHADER ERROR", MB_OK);
-		return false;
-	}
-
-	// Release the vertex shader buffer and pixel shader buffer since they are no longer needed.
-	vertexShaderBuffer->Release();
-	vertexShaderBuffer = 0;
-
-	pixelShaderBuffer->Release();
-	pixelShaderBuffer = 0;
-
-    // Setup the description of the matrix constant buffer that is in the vertex shader.
-    perObjectBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	perObjectBufferDesc.ByteWidth = sizeof(CBPerObject);
-    perObjectBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    perObjectBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    perObjectBufferDesc.MiscFlags = 0;
-	perObjectBufferDesc.StructureByteStride = 0;
-
-	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
-	hr = device->CreateBuffer(&perObjectBufferDesc, NULL, &perObjectBuffer);
-	if(FAILED(hr))
-	{
-		return false;
-	}
-
-	// Setup the description of the camera dynamic constant buffer that is in the vertex shader.
-	cameraBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	cameraBufferDesc.ByteWidth = sizeof(CBCamera);
-	cameraBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	cameraBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	cameraBufferDesc.MiscFlags = 0;
-	cameraBufferDesc.StructureByteStride = 0;
-
-	// Create the camera constant buffer pointer so we can access the vertex shader constant buffer from within this class.
-	hr = device->CreateBuffer(&cameraBufferDesc, NULL, &cameraBuffer);
-	if (FAILED(hr))
-	{
-		return false;
-	}
-
-	// Setup the description of the light dynamic constant buffer that is in the pixel shader.
-	// Note that ByteWidth always needs to be a multiple of 16 if using D3D11_BIND_CONSTANT_BUFFER or CreateBuffer will fail.
-	lightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	lightBufferDesc.ByteWidth = sizeof(CBLight);
-	lightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	lightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	lightBufferDesc.MiscFlags = 0;
-	lightBufferDesc.StructureByteStride = 0;
-
-	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
-	hr = device->CreateBuffer(&lightBufferDesc, NULL, &lightBuffer);
-	if (FAILED(hr))
-	{
-		return false;
-	}
-
-	// Create a texture sampler state description.
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.MipLODBias = 0.0f;
-	samplerDesc.MaxAnisotropy = 1;
-	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	samplerDesc.BorderColor[0] = 0;
-	samplerDesc.BorderColor[1] = 0;
-	samplerDesc.BorderColor[2] = 0;
-	samplerDesc.BorderColor[3] = 0;
-	samplerDesc.MinLOD = 0;
-	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-
-	// Create the texture sampler state.
-	hr = device->CreateSamplerState(&samplerDesc, &samplerState);
-	if (FAILED(hr))
-	{
-		return false;
-	}
-
-	return true;
-}
-
 bool Shader::InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileName, LPCWSTR psFileName, LPCSTR VSEntry, LPCSTR PSEntry)
 {
-	/* COMPILE AND CERATE VERTEX AND PIXEL SHADERS */
+	/* COMPILE AND CREATE VERTEX AND PIXEL SHADERS */
 
 	// Compile vertex shader
 	hr = D3DCompileFromFile(vsFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, VSEntry, "vs_5_0", D3DCOMPILE_ENABLE_STRICTNESS, NULL, &vertexShaderBlob, &errorBlob);
@@ -298,6 +146,91 @@ bool Shader::InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileNa
 	hr = device->CreateBuffer(&cBufferDescription, NULL, &materialBuffer);
 	if (FAILED(hr))
 	{
+		return false;
+	}
+
+	return true;
+}
+
+bool Shader::InitializeComputeShader(ID3D11Device* device, LPCWSTR csFileName)
+{
+	// Compile compute shader
+	hr = D3DCompileFromFile(csFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "cs_5_0", D3DCOMPILE_ENABLE_STRICTNESS, NULL, &computeShaderBlob, &errorBlob);
+	if (FAILED(hr))
+	{
+		if (errorBlob)
+		{
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+			MessageBox(NULL, csFileName, L"MISSING SHADER FILE!", MB_OK);
+			errorBlob->Release();
+		}
+
+		computeShaderBlob->Release();
+		assert(false);
+	}
+
+	// Create compute shader
+	hr = device->CreateComputeShader(computeShaderBlob->GetBufferPointer(), computeShaderBlob->GetBufferSize(), NULL, &this->computeShader);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, L"Couldn't create compute shader", L"SHADER ERROR!", MB_OK);
+		return false;
+	}
+
+	// Set input / output buffer descriptions.
+
+	// INPUT RESOURCES
+	// SHADER RESOURCE VIEW
+	inputDataDesc.Usage = D3D11_USAGE_DYNAMIC;
+	inputDataDesc.ByteWidth = sizeof(CBPixel);
+	inputDataDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	inputDataDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	inputDataDesc.StructureByteStride = sizeof(CBPixel);
+	inputDataDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+
+	hr = device->CreateBuffer(&inputDataDesc, NULL, &computeInputBuffer);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, L"Couldn't create compute input buffer!", L"SHADER ERROR", MB_OK);
+		return false;
+	}
+
+	srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFEREX;
+	srvDesc.BufferEx.FirstElement = 0;
+	srvDesc.BufferEx.Flags = 0;
+	srvDesc.BufferEx.NumElements = sizeof(CBPixel);
+
+	hr = device->CreateShaderResourceView(computeInputBuffer, &srvDesc, &computeInputSRV);
+
+	// OUTPUT RESOURCES
+	// UNORDERED ACCESS VIEW
+	outputDataDesc.Usage = D3D11_USAGE_DEFAULT;
+	outputDataDesc.ByteWidth = sizeof(CBPixel);
+	outputDataDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
+	outputDataDesc.CPUAccessFlags = 0;
+	outputDataDesc.StructureByteStride = sizeof(CBPixel);
+	outputDataDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+
+	hr = (device->CreateBuffer(&outputDataDesc, NULL, &computeOutputBuffer));
+
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, L"Couldn't create compute output buffer!", L"SHADER ERROR", MB_OK);
+		return false;
+	}
+
+	uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+	uavDesc.Buffer.FirstElement = 0;
+	uavDesc.Buffer.Flags = 0;
+	uavDesc.Buffer.NumElements = sizeof(CBPixel);
+
+	hr = device->CreateUnorderedAccessView(computeOutputBuffer, &uavDesc, &outputUAV);
+
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, L"Couldn't create UAV for compute shader!", L"SHADER ERROR", MB_OK);
 		return false;
 	}
 
@@ -443,12 +376,32 @@ void Shader::NewRenderShader(ID3D11DeviceContext* deviceContext, int indexCount,
 	// Set the vertex input layout.
 	deviceContext->IASetInputLayout(defaultLayout);
 
-	// Set the vertex and pixel shaders that will be used to render this triangle.
+	// Set the vertex and pixel shaders that will be used to render all objects and the light.
 	deviceContext->VSSetShader(vertexShader, NULL, 0);
 	deviceContext->PSSetShader(pixelShader, NULL, 0);
 
 	// Set the sampler state in the pixel shader.
 	deviceContext->PSSetSamplers(0, 1, &sampler);
+
+	// Set compute shader values
+	deviceContext->CSSetShader(computeShader, NULL, 0);
+
+	deviceContext->CSSetShaderResources(0, 1, &computeInputSRV);
+	deviceContext->CSSetUnorderedAccessViews(0, 1, &outputUAV, 0);
+
+	// Dispatch
+	deviceContext->Dispatch(32, 16, 1);
+
+	// Unbind the input textures from the CS
+	ID3D11ShaderResourceView* nullSRV[] = { NULL };
+	deviceContext->CSSetShaderResources(0, 1, nullSRV);
+
+	// Unbind output from compute shader
+	ID3D11UnorderedAccessView* nullUAV[] = { NULL };
+	deviceContext->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);
+
+	// Disable Compute Shader
+	deviceContext->CSSetShader(NULL, NULL, 0);
 
 	// Render the object.
 	deviceContext->DrawIndexed(indexCount, 0, 0);

@@ -136,13 +136,27 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	computeShader = new Shader;
+	if (!computeShader)
+	{
+		return false;
+	}
+
 	// Initialize texture shader
 	result = textureShader->InitializeShaders(dxHandler->GetDevice(), hwnd, L"DefaultVS.hlsl", L"DefaultPS.hlsl", "main", "main");
 	if (!result)
 	{
-		MessageBox(hwnd, L"Couldn't initialize the shader object.", L"SHADER ERROR", MB_OK);
+		MessageBox(hwnd, L"Couldn't initialize the shader object.", L"GRAPHICS ERROR", MB_OK);
 		return false;
 	}
+
+
+	/*result = computeShader->InitializeComputeShader(dxHandler->GetDevice(), L"DesaturatedCS.hlsl");
+	if (!result)
+	{
+		MessageBox(hwnd, L"Couldn't initialize compute shader!", L"GRAPHICS ERROR", MB_OK);
+		return false;
+	}*/
 
 	result = textureShader->CreateDefaultInputLayout(dxHandler->GetDevice());
 	if (!result)
@@ -280,21 +294,26 @@ bool Graphics::Render(float dt)
 	// testQuad->Render(dxHandler->GetDeviceContext());
 
 	// INDIVIDUAL MODEL RENDERS
+	cityTerrain->Render(dxHandler->GetDeviceContext());
 	// torusRing->Render(dxHandler->GetDeviceContext());
 	// triforce->Render(dxHandler->GetDeviceContext());
 	// suzanne->Render(dxHandler->GetDeviceContext());
 	// sphere->Render(dxHandler->GetDeviceContext());
 
-	// REWRITTEN SHADER RENDER FUNCTION TEST
-	// result = textureShader->NewRender(dxHandler->GetDeviceContext(), triforce, view, projection, camera, light, dxHandler->GetMinMagMipSampler());
+	// REWRITTEN SHADER RENDER FUNCTION
+	result = textureShader->NewRender(dxHandler->GetDeviceContext(), cityTerrain, view, projection, camera, light, dxHandler->GetMinMagMipSampler());
 
-	for (int i = 0; i < allModels.size(); i++) 
+	// COMPUTE SHADER RENDER
+	/*result = computeShader->NewRender(dxHandler->GetDeviceContext(), torusRing, view, projection, 
+		camera, light, dxHandler->GetMinMagMipSampler());*/
+
+	/*for (int i = 0; i < allModels.size(); i++) 
 	{
 		allModels[i]->Render(dxHandler->GetDeviceContext());
 		result = textureShader->NewRender(dxHandler->GetDeviceContext(), allModels[i], view, projection, camera, light, dxHandler->GetMinMagMipSampler());
 		if (!result)
 			return false;
-	}
+	}*/
 
 	//___________________________________________________________________________________________________
 

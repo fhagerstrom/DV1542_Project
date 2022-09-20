@@ -155,7 +155,7 @@
     <ClInclude Include="assets\imgui\imstb_textedit.h" />
     <ClInclude Include="assets\imgui\imstb_truetype.h" />
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="DeferredBuffers.h" />
+    <ClInclude Include="DeferredRender.h" />
     <ClInclude Include="DxHandler.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="Input.h" />
@@ -193,6 +193,16 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
     </FxCompile>
+    <FxCompile Include="DesaturatedCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="assets\imgui\imgui.cpp" />
@@ -203,7 +213,7 @@
     <ClCompile Include="assets\imgui\imgui_tables.cpp" />
     <ClCompile Include="assets\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="DeferredBuffers.cpp" />
+    <ClCompile Include="DeferredRender.cpp" />
     <ClCompile Include="DxHandler.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="Input.cpp" />

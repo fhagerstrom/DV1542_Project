@@ -49,6 +49,8 @@ private:
 	Material modelMtl;
 
 	Shader* textureShader;
+	Shader* computeShader;
+
 	Light* light;
 	ObjReader reader;
 
