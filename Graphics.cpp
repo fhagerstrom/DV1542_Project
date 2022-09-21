@@ -79,7 +79,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	cityTerrain = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), cityTerrain, L"assets/models/scifi_city.obj", true, false);
 	cityTerrain->SetWorldMatrix(XMMatrixTranslation(0.0f, -2.0f, 0.0f));
-	cityTerrain->GetMaterials()[0].ambientMtl = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	cityTerrain->GetMaterials()[0].ambientMtl = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f);
 	// cityTerrain->GetTextureStruct()->SetName("ice");
 	cityTerrain->GetMaterials()[0].hasTexture = true;
 	cityTerrain->GetMaterials()[0].hasReflection = false;
@@ -325,7 +325,7 @@ bool Graphics::Render(float dt)
 	ImGui::NewFrame();
 
 	// Test window.
-	ImGui::Begin("TEST WINDOW");
+	ImGui::Begin("CHANGE PROPERTIES");
 	ImGui::DragFloat3("Light pos (x, y, z): ", movableLightPos, 0.1f, -25.0f, 25.0f);
 	light->SetLightPosition(movableLightPos[0], movableLightPos[1], movableLightPos[2]);
 
