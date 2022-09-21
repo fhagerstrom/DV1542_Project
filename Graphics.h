@@ -52,6 +52,9 @@ private:
 	Shader* computeShader;
 
 	Light* light;
+	Light* light1;
+	int nrOfLights;
+
 	ObjReader reader;
 
 	std::vector<Model*> allModels;

@@ -69,6 +69,21 @@ bool Shader::InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileNa
 		assert(false);
 	}
 
+	// Compile vertex shader
+	hr = D3DCompileFromFile(L"DeferredCS.hlsl", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "cs_5_0", D3DCOMPILE_ENABLE_STRICTNESS, NULL, &computeShaderBlob, &errorBlob);
+	if (FAILED(hr))
+	{
+		if (errorBlob)
+		{
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+			MessageBox(hwnd, L"DeferredCS.hlsl", L"MISSING SHADER FILE!", MB_OK); // Change file name and entry to parameters when we know it works.
+			errorBlob->Release();
+		}
+
+		computeShaderBlob->Release();
+		assert(false);
+	}
+
 	// Create vertex shader
 	hr = device->CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), NULL, &this->vertexShader);
 	if (FAILED(hr))
@@ -82,6 +97,14 @@ bool Shader::InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileNa
 	if (FAILED(hr))
 	{
 		MessageBox(hwnd, L"Couldn't create pixel shader", L"SHADER ERROR!", MB_OK);
+		return false;
+	}
+
+	// Create pixel shader
+	hr = device->CreateComputeShader(computeShaderBlob->GetBufferPointer(), computeShaderBlob->GetBufferSize(), NULL, &this->computeShader);
+	if (FAILED(hr))
+	{
+		MessageBox(hwnd, L"Couldn't create compute shader", L"SHADER ERROR!", MB_OK);
 		return false;
 	}
 
@@ -149,88 +172,18 @@ bool Shader::InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileNa
 		return false;
 	}
 
-	return true;
-}
+	// Setup description for the deferred lighting buffer in the compute shader.
+	ZeroMemory(&cBufferDescription, sizeof(cBufferDescription));
+	cBufferDescription.Usage = D3D11_USAGE_DEFAULT;
+	cBufferDescription.ByteWidth = static_cast<uint32_t>(sizeof(CBDeferred) + (16 - (sizeof(CBDeferred) % 16)));
+	cBufferDescription.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cBufferDescription.CPUAccessFlags = 0;
+	cBufferDescription.MiscFlags = 0;
+	cBufferDescription.StructureByteStride = 0;
 
-bool Shader::InitializeComputeShader(ID3D11Device* device, LPCWSTR csFileName)
-{
-	// Compile compute shader
-	hr = D3DCompileFromFile(csFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "cs_5_0", D3DCOMPILE_ENABLE_STRICTNESS, NULL, &computeShaderBlob, &errorBlob);
+	hr = device->CreateBuffer(&cBufferDescription, NULL, &deferredBuffer);
 	if (FAILED(hr))
 	{
-		if (errorBlob)
-		{
-			OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-			MessageBox(NULL, csFileName, L"MISSING SHADER FILE!", MB_OK);
-			errorBlob->Release();
-		}
-
-		computeShaderBlob->Release();
-		assert(false);
-	}
-
-	// Create compute shader
-	hr = device->CreateComputeShader(computeShaderBlob->GetBufferPointer(), computeShaderBlob->GetBufferSize(), NULL, &this->computeShader);
-	if (FAILED(hr))
-	{
-		MessageBox(NULL, L"Couldn't create compute shader", L"SHADER ERROR!", MB_OK);
-		return false;
-	}
-
-	// Set input / output buffer descriptions.
-
-	// INPUT RESOURCES
-	// SHADER RESOURCE VIEW
-	inputDataDesc.Usage = D3D11_USAGE_DYNAMIC;
-	inputDataDesc.ByteWidth = sizeof(CBPixel);
-	inputDataDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	inputDataDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	inputDataDesc.StructureByteStride = sizeof(CBPixel);
-	inputDataDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-
-	hr = device->CreateBuffer(&inputDataDesc, NULL, &computeInputBuffer);
-	if (FAILED(hr))
-	{
-		MessageBox(NULL, L"Couldn't create compute input buffer!", L"SHADER ERROR", MB_OK);
-		return false;
-	}
-
-	srvDesc.Format = DXGI_FORMAT_UNKNOWN;
-	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFEREX;
-	srvDesc.BufferEx.FirstElement = 0;
-	srvDesc.BufferEx.Flags = 0;
-	srvDesc.BufferEx.NumElements = sizeof(CBPixel);
-
-	hr = device->CreateShaderResourceView(computeInputBuffer, &srvDesc, &computeInputSRV);
-
-	// OUTPUT RESOURCES
-	// UNORDERED ACCESS VIEW
-	outputDataDesc.Usage = D3D11_USAGE_DEFAULT;
-	outputDataDesc.ByteWidth = sizeof(CBPixel);
-	outputDataDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
-	outputDataDesc.CPUAccessFlags = 0;
-	outputDataDesc.StructureByteStride = sizeof(CBPixel);
-	outputDataDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-
-	hr = (device->CreateBuffer(&outputDataDesc, NULL, &computeOutputBuffer));
-
-	if (FAILED(hr))
-	{
-		MessageBox(NULL, L"Couldn't create compute output buffer!", L"SHADER ERROR", MB_OK);
-		return false;
-	}
-
-	uavDesc.Format = DXGI_FORMAT_UNKNOWN;
-	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-	uavDesc.Buffer.FirstElement = 0;
-	uavDesc.Buffer.Flags = 0;
-	uavDesc.Buffer.NumElements = sizeof(CBPixel);
-
-	hr = device->CreateUnorderedAccessView(computeOutputBuffer, &uavDesc, &outputUAV);
-
-	if (FAILED(hr))
-	{
-		MessageBox(NULL, L"Couldn't create UAV for compute shader!", L"SHADER ERROR", MB_OK);
 		return false;
 	}
 
@@ -367,6 +320,11 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 
 	context->UpdateSubresource(materialBuffer, 0, nullptr, &materialCb, 0, 0);
 	context->PSSetConstantBuffers(1, 1, &materialBuffer);
+
+	/* Deferred buffer - Compute shader */
+	deferredCb.lightPosition[MAX_LIGHTS] = light->GetLightPosition();
+	deferredCb.cameraPosition = camera->GetPosition();
+
 
 	return true;
 }

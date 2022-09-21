@@ -10,6 +10,8 @@
 
 using namespace DirectX;
 
+static const int MAX_LIGHTS = 8;
+
 ALIGN16
 struct CBPerObject
 {
@@ -49,22 +51,24 @@ struct CBMaterial
 };
 
 ALIGN16
+struct CBDeferred
+{
+	XMFLOAT4 lightColor;
+	XMFLOAT3 lightPosition[MAX_LIGHTS];
+	XMFLOAT3 cameraPosition;
+	int nrOfLights;
+};
+
+ALIGN16
 struct CBCamera
 {
 	XMFLOAT3 cameraPos;
 	float padding;
 };
 
-ALIGN16
-struct CBPixel
-{
-	int color;
-};
-
 class Shader
 {
 private:
-	bool InitializeShader(ID3D11Device*, HWND, LPCWSTR, LPCWSTR);
 	void ShutdownShader();
 
 	bool SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XMMATRIX view, DirectX::XMMATRIX projection, Camera* camera, Light* light);
@@ -80,6 +84,9 @@ private:
 	ID3D11Buffer* lightBuffer;
 	ID3D11Buffer* cameraBuffer;
 	ID3D11Buffer* materialBuffer;
+	ID3D11Buffer* deferredBuffer;
+
+	// Currently not in use, leaving them uncommented for now.
 	ID3D11Buffer* computeInputBuffer;
 	ID3D11Buffer* computeOutputBuffer;
 
@@ -88,6 +95,7 @@ private:
 	CBCamera cameraCb;
 	CBLight lightCb;
 	CBMaterial materialCb;
+	CBDeferred deferredCb;
 
 	// Textures / Resources
 	ID3D11SamplerState* samplerState;
@@ -96,7 +104,6 @@ private:
 	// Compute shader related resources
 	ID3D11ShaderResourceView* computeInputSRV;
 	ID3D11UnorderedAccessView* outputUAV;
-
 
 	HRESULT hr;
 	ID3DBlob* vertexShaderBlob;
@@ -107,12 +114,14 @@ private:
 	D3D11_BUFFER_DESC matrixBufferDesc;
 	D3D11_BUFFER_DESC lightBufferDesc;
 	D3D11_BUFFER_DESC cameraBufferDesc;
+	D3D11_BUFFER_DESC deferredBufferDesc;
+
+	// DESC is not in use at the moment, leaving them uncommented for now.
 	D3D11_BUFFER_DESC inputDataDesc;
 	D3D11_BUFFER_DESC outputDataDesc;
-
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-
 	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+	//_______________________________________________________________________________
 
 	D3D11_SAMPLER_DESC samplerDesc;
 
@@ -120,9 +129,7 @@ public:
 	Shader();
 	~Shader();
 
-	bool InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileName, LPCWSTR psFileName, LPCSTR VSEntry, LPCSTR PSEntry); // ADD COMPUTE SHADER LATER
-	bool InitializeComputeShader(ID3D11Device* device, LPCWSTR csFileName);
-
+	bool InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileName, LPCWSTR psFileName, LPCSTR VSEntry, LPCSTR PSEntry);
 	bool CreateDefaultInputLayout(ID3D11Device* device);
 
 	void Shutdown();

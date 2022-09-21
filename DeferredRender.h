@@ -5,7 +5,7 @@
 using namespace DirectX;
 
 // Defining amount of buffers to store the data to for deferred rendering.
-#define BUFFER_COUNT 3 // Change the buffer count successively as we add more stuff to the arrays.
+#define BUFFER_COUNT 8 // Change the buffer count successively as we add more stuff to the arrays.
 
 // Handle the geometry buffer for the deferred pipeline
 // as well as defining texture, render target view and shader resource view arrays.

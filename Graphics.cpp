@@ -68,6 +68,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	if (!light)
 		return false;
 
+	light1 = new Light;
+
 	// Set lighting values.
 	light->SetAmbientColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -76,10 +78,17 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	light->SetAttenuation(1.0f, 0.02f, 0.0f);
 	light->SetLightRange(500.0f);
 
+	/*light1->SetAmbientColor(1.0f, 1.0f, 1.0f, 1.0f);
+	light1->SetDiffuseColor(1.0f, 0.0f, 0.0f, 1.0f);
+	light1->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
+	light1->SetLightPosition(0.0f, 10.0f, -5.0f);
+	light1->SetAttenuation(1.0f, 0.02f, 0.0f);
+	light1->SetLightRange(500.0f);*/
+
 	cityTerrain = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), cityTerrain, L"assets/models/scifi_city.obj", true, false);
 	cityTerrain->SetWorldMatrix(XMMatrixTranslation(0.0f, -2.0f, 0.0f));
-	cityTerrain->GetMaterials()[0].ambientMtl = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	cityTerrain->GetMaterials()[0].ambientMtl = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f);
 	// cityTerrain->GetTextureStruct()->SetName("ice");
 	cityTerrain->GetMaterials()[0].hasTexture = true;
 	cityTerrain->GetMaterials()[0].hasReflection = false;
@@ -261,7 +270,7 @@ void Graphics::Update(float dt)
 		EnableImgui();*/
 
 	// Rotate model(s)
-	rotTriforceAngle += 1.0f * dt;
+	rotTriforceAngle += 2.0f * dt;
 	if (rotTriforceAngle > 2 * XM_PI)
 		rotTriforceAngle = 0.0f;
 
@@ -294,26 +303,26 @@ bool Graphics::Render(float dt)
 	// testQuad->Render(dxHandler->GetDeviceContext());
 
 	// INDIVIDUAL MODEL RENDERS
-	cityTerrain->Render(dxHandler->GetDeviceContext());
+	// cityTerrain->Render(dxHandler->GetDeviceContext());
 	// torusRing->Render(dxHandler->GetDeviceContext());
 	// triforce->Render(dxHandler->GetDeviceContext());
 	// suzanne->Render(dxHandler->GetDeviceContext());
 	// sphere->Render(dxHandler->GetDeviceContext());
 
 	// REWRITTEN SHADER RENDER FUNCTION
-	result = textureShader->NewRender(dxHandler->GetDeviceContext(), cityTerrain, view, projection, camera, light, dxHandler->GetMinMagMipSampler());
+	//result = textureShader->NewRender(dxHandler->GetDeviceContext(), cityTerrain, view, projection, camera, light, dxHandler->GetMinMagMipSampler());
 
 	// COMPUTE SHADER RENDER
 	/*result = computeShader->NewRender(dxHandler->GetDeviceContext(), torusRing, view, projection, 
 		camera, light, dxHandler->GetMinMagMipSampler());*/
 
-	/*for (int i = 0; i < allModels.size(); i++) 
+	for (int i = 0; i < allModels.size(); i++) 
 	{
 		allModels[i]->Render(dxHandler->GetDeviceContext());
 		result = textureShader->NewRender(dxHandler->GetDeviceContext(), allModels[i], view, projection, camera, light, dxHandler->GetMinMagMipSampler());
 		if (!result)
 			return false;
-	}*/
+	}
 
 	//___________________________________________________________________________________________________
 
@@ -325,9 +334,10 @@ bool Graphics::Render(float dt)
 	ImGui::NewFrame();
 
 	// Test window.
-	ImGui::Begin("TEST WINDOW");
-	ImGui::DragFloat3("Light pos (x, y, z): ", movableLightPos, 0.1f, -25.0f, 25.0f);
+	ImGui::Begin("CHANGE PROPERTIES");
+	ImGui::DragFloat3("Light pos (x, y, z): ", movableLightPos, 0.1f, -50.0f, 50.0f);
 	light->SetLightPosition(movableLightPos[0], movableLightPos[1], movableLightPos[2]);
+	// light1->SetLightPosition(movableLightPos[0], movableLightPos[1], movableLightPos[2]);
 
 	ImGui::End();
 
