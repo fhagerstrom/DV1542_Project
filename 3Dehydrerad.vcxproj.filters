@@ -89,6 +89,9 @@
     <FxCompile Include="DefaultVS.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
+    <FxCompile Include="DesaturatedCS.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
     <FxCompile Include="DeferredCS.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
