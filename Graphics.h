@@ -1,6 +1,5 @@
 #pragma once
 
-#include "DxHandler.h"
 #include "Camera.h"
 #include "ObjReader.h"
 #include "Model.h"
@@ -46,18 +45,18 @@ private:
 	Model* sphere;
 	Model* triforce;
 
-	Material modelMtl;
+	// Material modelMtl;
 
 	Shader* textureShader;
-	Shader* computeShader;
+	Shader* deferredShader;
 
 	Light* light;
-	Light* light1;
 	int nrOfLights;
 
 	ObjReader reader;
 
 	std::vector<Model*> allModels;
+	std::vector<Light*> lightVector;
 
 	/* Input devices */
 	Input* input;

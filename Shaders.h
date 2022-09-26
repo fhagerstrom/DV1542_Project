@@ -1,12 +1,15 @@
 #pragma once
 
 #define ALIGN16 __declspec(align(16))
+#define BUFFER_COUNT 8
 
 #include <d3dcompiler.h>
 
 #include "Model.h"
 #include "Light.h"
 #include "Camera.h"
+#include "DeferredRender.h"
+#include "DxHandler.h"
 
 using namespace DirectX;
 
@@ -69,6 +72,8 @@ struct CBCamera
 class Shader
 {
 private:
+	int windowWidth, windowHeight;
+
 	void ShutdownShader();
 
 	bool SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XMMATRIX view, DirectX::XMMATRIX projection, Camera* camera, Light* light);
@@ -79,16 +84,15 @@ private:
 	ID3D11ComputeShader* computeShader;
 	ID3D11InputLayout* defaultLayout;
 
+	DxHandler* dxHandler;
+	DeferredRender* deferredPtr;
+
 	// ID3D11 buffer declarations
 	ID3D11Buffer* perObjectBuffer;
 	ID3D11Buffer* lightBuffer;
 	ID3D11Buffer* cameraBuffer;
 	ID3D11Buffer* materialBuffer;
 	ID3D11Buffer* deferredBuffer;
-
-	// Currently not in use, leaving them uncommented for now.
-	ID3D11Buffer* computeInputBuffer;
-	ID3D11Buffer* computeOutputBuffer;
 
 	// Struct buffer declarations
 	CBPerObject objectCb;
@@ -116,6 +120,14 @@ private:
 	D3D11_BUFFER_DESC cameraBufferDesc;
 	D3D11_BUFFER_DESC deferredBufferDesc;
 
+	// Declare texture, RTV and SRV arrays for the deferred buffers
+	ID3D11Texture2D* renderTargetTextureArray[BUFFER_COUNT];
+	ID3D11RenderTargetView* renderTargetViewArray[BUFFER_COUNT];
+	ID3D11ShaderResourceView* shaderResourceViewArray[BUFFER_COUNT];
+	ID3D11Texture2D* backBuffer;
+	ID3D11UnorderedAccessView* deferredUav;
+
+
 	// DESC is not in use at the moment, leaving them uncommented for now.
 	D3D11_BUFFER_DESC inputDataDesc;
 	D3D11_BUFFER_DESC outputDataDesc;
@@ -130,6 +142,7 @@ public:
 	~Shader();
 
 	bool InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileName, LPCWSTR psFileName, LPCSTR VSEntry, LPCSTR PSEntry);
+	bool IntializeDeferredShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileName, LPCWSTR csFileName, LPCSTR VSEntry, LPCSTR CSEntry);
 	bool CreateDefaultInputLayout(ID3D11Device* device);
 
 	void Shutdown();

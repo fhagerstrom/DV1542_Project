@@ -15,7 +15,7 @@ class DeferredRender
 public:
 	DeferredRender();
 	~DeferredRender();
-	bool Initialize(ID3D11Device* device, int windowWidth, int windowHeight, int screenDepth, int screenNear);
+	bool Initialize(ID3D11Device* device, int windowWidth, int windowHeight);
 	void Shutdown();
 
 	void SetRenderTargets(ID3D11DeviceContext* context);
@@ -34,6 +34,8 @@ private:
 	ID3D11ShaderResourceView* shaderResourceViewArray[BUFFER_COUNT];
 
 	ID3D11Texture2D* depthStencilBuffer;
+	ID3D11Texture2D* backBuffer;
 	ID3D11DepthStencilView* depthStencilView;
+	ID3D11UnorderedAccessView* deferredUav;
 	D3D11_VIEWPORT viewport;
 };

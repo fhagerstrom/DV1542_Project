@@ -68,15 +68,14 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	if (!light)
 		return false;
 
-	light1 = new Light;
-
 	// Set lighting values.
 	light->SetAmbientColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetLightPosition(0.0f, 10.0f, -5.0f);
 	light->SetAttenuation(1.0f, 0.02f, 0.0f);
-	light->SetLightRange(500.0f);
+	light->SetLightRange(250.0f);
+	lightVector.push_back(light);
 
 	/*light1->SetAmbientColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light1->SetDiffuseColor(1.0f, 0.0f, 0.0f, 1.0f);
@@ -145,8 +144,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	computeShader = new Shader;
-	if (!computeShader)
+	deferredShader = new Shader;
+	if (!deferredShader)
 	{
 		return false;
 	}
@@ -159,13 +158,13 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-
-	/*result = computeShader->InitializeComputeShader(dxHandler->GetDevice(), L"DesaturatedCS.hlsl");
+	// Initialize deferred compute shader
+	result = deferredShader->InitializeShaders(dxHandler->GetDevice(), hwnd, L"DefaultVS.hlsl", L"DefaultPS.hlsl", "main", "main");
 	if (!result)
 	{
-		MessageBox(hwnd, L"Couldn't initialize compute shader!", L"GRAPHICS ERROR", MB_OK);
+		MessageBox(hwnd, L"Couldn't initialize deferred shader object.", L"GRAPHICS ERROR", MB_OK);
 		return false;
-	}*/
+	}
 
 	result = textureShader->CreateDefaultInputLayout(dxHandler->GetDevice());
 	if (!result)
@@ -313,7 +312,7 @@ bool Graphics::Render(float dt)
 	//result = textureShader->NewRender(dxHandler->GetDeviceContext(), cityTerrain, view, projection, camera, light, dxHandler->GetMinMagMipSampler());
 
 	// COMPUTE SHADER RENDER
-	/*result = computeShader->NewRender(dxHandler->GetDeviceContext(), torusRing, view, projection, 
+	/*result = deferredShader->NewRender(dxHandler->GetDeviceContext(), torusRing, view, projection, 
 		camera, light, dxHandler->GetMinMagMipSampler());*/
 
 	for (int i = 0; i < allModels.size(); i++) 

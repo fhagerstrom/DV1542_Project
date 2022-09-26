@@ -17,7 +17,7 @@ DeferredRender::~DeferredRender()
 {
 }
 
-bool DeferredRender::Initialize(ID3D11Device* device, int windowWidth, int windowHeight, int screenDepth, int screenNear)
+bool DeferredRender::Initialize(ID3D11Device* device, int windowWidth, int windowHeight)
 {
 	D3D11_TEXTURE2D_DESC textureDesc;
 	D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
@@ -81,6 +81,7 @@ bool DeferredRender::Initialize(ID3D11Device* device, int windowWidth, int windo
 		hr = device->CreateShaderResourceView(renderTargetTextureArray[i], &shaderResourceViewDesc, &shaderResourceViewArray[i]);
 		if (FAILED(hr))
 		{
+			MessageBox(NULL, L"Couldn't create SRVs for deferred!", L"DEFERRED ERROR", MB_OK);
 			return false;
 		}
 	}
@@ -105,6 +106,7 @@ bool DeferredRender::Initialize(ID3D11Device* device, int windowWidth, int windo
 	hr = device->CreateTexture2D(&depthBufferDesc, NULL, &depthStencilBuffer);
 	if (FAILED(hr))
 	{
+		MessageBox(NULL, L"Couldnt create Texture2D object for deferred!", L"DEFERRED ERROR", MB_OK);
 		return false;
 	}
 

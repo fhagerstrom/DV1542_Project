@@ -35,6 +35,112 @@ bool Shader::NewRender(ID3D11DeviceContext* context, Model* model, XMMATRIX view
 	return true;
 }
 
+bool Shader::IntializeDeferredShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileName, LPCWSTR csFileName, LPCSTR VSEntry, LPCSTR CSEntry)
+{
+	// Compile vertex shader
+	hr = D3DCompileFromFile(vsFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, VSEntry, "vs_5_0", D3DCOMPILE_ENABLE_STRICTNESS, NULL, &vertexShaderBlob, &errorBlob);
+	if (FAILED(hr))
+	{
+		if (errorBlob)
+		{
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+			MessageBox(hwnd, vsFileName, L"MISSING SHADER FILE!", MB_OK);
+			errorBlob->Release();
+		}
+
+		vertexShaderBlob->Release();
+		assert(false);
+	}
+
+	// Compile compute shader
+	hr = D3DCompileFromFile(csFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, CSEntry, "cs_5_0", D3DCOMPILE_ENABLE_STRICTNESS, NULL, &computeShaderBlob, &errorBlob);
+	if (FAILED(hr))
+	{
+		if (errorBlob)
+		{
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+			MessageBox(hwnd, csFileName, L"MISSING SHADER FILE!", MB_OK);
+			errorBlob->Release();
+		}
+
+		computeShaderBlob->Release();
+		assert(false);
+	}
+
+	// Create vertex shader
+	hr = device->CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), NULL, &this->vertexShader);
+	if (FAILED(hr))
+	{
+		MessageBox(hwnd, L"Couldn't create vertex shader", L"SHADER ERROR!", MB_OK);
+		return false;
+	}
+
+	// Create compute shader
+	hr = device->CreateComputeShader(computeShaderBlob->GetBufferPointer(), computeShaderBlob->GetBufferSize(), NULL, &this->computeShader);
+	if (FAILED(hr))
+	{
+		MessageBox(hwnd, L"Couldn't create compute shader", L"SHADER ERROR!", MB_OK);
+		return false;
+	}
+
+	/* CONSTANT BUFFER DESCRIPTIONS */
+
+	D3D11_BUFFER_DESC cBufferDescription;
+
+	// Setup the description of the bufferPerObject constant buffer that is in the vertex shader.
+	ZeroMemory(&cBufferDescription, sizeof(D3D11_BUFFER_DESC));
+	cBufferDescription.Usage = D3D11_USAGE_DEFAULT;
+	cBufferDescription.ByteWidth = static_cast<uint32_t>(sizeof(CBPerObject) + (16 - (sizeof(CBPerObject) % 16)));
+	cBufferDescription.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cBufferDescription.CPUAccessFlags = 0;
+	cBufferDescription.MiscFlags = 0;
+	cBufferDescription.StructureByteStride = 0;
+
+	hr = device->CreateBuffer(&cBufferDescription, NULL, &perObjectBuffer);
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	// Setup description for the deferred lighting buffer in the compute shader.
+	ZeroMemory(&cBufferDescription, sizeof(cBufferDescription));
+	cBufferDescription.Usage = D3D11_USAGE_DEFAULT;
+	cBufferDescription.ByteWidth = static_cast<uint32_t>(sizeof(CBDeferred) + (16 - (sizeof(CBDeferred) % 16)));
+	cBufferDescription.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cBufferDescription.CPUAccessFlags = 0;
+	cBufferDescription.MiscFlags = 0;
+	cBufferDescription.StructureByteStride = 0;
+
+	hr = device->CreateBuffer(&cBufferDescription, NULL, &deferredBuffer);
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	// Initialize deferred descriptions from DeferredRender class
+	// And get back buffer pointer as well as creating the UAV
+	windowWidth = 1280;
+	windowHeight = 720;
+	deferredPtr->Initialize(device, windowWidth, windowHeight);
+
+	// Get the pointer to the back buffer.
+	hr = dxHandler->GetSwapChain()->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, L"Couldn't get back buffer for deferred!", L"DEFERRED ERROR", MB_OK);
+		return false;
+	}
+
+	HRESULT hr = dxHandler->GetDevice()->CreateUnorderedAccessView(backBuffer, nullptr, &deferredUav);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, L"Couldn't create Unordered access view for deferred!", L"DEFERRED ERROR", MB_OK);
+		return false;
+	}
+
+	return true;
+}
+
 bool Shader::InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileName, LPCWSTR psFileName, LPCSTR VSEntry, LPCSTR PSEntry)
 {
 	/* COMPILE AND CREATE VERTEX AND PIXEL SHADERS */
@@ -69,21 +175,6 @@ bool Shader::InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileNa
 		assert(false);
 	}
 
-	// Compile vertex shader
-	hr = D3DCompileFromFile(L"DeferredCS.hlsl", NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "cs_5_0", D3DCOMPILE_ENABLE_STRICTNESS, NULL, &computeShaderBlob, &errorBlob);
-	if (FAILED(hr))
-	{
-		if (errorBlob)
-		{
-			OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-			MessageBox(hwnd, L"DeferredCS.hlsl", L"MISSING SHADER FILE!", MB_OK); // Change file name and entry to parameters when we know it works.
-			errorBlob->Release();
-		}
-
-		computeShaderBlob->Release();
-		assert(false);
-	}
-
 	// Create vertex shader
 	hr = device->CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), NULL, &this->vertexShader);
 	if (FAILED(hr))
@@ -97,14 +188,6 @@ bool Shader::InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileNa
 	if (FAILED(hr))
 	{
 		MessageBox(hwnd, L"Couldn't create pixel shader", L"SHADER ERROR!", MB_OK);
-		return false;
-	}
-
-	// Create pixel shader
-	hr = device->CreateComputeShader(computeShaderBlob->GetBufferPointer(), computeShaderBlob->GetBufferSize(), NULL, &this->computeShader);
-	if (FAILED(hr))
-	{
-		MessageBox(hwnd, L"Couldn't create compute shader", L"SHADER ERROR!", MB_OK);
 		return false;
 	}
 
@@ -167,21 +250,6 @@ bool Shader::InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileNa
 	cBufferDescription.StructureByteStride = 0;
 
 	hr = device->CreateBuffer(&cBufferDescription, NULL, &materialBuffer);
-	if (FAILED(hr))
-	{
-		return false;
-	}
-
-	// Setup description for the deferred lighting buffer in the compute shader.
-	ZeroMemory(&cBufferDescription, sizeof(cBufferDescription));
-	cBufferDescription.Usage = D3D11_USAGE_DEFAULT;
-	cBufferDescription.ByteWidth = static_cast<uint32_t>(sizeof(CBDeferred) + (16 - (sizeof(CBDeferred) % 16)));
-	cBufferDescription.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	cBufferDescription.CPUAccessFlags = 0;
-	cBufferDescription.MiscFlags = 0;
-	cBufferDescription.StructureByteStride = 0;
-
-	hr = device->CreateBuffer(&cBufferDescription, NULL, &deferredBuffer);
 	if (FAILED(hr))
 	{
 		return false;
@@ -322,6 +390,9 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 	context->PSSetConstantBuffers(1, 1, &materialBuffer);
 
 	/* Deferred buffer - Compute shader */
+	deferredCb.lightColor = light->GetAmbientColor();
+	deferredCb.lightColor = light->GetDiffuseColor();
+	deferredCb.lightColor = light->GetSpecularColor();
 	deferredCb.lightPosition[MAX_LIGHTS] = light->GetLightPosition();
 	deferredCb.cameraPosition = camera->GetPosition();
 
