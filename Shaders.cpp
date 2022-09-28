@@ -37,6 +37,8 @@ bool Shader::NewRender(ID3D11DeviceContext* context, Model* model, XMMATRIX view
 
 bool Shader::IntializeDeferredShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileName, LPCWSTR csFileName, LPCSTR VSEntry, LPCSTR CSEntry)
 {
+	deferredPtr = new DeferredRender;
+
 	// Compile vertex shader
 	hr = D3DCompileFromFile(vsFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, VSEntry, "vs_5_0", D3DCOMPILE_ENABLE_STRICTNESS, NULL, &vertexShaderBlob, &errorBlob);
 	if (FAILED(hr))
@@ -122,21 +124,6 @@ bool Shader::IntializeDeferredShaders(ID3D11Device* device, HWND hwnd, LPCWSTR v
 	windowWidth = 1280;
 	windowHeight = 720;
 	deferredPtr->Initialize(device, windowWidth, windowHeight);
-
-	// Get the pointer to the back buffer.
-	hr = dxHandler->GetSwapChain()->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
-	if (FAILED(hr))
-	{
-		MessageBox(NULL, L"Couldn't get back buffer for deferred!", L"DEFERRED ERROR", MB_OK);
-		return false;
-	}
-
-	HRESULT hr = dxHandler->GetDevice()->CreateUnorderedAccessView(backBuffer, nullptr, &deferredUav);
-	if (FAILED(hr))
-	{
-		MessageBox(NULL, L"Couldn't create Unordered access view for deferred!", L"DEFERRED ERROR", MB_OK);
-		return false;
-	}
 
 	return true;
 }
@@ -314,6 +301,13 @@ void Shader::ShutdownShader()
 		vertexShader = 0;
 	}
 
+	// Release the compute shader.
+	if (computeShader)
+	{
+		computeShader->Release();
+		computeShader = 0;
+	}
+
 	return;
 }
 
@@ -339,6 +333,38 @@ bool Shader::CreateDefaultInputLayout(ID3D11Device* device)
 	pixelShaderBlob->Release();
 
 	return true;
+}
+
+void Shader::BindGeometryPass(ID3D11DeviceContext* context)
+{
+	deferredPtr->SetRenderTargets(context);
+	context->ClearDepthStencilView(deferredPtr->GetDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0.0f);
+
+	float color[4] = { 0.2f, 0.2f, 0.2f, 1.0f };
+
+	deferredPtr->ClearRenderTargets(context, color[0], color[1], color[2], color[3]);
+}
+
+void Shader::BindLightPass(ID3D11DeviceContext* context)
+{
+	float color[4] = { 0.2f, 0.2f, 0.2f, 1.0f };
+
+	ID3D11UnorderedAccessView* nullUAV = NULL;
+	ID3D11RenderTargetView* nullRTV[BUFFER_COUNT] = { NULL };
+
+	deferredPtr->SetRenderTargets(context);
+
+	context->CSSetShader(computeShader, NULL, 0);
+
+	context->CSSetShaderResources(0, BUFFER_COUNT, &deferredPtr->shaderResourceViewArray[BUFFER_COUNT]);
+	context->CSSetUnorderedAccessViews(0, 1, &deferredUav, nullptr);
+
+	context->Dispatch(64, 128, 1);
+
+	ID3D11ShaderResourceView* nullSRV[BUFFER_COUNT] = { NULL };
+	context->CSGetShaderResources(0, NULL, nullSRV);
+
+	context->CSSetUnorderedAccessViews(0, 1, &nullUAV, NULL);
 }
 
 bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XMMATRIX view, DirectX::XMMATRIX projection, Camera* camera, Light* light)
@@ -419,7 +445,7 @@ void Shader::NewRenderShader(ID3D11DeviceContext* deviceContext, int indexCount,
 	deviceContext->CSSetUnorderedAccessViews(0, 1, &outputUAV, 0);
 
 	// Dispatch
-	deviceContext->Dispatch(32, 16, 1);
+	deviceContext->Dispatch(64, 128, 1);
 
 	// Unbind the input textures from the CS
 	ID3D11ShaderResourceView* nullSRV[] = { NULL };

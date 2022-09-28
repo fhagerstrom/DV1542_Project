@@ -1,7 +1,6 @@
 #pragma once
 
 #define ALIGN16 __declspec(align(16))
-#define BUFFER_COUNT 8
 
 #include <d3dcompiler.h>
 
@@ -9,7 +8,6 @@
 #include "Light.h"
 #include "Camera.h"
 #include "DeferredRender.h"
-#include "DxHandler.h"
 
 using namespace DirectX;
 
@@ -124,7 +122,6 @@ private:
 	ID3D11Texture2D* renderTargetTextureArray[BUFFER_COUNT];
 	ID3D11RenderTargetView* renderTargetViewArray[BUFFER_COUNT];
 	ID3D11ShaderResourceView* shaderResourceViewArray[BUFFER_COUNT];
-	ID3D11Texture2D* backBuffer;
 	ID3D11UnorderedAccessView* deferredUav;
 
 
@@ -144,6 +141,9 @@ public:
 	bool InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileName, LPCWSTR psFileName, LPCSTR VSEntry, LPCSTR PSEntry);
 	bool IntializeDeferredShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileName, LPCWSTR csFileName, LPCSTR VSEntry, LPCSTR CSEntry);
 	bool CreateDefaultInputLayout(ID3D11Device* device);
+
+	void BindGeometryPass(ID3D11DeviceContext* context);
+	void BindLightPass(ID3D11DeviceContext* context);
 
 	void Shutdown();
 	bool NewRender(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light, ID3D11SamplerState* sampler);

@@ -88,7 +88,6 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	reader.LoadObj(dxHandler->GetDevice(), cityTerrain, L"assets/models/scifi_city.obj", true, false);
 	cityTerrain->SetWorldMatrix(XMMatrixTranslation(0.0f, -2.0f, 0.0f));
 	cityTerrain->GetMaterials()[0].ambientMtl = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f);
-	// cityTerrain->GetTextureStruct()->SetName("ice");
 	cityTerrain->GetMaterials()[0].hasTexture = true;
 	cityTerrain->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(cityTerrain);
@@ -96,7 +95,6 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	torusRing = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), torusRing, L"assets/models/torusDonut.obj", true, false);
 	torusRing->SetWorldMatrix(XMMatrixTranslation(-4.0f, 0.0f, 0.0f));
-	torusRing->GetMaterials()[0].ambientMtl = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f);
 	torusRing->GetMaterials()[0].diffuseMtl = XMFLOAT4(0.5f, 0.0f, 0.0f, 1.0f);
 	torusRing->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
 	// torusRing->GetTextureStruct()->SetName("ice");
@@ -159,7 +157,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Initialize deferred compute shader
-	result = deferredShader->InitializeShaders(dxHandler->GetDevice(), hwnd, L"DefaultVS.hlsl", L"DefaultPS.hlsl", "main", "main");
+	result = deferredShader->IntializeDeferredShaders(dxHandler->GetDevice(), hwnd, L"DefaultVS.hlsl", L"DeferredCS.hlsl", "main", "main");
 	if (!result)
 	{
 		MessageBox(hwnd, L"Couldn't initialize deferred shader object.", L"GRAPHICS ERROR", MB_OK);

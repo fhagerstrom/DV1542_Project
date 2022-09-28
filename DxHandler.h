@@ -32,6 +32,7 @@ private:
 	ID3D11DeviceContext* contextPtr;
 	ID3D11RenderTargetView* renderTargetView;
 	ID3D11Texture2D* depthStencilBuffer;
+	ID3D11Texture2D* backBufferPtr;
 	ID3D11DepthStencilState* depthStencilState;
 	ID3D11DepthStencilView* depthStencilView;
 	ID3D11RasterizerState* rasterState;

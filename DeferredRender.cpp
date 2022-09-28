@@ -19,6 +19,8 @@ DeferredRender::~DeferredRender()
 
 bool DeferredRender::Initialize(ID3D11Device* device, int windowWidth, int windowHeight)
 {
+	dxHandler = new DxHandler;
+
 	D3D11_TEXTURE2D_DESC textureDesc;
 	D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
 	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
@@ -125,6 +127,21 @@ bool DeferredRender::Initialize(ID3D11Device* device, int windowWidth, int windo
 		return false;
 	}
 
+	// Get the pointer to the back buffer.
+	hr = dxHandler->GetSwapChain()->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, L"Couldn't get back buffer for deferred!", L"DEFERRED ERROR", MB_OK);
+		return false;
+	}
+
+	HRESULT hr = dxHandler->GetDevice()->CreateUnorderedAccessView(backBuffer, NULL, &deferredUav);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, L"Couldn't create Unordered access view for deferred!", L"DEFERRED ERROR", MB_OK);
+		return false;
+	}
+
 	// Setup the viewport for rendering.
 	viewport.Width = (float)windowWidth;
 	viewport.Height = (float)windowHeight;
@@ -148,7 +165,6 @@ void DeferredRender::Shutdown()
 	{
 		renderTargetTextureArray[i]->Release();
 		renderTargetTextureArray[i] = 0;
-
 
 		shaderResourceViewArray[i]->Release();
 		shaderResourceViewArray[i] = 0;
