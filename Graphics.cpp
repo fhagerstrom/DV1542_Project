@@ -158,8 +158,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}*/
 
-	// Initialize deferred compute shader
-	result = deferredShader->IntializeDeferredShaders(dxHandler->GetDevice(), dxHandler, hwnd, L"DefaultVS.hlsl", L"DeferredPS.hlsl", L"DeferredCS.hlsl", "main", "main", "main");
+	// Initialize deferred shader
+	result = deferredShader->IntializeDeferredShaders(dxHandler->GetDevice(), dxHandler, hwnd, L"DeferredVS.hlsl", L"DeferredPS.hlsl", L"DeferredCS.hlsl", "main", "main", "main");
 	if (!result)
 	{
 		MessageBox(hwnd, L"Couldn't initialize deferred shader object.", L"GRAPHICS ERROR", MB_OK);
@@ -292,7 +292,7 @@ bool Graphics::Render(float dt)
 	XMMATRIX view, projection;
 
 	// Clear the buffers to begin the scene.
-	dxHandler->BeginScene(0.7f, 0.0f, 0.7f, 1.0f);
+	dxHandler->BeginScene(0.3f, 0.3f, 0.3f, 1.0f);
 
 	// PUT RENDERS BELOW HERE
 	//___________________________________________________________________________________________________
@@ -315,15 +315,14 @@ bool Graphics::Render(float dt)
 	// suzanne->Render(dxHandler->GetDeviceContext());
 	// sphere->Render(dxHandler->GetDeviceContext());
 
-	// deferredShader->BindGeometryPass(dxHandler->GetDeviceContext());
-
 	// REWRITTEN SHADER RENDER FUNCTION
-	//result = textureShader->NewRender(dxHandler->GetDeviceContext(), cityTerrain, view, projection, camera, light, dxHandler->GetMinMagMipSampler());
+	// result = textureShader->NewRender(dxHandler->GetDeviceContext(), cityTerrain, view, projection, camera, light, dxHandler->GetMinMagMipSampler());
 
 	// COMPUTE SHADER RENDER
 	/*result = deferredShader->NewRender(dxHandler->GetDeviceContext(), cityTerrain, view, projection, 
 		camera, light, dxHandler->GetMinMagMipSampler());*/
 
+	// Loop through all models and render them.
 	for (int i = 0; i < allModels.size(); i++) 
 	{
 		allModels[i]->Render(dxHandler->GetDeviceContext());
@@ -331,6 +330,8 @@ bool Graphics::Render(float dt)
 		if (!result)
 			return false;
 	}
+
+	// deferredShader->BindGeometryPass(dxHandler->GetDeviceContext());
 
 	// deferredShader->BindLightPass(dxHandler->GetDeviceContext());
 

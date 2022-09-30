@@ -504,6 +504,9 @@ void Shader::NewRenderShader(ID3D11DeviceContext* deviceContext, int indexCount,
 	deviceContext->VSSetShader(vertexShader, NULL, 0);
 	deviceContext->PSSetShader(pixelShader, NULL, 0);
 
+	deviceContext->VSSetShader(deferredVS, NULL, 0);
+	deviceContext->PSSetShader(deferredPS, NULL, 0);
+
 	// Set the sampler state in the pixel shader.
 	deviceContext->PSSetSamplers(0, 1, &sampler);
 

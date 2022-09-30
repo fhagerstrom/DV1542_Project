@@ -23,22 +23,30 @@ struct PixelOutput
 
 cbuffer DeferredMtl
 {
-    float4 ambientMtl;
     float4 diffuseMtl;
+    float4 ambientMtl;
     float4 specularMtl;
-    // float4 reflectionMtl;
+    float4 reflectionMtl;
+
+    float shine;
+    bool hasTexture;
+    bool hasReflection;
+    int padding2;
+
+    bool hasNormMap;
+    float3 padding3;
 };
 
 PixelOutput main(PixelInput input)
 {
     PixelOutput output;
     
+    // output.position = input.worldPos;
     output.normal = float4(input.normal.xyz, 1);
-    output.position = input.worldPos;
-    output.ambient = texAmbient.Sample(deferredSampler, input.tex) * ambientMtl;
-    output.diffuse = texDiffuse.Sample(deferredSampler, input.tex) * diffuseMtl;
-    output.specular = texSpecular.Sample(deferredSampler, input.tex) * specularMtl;
-    output.specular.w = specularMtl.w;
+    // output.ambient = texAmbient.Sample(deferredSampler, input.tex) * ambientMtl;
+    // output.diffuse = texDiffuse.Sample(deferredSampler, input.tex) * diffuseMtl;
+    // output.specular = texSpecular.Sample(deferredSampler, input.tex) * specularMtl;
+    // output.specular.w = specularMtl.w;
     
 	return output;
 }

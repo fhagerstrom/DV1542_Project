@@ -42,6 +42,10 @@ float4 main(PixelInput input) : SV_TARGET
 {
     float4 textureColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
     
+    
+    // TODO: YEETA UT ALL LJUSBERÄKNING IFRÅN DENNA PSEN
+    // SPARA DENNA DATAN TILL ATT SKICKA UT TILL CSEN
+    
     // Initialize colors that is going to be combined, light + material
     float4 ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
     float4 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);

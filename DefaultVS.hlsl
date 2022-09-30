@@ -40,9 +40,8 @@ PixelInput main(VertexInput input)
 	// Store the texture coordinates for the pixel shader.
     output.tex = input.tex;
     
-    output.normal = mul(input.normal, (float3x3)world);
-    
     // Same goes for normals.
+    output.normal = mul(input.normal, (float3x3)world);
     output.normal = normalize(output.normal);
 
     // Determine the viewing direction based on the position of the camera and the position of the vertex in the world.
