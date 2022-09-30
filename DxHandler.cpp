@@ -53,7 +53,7 @@ bool DxHandler::Initialize(int screenWidth, int screenHeight, HWND hwnd, float s
 	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
 
 	// Set the usage of the back buffer.
-	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_UNORDERED_ACCESS;
 
 	// Set the handle for the window to render to.
 	swapChainDesc.OutputWindow = hwnd;
@@ -109,8 +109,8 @@ bool DxHandler::Initialize(int screenWidth, int screenHeight, HWND hwnd, float s
 	}
 
 	// Release pointer to the back buffer as we no longer need it.
-	backBufferPtr->Release();
-	backBufferPtr = 0;
+	/*backBufferPtr->Release();
+	backBufferPtr = 0;*/
 
 	// Initialize the description of the depth buffer.
 	ZeroMemory(&depthBufferDesc, sizeof(depthBufferDesc));

@@ -8,12 +8,13 @@ Texture2D texSpecular : register(t4);
 
 static const int MAX_LIGHTS = 8;
 
-cbuffer DeferredLighting
+cbuffer DeferredLighting : register(b0)
 {
     float4 lightColor;
-    float3 lightPosition[MAX_LIGHTS];
+    float3 lightPosition;
     float3 cameraPosition;
-    int nrOfLights;
+    float padding;
+    // int nrOfLights;
 }
 
 // Eventually add more render targets when adding more techniques (e.g shadows)
@@ -40,9 +41,9 @@ void main( uint3 DTid : SV_DispatchThreadID )
     if (length(normal.xyz) > 0.0f)
     {
         // Add for loop after adding multiple lights, loop through all lights
-        for (int i = 0; i < nrOfLights; i++)
-        {
-            float3 lightVector = normalize(lightPosition[i].xyz - pos.xyz);
+        //for (int i = 0; i < nrOfLights; i++)
+        // {
+            float3 lightVector = normalize(lightPosition.xyz - pos.xyz);
             float viewDirection = normalize(cameraPosition.xyz - pos.xyz);
             
             // Calculate lighting
@@ -65,7 +66,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
             }
             
             lighting += saturate(ambientLighting + diffuseLighting) + specularLighting;
-        }
+        // }
     }
     backBuffer[DTid.xy] = lighting;
 }

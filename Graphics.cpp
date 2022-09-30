@@ -13,6 +13,7 @@ Graphics::Graphics(Input* input)
 	testCube = 0;
 	testQuad = 0;
 	textureShader = 0;
+	deferredShader = 0;
 	light = 0;
 }
 
@@ -142,6 +143,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	// Create deferred shader object.
 	deferredShader = new Shader;
 	if (!deferredShader)
 	{
@@ -149,22 +151,22 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Initialize texture shader
-	result = textureShader->InitializeShaders(dxHandler->GetDevice(), hwnd, L"DefaultVS.hlsl", L"DefaultPS.hlsl", "main", "main");
+	/*result = textureShader->InitializeShaders(dxHandler->GetDevice(), hwnd, L"DefaultVS.hlsl", L"DefaultPS.hlsl", "main", "main");
 	if (!result)
 	{
 		MessageBox(hwnd, L"Couldn't initialize the shader object.", L"GRAPHICS ERROR", MB_OK);
 		return false;
-	}
+	}*/
 
 	// Initialize deferred compute shader
-	result = deferredShader->IntializeDeferredShaders(dxHandler->GetDevice(), hwnd, L"DefaultVS.hlsl", L"DeferredCS.hlsl", "main", "main");
+	result = deferredShader->IntializeDeferredShaders(dxHandler->GetDevice(), dxHandler, hwnd, L"DefaultVS.hlsl", L"DeferredPS.hlsl", L"DeferredCS.hlsl", "main", "main", "main");
 	if (!result)
 	{
 		MessageBox(hwnd, L"Couldn't initialize deferred shader object.", L"GRAPHICS ERROR", MB_OK);
 		return false;
 	}
 
-	result = textureShader->CreateDefaultInputLayout(dxHandler->GetDevice());
+	result = deferredShader->CreateDefaultInputLayout(dxHandler->GetDevice());
 	if (!result)
 	{
 		MessageBox(hwnd, L"Couldn't create input layout!", L"INPUT LAYOUT ERROR", MB_OK);
@@ -191,6 +193,13 @@ void Graphics::Shutdown()
 		textureShader->Shutdown();
 		delete textureShader;
 		textureShader = 0;
+	}
+
+	if (deferredShader)
+	{
+		deferredShader->Shutdown();
+		delete deferredShader;
+		deferredShader = 0;
 	}
 
 	// Release the light object.
@@ -283,7 +292,7 @@ bool Graphics::Render(float dt)
 	XMMATRIX view, projection;
 
 	// Clear the buffers to begin the scene.
-	dxHandler->BeginScene(0.3f, 0.3f, 0.3f, 1.0f);
+	dxHandler->BeginScene(0.7f, 0.0f, 0.7f, 1.0f);
 
 	// PUT RENDERS BELOW HERE
 	//___________________________________________________________________________________________________
@@ -292,7 +301,7 @@ bool Graphics::Render(float dt)
 	camera->GetViewMatrix(view);
 	dxHandler->GetProjectionMatrix(projection);
 
-	// CALL RENDER FUNCTION FOR MODELS
+	// CALL INDIVIDUAL RENDER FUNCTION FOR MODELS
 	//___________________________________________________________________________________________________
 
 	// Put the testCube vertex and index buffers on the graphics pipeline to prepare them for drawing
@@ -306,20 +315,24 @@ bool Graphics::Render(float dt)
 	// suzanne->Render(dxHandler->GetDeviceContext());
 	// sphere->Render(dxHandler->GetDeviceContext());
 
+	// deferredShader->BindGeometryPass(dxHandler->GetDeviceContext());
+
 	// REWRITTEN SHADER RENDER FUNCTION
 	//result = textureShader->NewRender(dxHandler->GetDeviceContext(), cityTerrain, view, projection, camera, light, dxHandler->GetMinMagMipSampler());
 
 	// COMPUTE SHADER RENDER
-	/*result = deferredShader->NewRender(dxHandler->GetDeviceContext(), torusRing, view, projection, 
+	/*result = deferredShader->NewRender(dxHandler->GetDeviceContext(), cityTerrain, view, projection, 
 		camera, light, dxHandler->GetMinMagMipSampler());*/
 
 	for (int i = 0; i < allModels.size(); i++) 
 	{
 		allModels[i]->Render(dxHandler->GetDeviceContext());
-		result = textureShader->NewRender(dxHandler->GetDeviceContext(), allModels[i], view, projection, camera, light, dxHandler->GetMinMagMipSampler());
+		result = deferredShader->NewRender(dxHandler->GetDeviceContext(), allModels[i], view, projection, camera, light, dxHandler->GetMinMagMipSampler());
 		if (!result)
 			return false;
 	}
+
+	// deferredShader->BindLightPass(dxHandler->GetDeviceContext());
 
 	//___________________________________________________________________________________________________
 

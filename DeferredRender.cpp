@@ -17,9 +17,9 @@ DeferredRender::~DeferredRender()
 {
 }
 
-bool DeferredRender::Initialize(ID3D11Device* device, int windowWidth, int windowHeight)
+bool DeferredRender::Initialize(ID3D11Device* device, DxHandler* dxHandler, int windowWidth, int windowHeight)
 {
-	dxHandler = new DxHandler;
+	this->dxHandler = dxHandler;
 
 	D3D11_TEXTURE2D_DESC textureDesc;
 	D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
@@ -127,15 +127,21 @@ bool DeferredRender::Initialize(ID3D11Device* device, int windowWidth, int windo
 		return false;
 	}
 
+	// Set UAV description for deferred.
+	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+	uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
+	uavDesc.Texture2D.MipSlice = 0;
+
 	// Get the pointer to the back buffer.
-	hr = dxHandler->GetSwapChain()->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
+	/*hr = dxHandler->GetSwapChain()->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
 	if (FAILED(hr))
 	{
 		MessageBox(NULL, L"Couldn't get back buffer for deferred!", L"DEFERRED ERROR", MB_OK);
 		return false;
-	}
+	}*/
 
-	HRESULT hr = dxHandler->GetDevice()->CreateUnorderedAccessView(backBuffer, NULL, &deferredUav);
+	HRESULT hr = dxHandler->GetDevice()->CreateUnorderedAccessView(dxHandler->GetBackBuffer(), &uavDesc, &deferredUav);
 	if (FAILED(hr))
 	{
 		MessageBox(NULL, L"Couldn't create Unordered access view for deferred!", L"DEFERRED ERROR", MB_OK);

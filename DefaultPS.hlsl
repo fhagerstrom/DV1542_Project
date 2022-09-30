@@ -29,7 +29,7 @@ cbuffer CBMaterial : register(b1)
     float3 padding3;
 }
 
-struct PixelInputType
+struct PixelInput
 {
     float4 position : SV_POSITION;
     float4 worldPos : POSITIONWS;
@@ -38,13 +38,7 @@ struct PixelInputType
     float3 viewDirection : TEXCOORD1;
 };
 
-//struct PixelOutputType
-//{
-//    float4 color : SV_TARGET0;
-//    float3 normal : SV_TARGET1;
-//};
-
-float4 main(PixelInputType input) : SV_TARGET
+float4 main(PixelInput input) : SV_TARGET
 {
     float4 textureColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
     

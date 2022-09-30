@@ -12,14 +12,14 @@ cbuffer cameraBuffer : register(b1)
     float padding;
 };
 
-struct VertexInputType
+struct VertexInput
 {
     float3 position : POSITION;
     float2 tex : TEXCOORD0;
     float3 normal : NORMAL;
 };
 
-struct PixelInputType
+struct PixelInput
 {
     float4 position : SV_POSITION;
     float4 worldPos : POSITIONWS;
@@ -28,9 +28,9 @@ struct PixelInputType
     float3 viewDirection : TEXCOORD1;
 };
 
-PixelInputType main(VertexInputType input)
+PixelInput main(VertexInput input)
 {
-    PixelInputType output;
+    PixelInput output;
 
 	// Calculate the position of the vertex against the world View Projection (WVP) and world matrix
     output.position = mul(float4(input.position, 1.0f), wvp);

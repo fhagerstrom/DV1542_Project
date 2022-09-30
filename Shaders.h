@@ -47,17 +47,15 @@ struct CBMaterial
 	int hasTexture;
 	int hasReflection;
 	int padding;
-
-	XMFLOAT4 translation;
 };
 
 ALIGN16
 struct CBDeferred
 {
 	XMFLOAT4 lightColor;
-	XMFLOAT3 lightPosition[MAX_LIGHTS];
+	XMFLOAT3 lightPosition;
 	XMFLOAT3 cameraPosition;
-	int nrOfLights;
+	// int nrOfLights;
 };
 
 ALIGN16
@@ -79,7 +77,10 @@ private:
 
 	ID3D11VertexShader* vertexShader;
 	ID3D11PixelShader* pixelShader;
-	ID3D11ComputeShader* computeShader;
+
+	ID3D11VertexShader* deferredVS;
+	ID3D11PixelShader* deferredPS;
+	ID3D11ComputeShader* deferredCS;
 	ID3D11InputLayout* defaultLayout;
 
 	DxHandler* dxHandler;
@@ -103,10 +104,6 @@ private:
 	ID3D11SamplerState* samplerState;
 	ID3D11ShaderResourceView* textureSRV;
 
-	// Compute shader related resources
-	ID3D11ShaderResourceView* computeInputSRV;
-	ID3D11UnorderedAccessView* outputUAV;
-
 	HRESULT hr;
 	ID3DBlob* vertexShaderBlob;
 	ID3DBlob* pixelShaderBlob;
@@ -122,7 +119,6 @@ private:
 	ID3D11Texture2D* renderTargetTextureArray[BUFFER_COUNT];
 	ID3D11RenderTargetView* renderTargetViewArray[BUFFER_COUNT];
 	ID3D11ShaderResourceView* shaderResourceViewArray[BUFFER_COUNT];
-	ID3D11UnorderedAccessView* deferredUav;
 
 
 	// DESC is not in use at the moment, leaving them uncommented for now.
@@ -139,7 +135,7 @@ public:
 	~Shader();
 
 	bool InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileName, LPCWSTR psFileName, LPCSTR VSEntry, LPCSTR PSEntry);
-	bool IntializeDeferredShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileName, LPCWSTR csFileName, LPCSTR VSEntry, LPCSTR CSEntry);
+	bool IntializeDeferredShaders(ID3D11Device* device, DxHandler* dxHandler, HWND hwnd, LPCWSTR vsFileName, LPCWSTR psFileName, LPCWSTR csFileName, LPCSTR VSEntry, LPCSTR PSEntry, LPCSTR CSEntry);
 	bool CreateDefaultInputLayout(ID3D11Device* device);
 
 	void BindGeometryPass(ID3D11DeviceContext* context);

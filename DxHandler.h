@@ -20,6 +20,7 @@ public:
 	ID3D11Device* GetDevice() { return devicePtr; }
 	ID3D11DeviceContext* GetDeviceContext() { return contextPtr; }
 	IDXGISwapChain* GetSwapChain() { return swapChain; }
+	ID3D11Texture2D* GetBackBuffer() { return backBufferPtr; }
 
 	ID3D11SamplerState* GetMinMagMipSampler() { return this->minMagMipSampler; }
 
