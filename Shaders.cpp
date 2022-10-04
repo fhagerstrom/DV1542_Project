@@ -145,7 +145,7 @@ bool Shader::IntializeDeferredShaders(ID3D11Device* device, DxHandler* dxHandler
 	// Setup description for the deferred lighting buffer in the compute shader.
 	ZeroMemory(&cBufferDescription, sizeof(cBufferDescription));
 	cBufferDescription.Usage = D3D11_USAGE_DEFAULT;
-	cBufferDescription.ByteWidth = static_cast<uint32_t>(sizeof(CBDeferred) + (16 - (sizeof(CBDeferred) % 16)));
+	cBufferDescription.ByteWidth = static_cast<uint32_t>(sizeof(CBDeferredLight) + (16 - (sizeof(CBDeferredLight) % 16)));
 	cBufferDescription.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	cBufferDescription.CPUAccessFlags = 0;
 	cBufferDescription.MiscFlags = 0;
@@ -188,10 +188,11 @@ bool Shader::IntializeDeferredShaders(ID3D11Device* device, DxHandler* dxHandler
 	}
 
 	// Initialize deferred descriptions from DeferredRender class
-	// And get back buffer pointer as well as creating the UAV
+	// Get back buffer pointer as well as creating the UAV
 	windowWidth = 1280;
 	windowHeight = 720;
 	deferredPtr->Initialize(device, dxHandler, windowWidth, windowHeight);
+	dxHandler->GetBackBuffer()->Release();
 
 	return true;
 }
@@ -405,12 +406,12 @@ bool Shader::CreateDefaultInputLayout(ID3D11Device* device)
 
 void Shader::BindGeometryPass(ID3D11DeviceContext* context)
 {
-	deferredPtr->SetRenderTargets(context);
 	context->ClearDepthStencilView(deferredPtr->GetDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0.0f);
 
 	float color[4] = { 0.6f, 0.0f, 0.6f, 1.0f };
 
 	deferredPtr->ClearRenderTargets(context, color[0], color[1], color[2], color[3]);
+	deferredPtr->SetRenderTargets(context);
 }
 
 void Shader::BindLightPass(ID3D11DeviceContext* context)
@@ -420,17 +421,17 @@ void Shader::BindLightPass(ID3D11DeviceContext* context)
 	ID3D11UnorderedAccessView* nullUAV = NULL;
 	ID3D11RenderTargetView* nullRTV[BUFFER_COUNT] = { NULL };
 
-	deferredPtr->SetRenderTargets(context);
+	//deferredPtr->SetRenderTargets(context);
 
 	context->CSSetShader(deferredCS, NULL, 0);
 
-	context->CSSetShaderResources(0, BUFFER_COUNT, &deferredPtr->shaderResourceViewArray[BUFFER_COUNT]);
+	context->CSSetShaderResources(0, BUFFER_COUNT, deferredPtr->shaderResourceViewArray);
 	context->CSSetUnorderedAccessViews(0, 1, &deferredPtr->deferredUav, NULL);
 
 	context->Dispatch(60, 128, 1);
 
 	ID3D11ShaderResourceView* nullSRV[BUFFER_COUNT] = { NULL };
-	context->CSGetShaderResources(0, NULL, nullSRV);
+	context->CSSetShaderResources(0, 1, nullSRV);
 
 	context->CSSetUnorderedAccessViews(0, 1, &nullUAV, NULL);
 }
@@ -483,14 +484,14 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 	context->PSSetConstantBuffers(1, 1, &materialBuffer);
 
 	/* Deferred buffer - Compute shader */
-	deferredCb.lightColor = light->GetAmbientColor();
-	deferredCb.lightColor = light->GetDiffuseColor();
-	deferredCb.lightColor = light->GetSpecularColor();
-	deferredCb.lightPosition = light->GetLightPosition();
-	deferredCb.cameraPosition = camera->GetPosition();
+	deferredLightCb.lightColor = light->GetAmbientColor();
+	deferredLightCb.lightColor = light->GetDiffuseColor();
+	deferredLightCb.lightColor = light->GetSpecularColor();
+	deferredLightCb.lightPosition = light->GetLightPosition();
+	deferredLightCb.cameraPosition = camera->GetPosition();
 
-	/*context->UpdateSubresource(deferredBuffer, 0, NULL, &deferredCb, 0, 0);
-	context->CSSetConstantBuffers(0, 1, &deferredBuffer);*/
+	context->UpdateSubresource(deferredBuffer, 0, NULL, &deferredLightCb, 0, 0);
+	context->CSSetConstantBuffers(0, 1, &deferredBuffer);
 
 	return true;
 }
@@ -501,8 +502,8 @@ void Shader::NewRenderShader(ID3D11DeviceContext* deviceContext, int indexCount,
 	deviceContext->IASetInputLayout(defaultLayout);
 
 	// Set the vertex and pixel shaders that will be used to render all objects and the light.
-	deviceContext->VSSetShader(vertexShader, NULL, 0);
-	deviceContext->PSSetShader(pixelShader, NULL, 0);
+	/*deviceContext->VSSetShader(vertexShader, NULL, 0);
+	deviceContext->PSSetShader(pixelShader, NULL, 0);*/
 
 	deviceContext->VSSetShader(deferredVS, NULL, 0);
 	deviceContext->PSSetShader(deferredPS, NULL, 0);

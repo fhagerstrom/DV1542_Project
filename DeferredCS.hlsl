@@ -66,7 +66,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
             }
             
             lighting += saturate(ambientLighting + diffuseLighting) + specularLighting;
-        // }
+        // } // For loop clause
     }
     backBuffer[DTid.xy] = lighting;
 }

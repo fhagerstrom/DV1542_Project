@@ -53,16 +53,20 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	camera->SetPosition(0.0f, 10.0f, -50.0f);
 	camera->GetInputs(input);
 
-	/*testCube = new Model;
+	testCube = new Model;
 	if (!testCube)
 		return false;
 
-	result = testCube->InitializeCube(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/iceGlass.jpg");
+	/*result = testCube->InitializeCube(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/iceGlass.jpg");
 	if (!result)
 	{
 		MessageBox(NULL, L"Couldn't initialize cube. Check the file paths!", L"MODEL ERROR", MB_OK);
 		return false;
-	}*/
+	}
+	testCube->SetWorldMatrix(XMMatrixTranslation(0.0f, 10.0f, -10.0f));
+
+	allModels.push_back(testCube);*/
+
 
 	// Create light object.
 	light = new Light;
@@ -98,7 +102,6 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	torusRing->SetWorldMatrix(XMMatrixTranslation(-4.0f, 0.0f, 0.0f));
 	torusRing->GetMaterials()[0].diffuseMtl = XMFLOAT4(0.5f, 0.0f, 0.0f, 1.0f);
 	torusRing->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
-	// torusRing->GetTextureStruct()->SetName("ice");
 	// torusRing->GetMaterials()[0].hasTexture = false;
 	// torusRing->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(torusRing);
@@ -108,7 +111,6 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	suzanne->SetWorldMatrix(XMMatrixTranslation(4.0f, 0.0f, 0.0f));
 	suzanne->GetMaterials()[0].diffuseMtl = XMFLOAT4(0.0f, 0.0f, 0.5f, 1.0f);
 	suzanne->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
-	// suzanne->GetTextureStruct()->SetName("ice");
 	// suzanne->GetMaterials()[0].hasTexture = false;
 	// suzanne->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(suzanne);
@@ -118,7 +120,6 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	sphere->SetWorldMatrix(XMMatrixTranslation(0.0f, 0.0f, 0.0f));
 	sphere->GetMaterials()[0].diffuseMtl = XMFLOAT4(0.0f, 0.5f, 0.0f, 1.0f);
 	sphere->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
-	// sphere->GetTextureStruct()->SetName("ice");
 	// sphere->GetMaterials()[0].hasTexture = false;
 	// sphere->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(sphere);
@@ -128,7 +129,6 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	// WORLD MATRIX IS SET IN UPDATE DUE TO ROTATION
 	triforce->GetMaterials()[0].ambientMtl = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
 	triforce->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
-	// triforce->GetTextureStruct()->SetName("iceGlass");
 	triforce->GetMaterials()[0].hasTexture = true;
 	triforce->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(triforce);
@@ -280,7 +280,7 @@ void Graphics::Update(float dt)
 	if (rotTriforceAngle > 2 * XM_PI)
 		rotTriforceAngle = 0.0f;
 
-	XMVECTOR rotTriforceAxis = XMVectorSet(0.0f, rotTriforceAngle, 0.0f, 0.0f);
+	XMVECTOR rotTriforceAxis = XMVectorSet(rotTriforceAngle, rotTriforceAngle, 0.0f, 0.0f);
 	XMMATRIX rotTriforceRotation = XMMatrixRotationRollPitchYawFromVector(rotTriforceAxis);
 	XMMATRIX triforceTranslation = XMMatrixTranslation(0.0f, 5.0f, 0.0f);
 	triforce->SetWorldMatrix(rotTriforceRotation * triforceTranslation);
@@ -297,7 +297,7 @@ bool Graphics::Render(float dt)
 	// PUT RENDERS BELOW HERE
 	//___________________________________________________________________________________________________
 
-	// Get the world, view, and projection matrices from the camera and DX objects.
+	// Get the view and projection matrices from the camera and DX object.
 	camera->GetViewMatrix(view);
 	dxHandler->GetProjectionMatrix(projection);
 
@@ -326,14 +326,13 @@ bool Graphics::Render(float dt)
 	for (int i = 0; i < allModels.size(); i++) 
 	{
 		allModels[i]->Render(dxHandler->GetDeviceContext());
+		deferredShader->BindGeometryPass(dxHandler->GetDeviceContext());
 		result = deferredShader->NewRender(dxHandler->GetDeviceContext(), allModels[i], view, projection, camera, light, dxHandler->GetMinMagMipSampler());
 		if (!result)
 			return false;
 	}
 
-	// deferredShader->BindGeometryPass(dxHandler->GetDeviceContext());
-
-	// deferredShader->BindLightPass(dxHandler->GetDeviceContext());
+	deferredShader->BindLightPass(dxHandler->GetDeviceContext());
 
 	//___________________________________________________________________________________________________
 

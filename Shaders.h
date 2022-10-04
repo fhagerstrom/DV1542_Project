@@ -50,7 +50,7 @@ struct CBMaterial
 };
 
 ALIGN16
-struct CBDeferred
+struct CBDeferredLight
 {
 	XMFLOAT4 lightColor;
 	XMFLOAT3 lightPosition;
@@ -98,7 +98,7 @@ private:
 	CBCamera cameraCb;
 	CBLight lightCb;
 	CBMaterial materialCb;
-	CBDeferred deferredCb;
+	CBDeferredLight deferredLightCb;
 
 	// Textures / Resources
 	ID3D11SamplerState* samplerState;
