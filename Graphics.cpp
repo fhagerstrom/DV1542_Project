@@ -322,11 +322,12 @@ bool Graphics::Render(float dt)
 	/*result = deferredShader->NewRender(dxHandler->GetDeviceContext(), cityTerrain, view, projection, 
 		camera, light, dxHandler->GetMinMagMipSampler());*/
 
+	deferredShader->BindGeometryPass(dxHandler->GetDeviceContext());
+
 	// Loop through all models and render them.
 	for (int i = 0; i < allModels.size(); i++) 
 	{
 		allModels[i]->Render(dxHandler->GetDeviceContext());
-		deferredShader->BindGeometryPass(dxHandler->GetDeviceContext());
 		result = deferredShader->NewRender(dxHandler->GetDeviceContext(), allModels[i], view, projection, camera, light, dxHandler->GetMinMagMipSampler());
 		if (!result)
 			return false;
@@ -339,21 +340,21 @@ bool Graphics::Render(float dt)
 	// CALL IMGUI FRAME PROPERTIES
 	//___________________________________________________________________________________________________
 
-	ImGui_ImplDX11_NewFrame();
-	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
+	//ImGui_ImplDX11_NewFrame();
+	//ImGui_ImplWin32_NewFrame();
+	//ImGui::NewFrame();
 
-	// Test window.
-	ImGui::Begin("CHANGE PROPERTIES");
-	ImGui::DragFloat3("Light pos (x, y, z): ", movableLightPos, 0.1f, -50.0f, 50.0f);
-	light->SetLightPosition(movableLightPos[0], movableLightPos[1], movableLightPos[2]);
+	//// Test window.
+	//ImGui::Begin("CHANGE PROPERTIES");
+	//ImGui::DragFloat3("Light pos (x, y, z): ", movableLightPos, 0.1f, -50.0f, 50.0f);
+	//light->SetLightPosition(movableLightPos[0], movableLightPos[1], movableLightPos[2]);
 	// light1->SetLightPosition(movableLightPos[0], movableLightPos[1], movableLightPos[2]);
 
-	ImGui::End();
+	// ImGui::End();
 
 	// Assemble draw data from Imgui and draw window(s).
-	ImGui::Render();
-	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	/*ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());*/
 
 	// TODO: Fix toggling on and off.
 	/*if (imguiEnabled)

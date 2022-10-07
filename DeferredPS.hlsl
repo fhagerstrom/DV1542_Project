@@ -41,12 +41,12 @@ PixelOutput main(PixelInput input)
 {
     PixelOutput output;
     
-    // output.position = input.worldPos;
+    output.position = input.worldPos;
     output.normal = float4(input.normal.xyz, 1);
-    // output.ambient = texAmbient.Sample(deferredSampler, input.tex) * ambientMtl;
-    // output.diffuse = texDiffuse.Sample(deferredSampler, input.tex) * diffuseMtl;
-    // output.specular = texSpecular.Sample(deferredSampler, input.tex) * specularMtl;
-    // output.specular.w = specularMtl.w;
+    output.ambient = texAmbient.Sample(deferredSampler, input.tex) * ambientMtl;
+    output.diffuse = texDiffuse.Sample(deferredSampler, input.tex) * diffuseMtl;
+    output.specular = texSpecular.Sample(deferredSampler, input.tex) * specularMtl;
+    output.specular.w = specularMtl.w;
     
 	return output;
 }

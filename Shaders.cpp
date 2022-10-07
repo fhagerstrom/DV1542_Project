@@ -69,8 +69,11 @@ bool Shader::IntializeDeferredShaders(ID3D11Device* device, DxHandler* dxHandler
 		assert(false);
 	}
 
+	UINT csFlags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+
+
 	// Compile compute shader
-	hr = D3DCompileFromFile(csFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, CSEntry, "cs_5_0", D3DCOMPILE_ENABLE_STRICTNESS, NULL, &computeShaderBlob, &errorBlob);
+	hr = D3DCompileFromFile(csFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, CSEntry, "cs_5_0", csFlags, NULL, &computeShaderBlob, &errorBlob);
 	if (FAILED(hr))
 	{
 		if (errorBlob)
@@ -406,22 +409,19 @@ bool Shader::CreateDefaultInputLayout(ID3D11Device* device)
 
 void Shader::BindGeometryPass(ID3D11DeviceContext* context)
 {
-	context->ClearDepthStencilView(deferredPtr->GetDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0.0f);
+	deferredPtr->SetRenderTargets(context);
+	context->ClearDepthStencilView(deferredPtr->depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0.0f);
 
 	float color[4] = { 0.6f, 0.0f, 0.6f, 1.0f };
 
 	deferredPtr->ClearRenderTargets(context, color[0], color[1], color[2], color[3]);
-	deferredPtr->SetRenderTargets(context);
 }
 
 void Shader::BindLightPass(ID3D11DeviceContext* context)
 {
 	float color[4] = { 0.6f, 0.0f, 0.6f, 1.0f };
 
-	ID3D11UnorderedAccessView* nullUAV = NULL;
-	ID3D11RenderTargetView* nullRTV[BUFFER_COUNT] = { NULL };
-
-	//deferredPtr->SetRenderTargets(context);
+	context->OMSetRenderTargets(BUFFER_COUNT, nullRTV, NULL);
 
 	context->CSSetShader(deferredCS, NULL, 0);
 
@@ -430,9 +430,8 @@ void Shader::BindLightPass(ID3D11DeviceContext* context)
 
 	context->Dispatch(60, 128, 1);
 
-	ID3D11ShaderResourceView* nullSRV[BUFFER_COUNT] = { NULL };
 	context->CSSetShaderResources(0, 1, nullSRV);
-
+	context->CSSetConstantBuffers(0, NULL, &nullBuffer);
 	context->CSSetUnorderedAccessViews(0, 1, &nullUAV, NULL);
 }
 
@@ -511,29 +510,17 @@ void Shader::NewRenderShader(ID3D11DeviceContext* deviceContext, int indexCount,
 	// Set the sampler state in the pixel shader.
 	deviceContext->PSSetSamplers(0, 1, &sampler);
 
-	// Set compute shader values
-	// deviceContext->CSSetShader(computeShader, NULL, 0);
-	// deviceContext->CSSetSamplers(0, 1, &sampler);
-
-	// deviceContext->CSSetShaderResources(0, 1, &computeInputSRV);
-	// deviceContext->CSSetUnorderedAccessViews(0, 1, &outputUAV, 0);
-
-	// Dispatch
-	// deviceContext->Dispatch(60, 128, 1);
-
-	// Unbind the input textures from the CS
-	/*ID3D11ShaderResourceView* nullSRV[] = { NULL };
-	deviceContext->CSSetShaderResources(0, 1, nullSRV);*/
-
-	// Unbind output from compute shader
-	/*ID3D11UnorderedAccessView* nullUAV[] = { NULL };
-	deviceContext->CSSetUnorderedAccessViews(0, 1, nullUAV, 0);*/
-
-	// Disable Compute Shader
-	// deviceContext->CSSetShader(NULL, NULL, 0);
-
 	// Render the object.
 	deviceContext->DrawIndexed(indexCount, 0, 0);
+
+	// Set everything to null after draw call teehee
+	deviceContext->VSSetShader(nullVs, NULL, 0);
+	deviceContext->PSSetShader(nullPs, NULL, 0);
+
+	deviceContext->VSSetConstantBuffers(0, 1, &nullBuffer);
+	deviceContext->PSSetConstantBuffers(0, 1, &nullBuffer);
+	deviceContext->PSSetShaderResources(0, BUFFER_COUNT, nullSRV);
+
 
 	return;
 }

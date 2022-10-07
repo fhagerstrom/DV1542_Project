@@ -23,11 +23,11 @@ cbuffer DeferredLighting : register(b0)
 void main( uint3 DTid : SV_DispatchThreadID )
 {
     // Set values to its corresponding target
-    float4 pos = texPosition.Load(int3(DTid.xy, 0));
-    float4 normal = texNormal.Load(int3(DTid.xy, 0));
-    float4 ambient = texAmbient.Load(int3(DTid.xy, 0));
-    float4 diffuse = texDiffuse.Load(int3(DTid.xy, 0));
-    float4 specular = texSpecular.Load(int3(DTid.xy, 0));
+    float4 pos = texPosition[DTid.xy]; /*.Load(int3(DTid.xy, 0));*/
+    float4 normal = texNormal[DTid.xy]; /*.Load(int3(DTid.xy, 0));*/
+    float4 ambient = texAmbient[DTid.xy]; /*.Load(int3(DTid.xy, 0));*/
+    float4 diffuse = texDiffuse[DTid.xy]; /*.Load(int3(DTid.xy, 0));*/
+    float4 specular = texSpecular[DTid.xy]; /*.Load(int3(DTid.xy, 0));*/
     
     float4 lighting = (0.0f, 0.0f, 0.0f, 1.0f);
     float4 lightColor = (1.0f, 1.0f, 1.0f, 1.0f);
@@ -53,20 +53,28 @@ void main( uint3 DTid : SV_DispatchThreadID )
             // DIFFUSE AND SPECULAR
             // Diffuse factor
             float diffuseFactor = saturate(dot(lightVector, normal.xyz));
-    
-            if (diffuseFactor > 0.0f)
-            {
-                // SPECULAR
-                // Specular shade with reflection
-                float3 lightReflection = reflect(-lightVector, normal.xyz);
-                float specularShade = pow(max(dot(lightReflection, viewDirection), 0.0f), specular.w); // w = "shine"
+        
+            // SPECULAR
+            // Specular shade with reflection
+            float3 lightReflection = reflect(-lightVector, normal.xyz);
+            float specularShade = pow(max(dot(lightReflection, viewDirection), 0.0f), specular.w); // w = "shine"
                 
-                diffuseLighting = diffuseFactor * diffuse * lightColor;
-                specularLighting = specular * specularShade;
-            }
+            diffuseLighting = diffuseFactor * lightColor;
+            specularLighting = specular * specularShade;
+    
+            //if (diffuseFactor > 0.0f)
+            //{
+            //    // SPECULAR
+            //    // Specular shade with reflection
+            //    float3 lightReflection = reflect(-lightVector, normal.xyz);
+            //    float specularShade = pow(max(dot(lightReflection, viewDirection), 0.0f), specular.w); // w = "shine"
+                
+            //    diffuseLighting = diffuseFactor * diffuse * lightColor;
+            //    specularLighting = specular * specularShade;
+            //}
             
-            lighting += saturate(ambientLighting + diffuseLighting) + specularLighting;
+        lighting += saturate(ambientLighting + diffuseLighting + specularLighting);
         // } // For loop clause
     }
-    backBuffer[DTid.xy] = lighting;
+    backBuffer[DTid.xy] = lighting * ambient;
 }

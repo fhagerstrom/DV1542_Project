@@ -72,7 +72,7 @@ private:
 
 	void ShutdownShader();
 
-	bool SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XMMATRIX view, DirectX::XMMATRIX projection, Camera* camera, Light* light);
+	bool SetCBuffers(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light);
 	void NewRenderShader(ID3D11DeviceContext* context, int indexCount, ID3D11SamplerState* sampler);
 
 	ID3D11VertexShader* vertexShader;
@@ -119,6 +119,14 @@ private:
 	ID3D11Texture2D* renderTargetTextureArray[BUFFER_COUNT];
 	ID3D11RenderTargetView* renderTargetViewArray[BUFFER_COUNT];
 	ID3D11ShaderResourceView* shaderResourceViewArray[BUFFER_COUNT];
+
+	// Declare null pointers for clearing shaders, CBuffers, SRVs and RTVs
+	ID3D11VertexShader* nullVs = NULL;
+	ID3D11PixelShader* nullPs = NULL;
+	ID3D11Buffer* nullBuffer = NULL;
+	ID3D11UnorderedAccessView* nullUAV = NULL;
+	ID3D11RenderTargetView* nullRTV[BUFFER_COUNT] = { NULL };
+	ID3D11ShaderResourceView* nullSRV[BUFFER_COUNT] = { NULL };
 
 
 	// DESC is not in use at the moment, leaving them uncommented for now.
