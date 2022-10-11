@@ -1,27 +1,14 @@
 #pragma once
 
 #include <d3d11.h>
-#include <directxmath.h>
 #include <iostream>
 #include <string>
 #include <vector>
 
+#include "Vertex.h"
 #include "Texture.h"
 
 using namespace DirectX;
-
-struct Vertex
-{
-	Vertex() {}
-	Vertex(float x, float y, float z,
-		float u, float v,
-		float nx, float ny, float nz)
-		: position(x, y, z), texCoord(u, v), normal(nx, ny, nz) { }
-
-	XMFLOAT3 position;
-	XMFLOAT2 texCoord;
-	XMFLOAT3 normal;
-};
 
 struct Material
 {

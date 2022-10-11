@@ -32,9 +32,6 @@ cbuffer DeferredMtl
     bool hasTexture;
     bool hasReflection;
     int padding2;
-
-    bool hasNormMap;
-    float3 padding3;
 };
 
 PixelOutput main(PixelInput input)

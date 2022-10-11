@@ -430,7 +430,7 @@ void Shader::BindLightPass(ID3D11DeviceContext* context)
 
 	context->Dispatch(60, 128, 1);
 
-	context->CSSetShaderResources(0, 1, nullSRV);
+	context->CSSetShaderResources(0, BUFFER_COUNT, nullSRV);
 	context->CSSetConstantBuffers(0, NULL, &nullBuffer);
 	context->CSSetUnorderedAccessViews(0, 1, &nullUAV, NULL);
 }

@@ -113,7 +113,7 @@ void Camera::DetectInputs(double deltaTime)
 	}
 
 	// DESCEND
-	if (keyboardState[DIK_LCONTROL] & 0x80)
+	if (keyboardState[DIK_LSHIFT] & 0x80)
 	{
 		eyePosition -= XMVectorSet(0.0f, moveSpeed, 0.0f, 1.0f);
 	}
