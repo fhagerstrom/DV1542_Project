@@ -304,24 +304,17 @@ bool Graphics::Render(float dt)
 	// CALL INDIVIDUAL RENDER FUNCTION FOR MODELS
 	//___________________________________________________________________________________________________
 
-	// Put the testCube vertex and index buffers on the graphics pipeline to prepare them for drawing
-	// testCube->Render(dxHandler->GetDeviceContext());
-	// testQuad->Render(dxHandler->GetDeviceContext());
-
-	// INDIVIDUAL MODEL RENDERS
 	// cityTerrain->Render(dxHandler->GetDeviceContext());
 	// torusRing->Render(dxHandler->GetDeviceContext());
 	// triforce->Render(dxHandler->GetDeviceContext());
 	// suzanne->Render(dxHandler->GetDeviceContext());
 	// sphere->Render(dxHandler->GetDeviceContext());
 
-	// REWRITTEN SHADER RENDER FUNCTION
-	// result = textureShader->NewRender(dxHandler->GetDeviceContext(), cityTerrain, view, projection, camera, light, dxHandler->GetMinMagMipSampler());
+	// REGULAR "TEXTURE" SHADER / FORWARD RENDERING
+ 	// result = textureShader->NewRender(dxHandler->GetDeviceContext(), cityTerrain, view, projection, camera, light, dxHandler->GetMinMagMipSampler());
 
-	// COMPUTE SHADER RENDER
-	/*result = deferredShader->NewRender(dxHandler->GetDeviceContext(), cityTerrain, view, projection, 
-		camera, light, dxHandler->GetMinMagMipSampler());*/
-
+	// ALL MODELS + DEFERRED RENDERING
+	// Bind first pass for the deferred shading
 	deferredShader->BindGeometryPass(dxHandler->GetDeviceContext());
 
 	// Loop through all models and render them.
@@ -333,6 +326,7 @@ bool Graphics::Render(float dt)
 			return false;
 	}
 
+	// Bind the second pass for the deferred shading
 	deferredShader->BindLightPass(dxHandler->GetDeviceContext());
 
 	//___________________________________________________________________________________________________

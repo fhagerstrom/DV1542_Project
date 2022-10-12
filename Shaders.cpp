@@ -195,7 +195,9 @@ bool Shader::IntializeDeferredShaders(ID3D11Device* device, DxHandler* dxHandler
 	windowWidth = 1280;
 	windowHeight = 720;
 	deferredPtr->Initialize(device, dxHandler, windowWidth, windowHeight);
-	dxHandler->GetBackBuffer()->Release();
+
+	// DENNA KLAGAR PÅ STATIONÄRA, VENNE VARFÖR FÖR ATT DET FUNKAR PÅ LAPTOPEN
+	// dxHandler->GetBackBuffer()->Release();
 
 	return true;
 }
