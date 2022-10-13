@@ -246,7 +246,7 @@ bool DxHandler::Initialize(int screenWidth, int screenHeight, HWND hwnd, float s
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
 	// Create the texture sampler state.
-	hr = devicePtr->CreateSamplerState(&samplerDesc, &minMagMipSampler);
+	hr = devicePtr->CreateSamplerState(&samplerDesc, &sampler);
 	if (FAILED(hr))
 	{
 		return false;

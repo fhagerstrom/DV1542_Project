@@ -36,15 +36,23 @@ bool Particles::Initialize(ID3D11Device* device, ID3D11DeviceContext* context)
 bool Particles::InitializeBuffers(ID3D11Device* device)
 {
 	unsigned long* indices;
-	HRESULT result;
+	HRESULT hr;
 
 	vertexCount = maxParticles * 6;
 	indexCount = vertexCount;
 
-	// Create the vertex array for the particles that will be rendered.
+	// Create the vertex array for the particles that will be rendered
 	vertices = new Vertex[vertexCount];
 	if (!vertices)
 		return false;
+
+	// Loop through all vertices of the particles and set values for them
+	for (int i = 0; i < vertexCount; i++)
+	{
+		particles[i].position = { 0.0f, 30.0f, 0.0f };
+		particles[i].seed = 100;
+		particles[i].speed = 0.5f;
+	}
 
 	// Create the index array.
 	indices = new unsigned long[indexCount];
@@ -74,8 +82,8 @@ bool Particles::InitializeBuffers(ID3D11Device* device)
 	vertexData.SysMemSlicePitch = 0;
 
 	// Now finally create the vertex buffer.
-	result = device->CreateBuffer(&vertexBufferDesc, &vertexData, &vertexBuffer);
-	if (FAILED(result))
+	hr = device->CreateBuffer(&vertexBufferDesc, &vertexData, &vertexBuffer);
+	if (FAILED(hr))
 		return false;
 
 
@@ -97,31 +105,57 @@ bool Particles::InitializeBuffers(ID3D11Device* device)
 	indexData.SysMemSlicePitch = 0;
 
 	// Create the index buffer.
-	result = device->CreateBuffer(&indexBufferDesc, &indexData, &indexBuffer);
-	if (FAILED(result))
+	hr = device->CreateBuffer(&indexBufferDesc, &indexData, &indexBuffer);
+	if (FAILED(hr))
 		return false;
 
 	// Release the index array since it is no longer needed.
 	delete[] indices;
 	indices = 0;
 
-	// Setup a UAV desc for the compute shader side of the particle managing.
-	D3D11_UNORDERED_ACCESS_VIEW_DESC UavDesc;
-	UavDesc.Format = DXGI_FORMAT_R32_FLOAT;
-	UavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-	UavDesc.Buffer.FirstElement = 0;
-	UavDesc.Buffer.NumElements = maxParticles * 3;
-	UavDesc.Buffer.Flags = 0;
+	// Setup structured buffer description.
+	// Bind it bitwise OR between SRV and UAV
+	D3D11_BUFFER_DESC structuredDesc;
+	structuredDesc.ByteWidth = vertexCount * sizeof(Particle);
+	structuredDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
+	structuredDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+	structuredDesc.StructureByteStride = sizeof(Particle);
+	structuredDesc.Usage = D3D11_USAGE_DEFAULT;
+	structuredDesc.CPUAccessFlags = 0;
 
-	device->CreateUnorderedAccessView(vertexBuffer, &UavDesc, &particleUav);
+	D3D11_SUBRESOURCE_DATA structuredData;
+	ZeroMemory(&structuredData, sizeof(D3D11_SUBRESOURCE_DATA));
+	structuredData.pSysMem = indices;
+	structuredData.SysMemPitch = 0;
+	structuredData.SysMemSlicePitch = 0;
+
+	hr = device->CreateBuffer(&structuredDesc, &structuredData, &structuredBuffer);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, L"Couldn't create structured buffer for particle system!", L"PARTICLES ERROR", MB_OK);
+		return false;
+	}
+
+	// Setup a UAV desc for the compute shader side of the particle managing.
+	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+	uavDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+	uavDesc.Buffer.FirstElement = 0;
+	uavDesc.Buffer.NumElements = particles->seed * 3;
+	uavDesc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_APPEND;
+
+	hr = device->CreateUnorderedAccessView(vertexBuffer, &uavDesc, &particleUav);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, L"Couldn't create UAV for particle system!", L"PARTICLES ERROR", MB_OK);
+		return false;
+	}
+
+
 
 	return true;
 }
 
-void Particles::CreateParticle(float frameTime)
-{
-
-}
 
 
 

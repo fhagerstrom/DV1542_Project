@@ -1,34 +1,24 @@
-cbuffer MatrixBuffer : register(b0)
+cbuffer CBParticles
 {
     matrix wvp;
-    matrix world;
-}
+};
 
 struct VertexInput
-{
-    float4 position : POSITION;
-    float2 uv : TEXCOORD;
-    float4 color : COLOR;
+{ 
+    float3 position : POSITION;
 };
 
-struct PixelInput
+struct GSInput
 {
     float4 position : SV_POSITION;
-    float4 worldPosition : POSITION;
-    float2 uv : TEXCOORD;
-    float4 color : COLOR;
 };
 
-PixelInput main(VertexInput input)
+GSInput main(VertexInput input)
 {
-    PixelInput output = (PixelInput)0;
+    GSInput output;
     
-    input.position.w = 1.0f;
-    output.position = mul(wvp, float4(input.position));
-    output.worldPosition = mul(world, float4(input.position));
-    output.uv = input.uv;
-    
-    output.color = input.color;
+    // Calculate the position of the vertex against the world View Projection (WVP)
+    output.position = mul(float4(input.position, 1.0f), wvp);
     
 	return output;
 }

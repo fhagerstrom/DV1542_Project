@@ -22,7 +22,7 @@ public:
 	IDXGISwapChain* GetSwapChain() { return swapChain; }
 	ID3D11Texture2D* GetBackBuffer() { return backBufferPtr; }
 
-	ID3D11SamplerState* GetMinMagMipSampler() { return this->minMagMipSampler; }
+	ID3D11SamplerState* GetSampler() { return this->sampler; }
 
 	void GetProjectionMatrix(XMMATRIX& projectionMatrix) { projectionMatrix = this->projectionMatrix; }
 	void GetWorldMatrix(XMMATRIX& worldMatrix) { worldMatrix = this->worldMatrix; }
@@ -38,7 +38,7 @@ private:
 	ID3D11DepthStencilView* depthStencilView;
 	ID3D11RasterizerState* rasterState;
 
-	ID3D11SamplerState* minMagMipSampler;
+	ID3D11SamplerState* sampler;
 
 	XMMATRIX projectionMatrix;
 	XMMATRIX worldMatrix;

@@ -280,7 +280,7 @@ void Graphics::Update(float dt)
 	if (rotTriforceAngle > 2 * XM_PI)
 		rotTriforceAngle = 0.0f;
 
-	XMVECTOR rotTriforceAxis = XMVectorSet(rotTriforceAngle, rotTriforceAngle, 0.0f, 0.0f);
+	XMVECTOR rotTriforceAxis = XMVectorSet(0.0f, rotTriforceAngle, rotTriforceAngle, 0.0f);
 	XMMATRIX rotTriforceRotation = XMMatrixRotationRollPitchYawFromVector(rotTriforceAxis);
 	XMMATRIX triforceTranslation = XMMatrixTranslation(0.0f, 5.0f, 0.0f);
 	triforce->SetWorldMatrix(rotTriforceRotation * triforceTranslation);
@@ -311,7 +311,7 @@ bool Graphics::Render(float dt)
 	// sphere->Render(dxHandler->GetDeviceContext());
 
 	// REGULAR "TEXTURE" SHADER / FORWARD RENDERING
- 	// result = textureShader->NewRender(dxHandler->GetDeviceContext(), cityTerrain, view, projection, camera, light, dxHandler->GetMinMagMipSampler());
+ 	// result = textureShader->NewRender(dxHandler->GetDeviceContext(), cityTerrain, view, projection, camera, light, dxHandler->GetSampler());
 
 	// ALL MODELS + DEFERRED RENDERING
 	// Bind first pass for the deferred shading
@@ -321,7 +321,7 @@ bool Graphics::Render(float dt)
 	for (int i = 0; i < allModels.size(); i++) 
 	{
 		allModels[i]->Render(dxHandler->GetDeviceContext());
-		result = deferredShader->NewRender(dxHandler->GetDeviceContext(), allModels[i], view, projection, camera, light, dxHandler->GetMinMagMipSampler());
+		result = deferredShader->NewRender(dxHandler->GetDeviceContext(), allModels[i], view, projection, camera, light, dxHandler->GetSampler());
 		if (!result)
 			return false;
 	}
