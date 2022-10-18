@@ -1,3 +1,4 @@
+#pragma once
 #include <d3d11.h>
 #include <WICTextureLoader.h>
 
@@ -7,7 +8,6 @@ class Texture
 {
 private:
 	HRESULT hr;
-	// ID3D11Texture2D* textureSRV;
 	ID3D11ShaderResourceView* textureSrv;
 	std::string name;
 

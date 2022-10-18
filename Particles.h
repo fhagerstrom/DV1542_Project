@@ -1,5 +1,4 @@
 #pragma once
-#include "DxHandler.h"
 #include "Texture.h"
 #include "Vertex.h"
 
@@ -7,18 +6,20 @@ struct Particle
 {
 	XMFLOAT3 position;
 	int seed;
-	float speed;
+	XMFLOAT3 velocity;
 };
 
 class Particles
 {
 private:
 	bool InitializeBuffers(ID3D11Device* device);
-	void UpdateBuffers(ID3D11DeviceContext* context);
+	bool UpdateBuffers(ID3D11DeviceContext* context);
 
 	void CreateParticle(float frameTime);
 	void UpdateParticle(float frameTime);
 	void DeleteParticles();
+	bool LoadTexture(ID3D11Device* device, LPCWSTR textureFile);
+
 
 	float deviationX, deviationY, deviationZ;
 	float particleSpeed, particleSpeedVariation;
@@ -36,7 +37,9 @@ private:
 	ID3D11ShaderResourceView* particleSrv;
 	ID3D11UnorderedAccessView* particleUav;
 
+	unsigned long* indices;
 	Vertex* vertices;
+
 	Particle* particles;
 	Texture* texture;
 	XMMATRIX world;
@@ -53,7 +56,6 @@ public:
 	void SetWorldMatrix(XMMATRIX world) { this->world = world; };
 	XMMATRIX GetWorldMatrix() { return this->world; };
 
-	ID3D11ShaderResourceView* GetTexture();
-	int GetIndexCount();
+	ID3D11ShaderResourceView* GetTexture() { return this->particleSrv; }
+	int GetIndexCount() { return this->indexCount; }
 };
-

@@ -11,15 +11,12 @@ struct GSInput
 
 struct GSOutput
 {
-	float4 pos : SV_POSITION;
+	float4 position : SV_POSITION;
     float3 worldPos : POSITIONWS;
-    float2 tex : TEXCOORD0;
-    float3 normal : NORMAL;
-    float3 viewDirection : TEXCOORD1;
 };
 
 [maxvertexcount(3)]
-void main(triangle GSOutput input[3] : SV_POSITION, inout TriangleStream<GSOutput> output)
+void main(triangle GSOutput input[3], inout TriangleStream<GSOutput> output)
 {
 	// Define 2 out of 3 edges of the polygon, create a vector from vertex index 0 to the camera,
     // get the normal of the polygon by performing cross product of the edges.
@@ -39,5 +36,4 @@ void main(triangle GSOutput input[3] : SV_POSITION, inout TriangleStream<GSOutpu
         output.Append(input[1]);
         output.Append(input[0]);
     }
-    
 }

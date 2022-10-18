@@ -10,7 +10,7 @@ Particles::~Particles()
 
 bool Particles::Initialize(ID3D11Device* device, ID3D11DeviceContext* context)
 {
-	HRESULT hr;
+	bool result;
 
 	// Set deviation on particles. This is a point from where the particle will "spawn" and then be randomized from.
 	deviationX = 30.0f;
@@ -28,14 +28,59 @@ bool Particles::Initialize(ID3D11Device* device, ID3D11DeviceContext* context)
 	// This is from the beginning and the time will increment based on delta time.
 	accumulatedTime = 0.0f;
 
-	InitializeBuffers(device);
+	result = InitializeBuffers(device);
+	if (!result)
+	{
+		return false;
+	}
 
 	return true;
 }
 
+bool Particles::Update(float frameTime, ID3D11DeviceContext* context)
+{
+	bool result;
+
+	// Update behaviors etc...
+
+
+	// Call UpdateBuffers
+	result = UpdateBuffers(context);
+	if (!result)
+	{
+		return false;
+	}
+
+
+	return true;
+}
+
+void Particles::Render(ID3D11DeviceContext* context)
+{
+	unsigned int stride;
+	unsigned int offset;
+
+
+	// Set vertex buffer stride and offset.
+	stride = sizeof(Vertex);
+	offset = 0;
+
+	// Set the vertex buffer to active in the input assembler so it can be rendered.
+	context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+
+	// Set the index buffer to active in the input assembler so it can be rendered.
+	context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+	// Set the type of primitive that should be rendered from this vertex buffer.
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+}
+
+void Particles::Shutdown()
+{
+}
+
 bool Particles::InitializeBuffers(ID3D11Device* device)
 {
-	unsigned long* indices;
 	HRESULT hr;
 
 	vertexCount = maxParticles * 6;
@@ -49,9 +94,9 @@ bool Particles::InitializeBuffers(ID3D11Device* device)
 	// Loop through all vertices of the particles and set values for them
 	for (int i = 0; i < vertexCount; i++)
 	{
-		particles[i].position = { 0.0f, 30.0f, 0.0f };
+		particles[i].position = XMFLOAT3(0.0f, 30.0f, 0.0f);
 		particles[i].seed = 100;
-		particles[i].speed = 0.5f;
+		particles[i].velocity = XMFLOAT3(0.0f, -0.5f, 0.0f);
 	}
 
 	// Create the index array.
@@ -113,46 +158,69 @@ bool Particles::InitializeBuffers(ID3D11Device* device)
 	delete[] indices;
 	indices = 0;
 
-	// Setup structured buffer description.
-	// Bind it bitwise OR between SRV and UAV
-	D3D11_BUFFER_DESC structuredDesc;
-	structuredDesc.ByteWidth = vertexCount * sizeof(Particle);
-	structuredDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
-	structuredDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-	structuredDesc.StructureByteStride = sizeof(Particle);
-	structuredDesc.Usage = D3D11_USAGE_DEFAULT;
-	structuredDesc.CPUAccessFlags = 0;
-
-	D3D11_SUBRESOURCE_DATA structuredData;
-	ZeroMemory(&structuredData, sizeof(D3D11_SUBRESOURCE_DATA));
-	structuredData.pSysMem = indices;
-	structuredData.SysMemPitch = 0;
-	structuredData.SysMemSlicePitch = 0;
-
-	hr = device->CreateBuffer(&structuredDesc, &structuredData, &structuredBuffer);
-	if (FAILED(hr))
-	{
-		MessageBox(NULL, L"Couldn't create structured buffer for particle system!", L"PARTICLES ERROR", MB_OK);
-		return false;
-	}
-
 	// Setup a UAV desc for the compute shader side of the particle managing.
 	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
 	uavDesc.Format = DXGI_FORMAT_R32_FLOAT;
 	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
 	uavDesc.Buffer.FirstElement = 0;
-	uavDesc.Buffer.NumElements = particles->seed * 3;
+	uavDesc.Buffer.NumElements = particles->seed;
 	uavDesc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_APPEND;
 
-	hr = device->CreateUnorderedAccessView(vertexBuffer, &uavDesc, &particleUav);
+	hr = device->CreateUnorderedAccessView(structuredBuffer, &uavDesc, &particleUav);
 	if (FAILED(hr))
 	{
 		MessageBox(NULL, L"Couldn't create UAV for particle system!", L"PARTICLES ERROR", MB_OK);
 		return false;
 	}
 
+	return true;
+}
 
+bool Particles::UpdateBuffers(ID3D11DeviceContext* context)
+{
+	HRESULT hr;
+	/*D3D11_MAPPED_SUBRESOURCE mappedResource;
+	Vertex* vertexPtr;*/
+	ID3D11Resource* particleResource;
 
+	particleUav->GetResource(&particleResource);
+
+	context->CopyResource(vertexBuffer, particleResource);
+
+	/*
+		Resource is mapped for writing, the previous contents of the resource will be undefined.
+		Map/Unmap is a common use with temporary buffers. - Dynamic usage of our vertexbuffer. (It is at least prefered)
+	*/
+
+	// Lock the vertex buffer.
+	//hr = context->Map(vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);	// maybe D3D11_MAP_WRITE_NO_OVERWRITE
+	//if (FAILED(hr))
+	//{
+	//	return false;
+	//}
+
+	//// Get a pointer to the data in the vertex buffer.
+	//vertexPtr = (Vertex*)mappedResource.pData;
+
+	//// Copy the data into the vertex buffer.
+	//memcpy(vertexPtr, (void*)vertices, (sizeof(Vertex) * vertexCount));
+
+	//// Unlock the vertex buffer.
+	//context->Unmap(vertexBuffer, 0);
+	return true;
+}
+
+bool Particles::LoadTexture(ID3D11Device* device, LPCWSTR textureFile)
+{
+	bool result;
+
+	texture = new Texture;
+	if (!texture)
+		return false;
+
+	result = texture->Initialize(device, textureFile);
+	if (!result)
+		return false;
 	return true;
 }
 

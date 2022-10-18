@@ -136,6 +136,9 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	// Set model material
 	// modelMtl.ambientMtl = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
+	// Initialize particle system.
+
+
 	// Create the texture shader object.
 	textureShader = new Shader;
 	if (!textureShader)
@@ -146,6 +149,13 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	// Create deferred shader object.
 	deferredShader = new Shader;
 	if (!deferredShader)
+	{
+		return false;
+	}
+
+	// Create particle shader object.
+	particleShader = new Shader;
+	if (!particleShader)
 	{
 		return false;
 	}
@@ -166,12 +176,47 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	// Create the input layout for all models
 	result = deferredShader->CreateDefaultInputLayout(dxHandler->GetDevice());
 	if (!result)
 	{
-		MessageBox(hwnd, L"Couldn't create input layout!", L"INPUT LAYOUT ERROR", MB_OK);
+		MessageBox(hwnd, L"Couldn't create default input layout!", L"INPUT LAYOUT ERROR", MB_OK);
 		return false;
 	}
+
+	// Initialize particle shader
+	result = particleShader->InitializeParticleShaders(dxHandler->GetDevice(), hwnd, L"ParticleVS.hlsl", L"ParticlePS.hlsl", L"ParticleCS.hlsl", L"ParticleGS.hlsl", "main", "main", "main", "main");
+	if (!result)
+	{
+		MessageBox(hwnd, L"Couldn't initialize particle shader object.", L"GRAPHICS ERROR", MB_OK);
+		return false;
+	}
+
+	// Create the input layout for particles
+	// TODO: CANT CREATE INPUT LAYOUT - ENCODED SIGNATURE DOESNT MATCH SPECIFIED SIZE. 
+	// Lista ut varför de knasar sig här och sen fortsätt med resten av partikelsystemet
+	/*result = particleShader->CreateParticleInputLayout(dxHandler->GetDevice());
+	if (!result)
+	{
+		MessageBox(hwnd, L"Couldn't create particle input layout!", L"INPUT LAYOUT ERROR", MB_OK);
+		return false;
+	}*/
+
+	// Create particle object.
+	//particles = new Particles;
+	//if (!particles)
+	//{
+	//	return false;
+	//}
+
+	//// Initialize particle system.
+	//result = particles->Initialize(dxHandler->GetDevice(), dxHandler->GetDeviceContext());
+	//if (!result)
+	//{
+	//	MessageBox(hwnd, L"Couldn't initialize particle system!", L"PARTICLE ERROR", MB_OK);
+	//	return false;
+	//}
+
 
 	// ImGui setup.
 	IMGUI_CHECKVERSION();
@@ -284,6 +329,30 @@ void Graphics::Update(float dt)
 	XMMATRIX rotTriforceRotation = XMMatrixRotationRollPitchYawFromVector(rotTriforceAxis);
 	XMMATRIX triforceTranslation = XMMatrixTranslation(0.0f, 5.0f, 0.0f);
 	triforce->SetWorldMatrix(rotTriforceRotation * triforceTranslation);
+
+
+	/* Update particles and do the billboarding */
+
+	//XMFLOAT3 cameraPosition;
+	//cameraPosition = camera->GetPosition();
+
+	//XMFLOAT3 particlePosition;
+	//particlePosition.x = 0.0f;
+	//particlePosition.y = 30.0f;
+	//particlePosition.z = -5.0f;
+
+	//// Set an angle and rotation value for the particles for the billboarding
+	//float particleAngle = atan2(particlePosition.x - cameraPosition.x, particlePosition.z - cameraPosition.z) * (180.0 / XM_PI);
+	//float particleRotation = particleAngle * 0.0174532925f;
+
+	//// Set matrix and rotations for the particles.
+	//XMMATRIX worldParticles = XMMatrixIdentity();
+	//XMMATRIX particlesRotationY = XMMatrixRotationY(particleRotation);
+	//XMMATRIX particlesTranslation = XMMatrixTranslation(particlePosition.x, particlePosition.y, particlePosition.z);
+	//worldParticles = particlesRotationY * particlesTranslation;
+	//particles->SetWorldMatrix(worldParticles);
+
+	//particles->Update(dt, dxHandler->GetDeviceContext());
 }
 
 bool Graphics::Render(float dt)
@@ -325,6 +394,11 @@ bool Graphics::Render(float dt)
 		if (!result)
 			return false;
 	}
+
+	// particles->Render(dxHandler->GetDeviceContext());
+	// result = particleShader->RenderParticles(dx11->GetContext(), particles->GetIndexCount(), particles->GetWorldMatrix(), view, projection, particles->GetTexture(), dx11->GetMinMagMipSampler());
+	/*if (!result)
+		return false;*/
 
 	// Bind the second pass for the deferred shading
 	deferredShader->BindLightPass(dxHandler->GetDeviceContext());

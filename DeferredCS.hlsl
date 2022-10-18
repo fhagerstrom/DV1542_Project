@@ -30,7 +30,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
     float4 specular = texSpecular[DTid.xy]; /*.Load(int3(DTid.xy, 0));*/
     
     float4 lighting = (0.0f, 0.0f, 0.0f, 1.0f);
-    float4 lightColor = (1.0f, 1.0f, 1.0f, 1.0f);
+    float4 lightColor = (0.0f, 0.0f, 0.0f, 1.0f);
     float4 ambientLighting;
     float4 diffuseLighting;
     float4 specularLighting;

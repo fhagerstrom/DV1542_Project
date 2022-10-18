@@ -2,46 +2,37 @@ struct Particles
 {
     float3 position;
     float3 velocity;
-    float3 time;
+    // float frameTime;
 };
 
-cbuffer ParticleCount
-{
-    float numParticles;
-    float3 padding;
-};
+//cbuffer ParticleCount
+//{
+//    float numParticles;
+//    float3 padding;
+//};
 
 // AppendStructuredBuffer<Particles> NewSimState : register(u0);
 // ConsumeStructuredBuffer<Particles> CurrentSimState : register(u1);
 RWStructuredBuffer<Particles> SimState : register(u0);
 
-//cbuffer SimulationParameters
-//{
-//    float4 timeFactors;
-//    float4 emitterLocation;
-//    float4 consumerLocation;
-//};
-
-[numthreads(256, 1, 1)]
+[numthreads(512, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
 {
     // Check for if this thread should run or not
-    uint checkID = DTid.x + DTid.y * 256 + DTid.z * 256 * 256;
+    uint checkID = DTid.x + DTid.y * 512 + DTid.z * 512 * 512;
     
-    // As long as the threads does not exceed the amount of particles...
-    if (checkID < numParticles)
-    {
-        // Perform update process here...
-        // Get current particle
-        Particles particle = SimState[checkID];
+    // Get current particle
+    Particles particle = SimState[checkID];
         
-        // Set the particles velocity for updating the position
-        particle.velocity = (0.0f, -0.2f, 0.0f);
+    // Keep track of the time for emitted particles
+    // particle.frameTime += frac(dot(DTid.x + 1, float2(12.9898, 78.233)) * 43758.5453123);
         
-         // Update position of particle for making them fall down
-        particle.position.xyz = particle.position.xyz + particle.velocity;
+    // Set the particles velocity for updating the position
+    particle.velocity = (0.0f, -0.2f, 0.0f);
         
-        SimState[checkID] = particle;
-    }
+    // Update position of particle for making them fall down
+    particle.position.xyz = particle.position.xyz + particle.velocity;
+        
+    SimState[checkID] = particle;
 
 }

@@ -202,6 +202,160 @@ bool Shader::IntializeDeferredShaders(ID3D11Device* device, DxHandler* dxHandler
 	return true;
 }
 
+bool Shader::InitializeParticleShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileName, LPCWSTR psFileName, LPCWSTR csFileName, LPCWSTR gsFileName, LPCSTR VSEntry, LPCSTR PSEntry, LPCSTR CSEntry, LPCSTR GSEntry)
+{
+	// Compile vertex shader
+	hr = D3DCompileFromFile(vsFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, VSEntry, "vs_5_0", D3DCOMPILE_ENABLE_STRICTNESS, NULL, &vertexShaderBlob, &errorBlob);
+	if (FAILED(hr))
+	{
+		if (errorBlob)
+		{
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+			MessageBox(hwnd, vsFileName, L"MISSING SHADER FILE!", MB_OK);
+			errorBlob->Release();
+		}
+
+		vertexShaderBlob->Release();
+		assert(false);
+	}
+
+	// Compile pixel shader
+	hr = D3DCompileFromFile(psFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, PSEntry, "ps_5_0", D3DCOMPILE_ENABLE_STRICTNESS, NULL, &pixelShaderBlob, &errorBlob);
+	if (FAILED(hr))
+	{
+		if (errorBlob)
+		{
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+			MessageBox(hwnd, psFileName, L"MISSING SHADER FILE!", MB_OK);
+			errorBlob->Release();
+		}
+
+		pixelShaderBlob->Release();
+		assert(false);
+	}
+
+	UINT csFlags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+
+
+	// Compile compute shader
+	hr = D3DCompileFromFile(csFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, CSEntry, "cs_5_0", csFlags, NULL, &computeShaderBlob, &errorBlob);
+	if (FAILED(hr))
+	{
+		if (errorBlob)
+		{
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+			MessageBox(hwnd, csFileName, L"MISSING SHADER FILE!", MB_OK);
+			errorBlob->Release();
+		}
+
+		computeShaderBlob->Release();
+		assert(false);
+	}
+
+	// Compile geometry shader
+	hr = D3DCompileFromFile(gsFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, GSEntry, "gs_5_0", csFlags, NULL, &geometryShaderBlob, &errorBlob);
+	if (FAILED(hr))
+	{
+		if (errorBlob)
+		{
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+			MessageBox(hwnd, csFileName, L"MISSING SHADER FILE!", MB_OK);
+			errorBlob->Release();
+		}
+
+		geometryShaderBlob->Release();
+		assert(false);
+	}
+
+	// Create vertex shader
+	hr = device->CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), NULL, &this->particleVS);
+	if (FAILED(hr))
+	{
+		MessageBox(hwnd, L"Couldn't create particle vertex shader!", L"SHADER ERROR", MB_OK);
+		return false;
+	}
+
+	// Create pixel shader
+	hr = device->CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), NULL, &this->particlePS);
+	if (FAILED(hr))
+	{
+		MessageBox(hwnd, L"Couldn't create particle pixel shader!", L"SHADER ERROR", MB_OK);
+		return false;
+	}
+
+	// Create compute shader
+	hr = device->CreateComputeShader(computeShaderBlob->GetBufferPointer(), computeShaderBlob->GetBufferSize(), NULL, &this->particleCS);
+	if (FAILED(hr))
+	{
+		MessageBox(hwnd, L"Couldn't create particle compute shader!", L"SHADER ERROR", MB_OK);
+		return false;
+	}
+
+	// Create geometry shader
+	hr = device->CreateGeometryShader(geometryShaderBlob->GetBufferPointer(), geometryShaderBlob->GetBufferSize(), NULL, &this->particleGS);
+	if (FAILED(hr))
+	{
+		MessageBox(hwnd, L"Couldn't create particle geometry shader!", L"SHADER ERROR", MB_OK);
+		return false;
+	}
+
+	/* CONSTANT BUFFER DESCRIPTIONS */
+
+	D3D11_BUFFER_DESC cBufferDescription;
+
+	// Setup the description of the particle constant buffer that is in the compute shader.
+	ZeroMemory(&cBufferDescription, sizeof(D3D11_BUFFER_DESC));
+	cBufferDescription.Usage = D3D11_USAGE_DEFAULT;
+	cBufferDescription.ByteWidth = static_cast<uint32_t>(sizeof(CBPerParticle) + (16 - (sizeof(CBPerParticle) % 16)));
+	cBufferDescription.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cBufferDescription.CPUAccessFlags = 0;
+	cBufferDescription.MiscFlags = 0;
+	cBufferDescription.StructureByteStride = 0;
+
+	hr = device->CreateBuffer(&cBufferDescription, NULL, &perParticleBuffer);
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	//// Setup the description of the particle constant buffer that is in the compute shader.
+	//ZeroMemory(&cBufferDescription, sizeof(D3D11_BUFFER_DESC));
+	//cBufferDescription.Usage = D3D11_USAGE_DEFAULT;
+	//cBufferDescription.ByteWidth = static_cast<uint32_t>(sizeof(CBParticles) + (16 - (sizeof(CBParticles) % 16)));
+	//cBufferDescription.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	//cBufferDescription.CPUAccessFlags = 0;
+	//cBufferDescription.MiscFlags = 0;
+	//cBufferDescription.StructureByteStride = 0;
+
+	//hr = device->CreateBuffer(&cBufferDescription, NULL, &particleBuffer);
+	//if (FAILED(hr))
+	//{
+	//	return false;
+	//}
+
+	// Setup the description of the camera constant buffer that is in the geometry shader.
+	ZeroMemory(&cBufferDescription, sizeof(D3D11_BUFFER_DESC));
+	cBufferDescription.Usage = D3D11_USAGE_DEFAULT;
+	cBufferDescription.ByteWidth = static_cast<uint32_t>(sizeof(CBCamera) + (16 - (sizeof(CBCamera) % 16)));
+	cBufferDescription.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cBufferDescription.CPUAccessFlags = 0;
+	cBufferDescription.MiscFlags = 0;
+	cBufferDescription.StructureByteStride = 0;
+
+	hr = device->CreateBuffer(&cBufferDescription, NULL, &cameraBuffer);
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	vertexShaderBlob->Release();
+	pixelShaderBlob->Release();
+	computeShaderBlob->Release();
+	geometryShaderBlob->Release();
+
+	return true;
+}
+
 bool Shader::InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileName, LPCWSTR psFileName, LPCSTR VSEntry, LPCSTR PSEntry)
 {
 	/* COMPILE AND CREATE VERTEX AND PIXEL SHADERS */
@@ -409,19 +563,42 @@ bool Shader::CreateDefaultInputLayout(ID3D11Device* device)
 	return true;
 }
 
+
+
+bool Shader::CreateParticleInputLayout(ID3D11Device* device)
+{
+	/* CREATE INPUT LAYOUT DESCRIPTION */
+
+	D3D11_INPUT_ELEMENT_DESC inputLayoutPos[] =
+	{
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,	0, D3D11_INPUT_PER_VERTEX_DATA, 0}
+	};
+
+	hr = device->CreateInputLayout(inputLayoutPos, ARRAYSIZE(inputLayoutPos), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &defaultLayout);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, L"Couldn't create input layout for particles!", L"SHADER ERROR", MB_OK);
+		return false;
+	}
+
+	vertexShaderBlob->Release();
+
+	return true;
+}
+
 void Shader::BindGeometryPass(ID3D11DeviceContext* context)
 {
 	deferredPtr->SetRenderTargets(context);
 	context->ClearDepthStencilView(deferredPtr->depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0.0f);
 
-	float color[4] = { 0.6f, 0.0f, 0.6f, 1.0f };
+	float color[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
 
 	deferredPtr->ClearRenderTargets(context, color[0], color[1], color[2], color[3]);
 }
 
 void Shader::BindLightPass(ID3D11DeviceContext* context)
 {
-	float color[4] = { 0.6f, 0.0f, 0.6f, 1.0f };
+	float color[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
 
 	context->OMSetRenderTargets(BUFFER_COUNT, nullRTV, NULL);
 
@@ -497,6 +674,22 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 	return true;
 }
 
+bool Shader::SetParticleCBuffers(ID3D11DeviceContext* context, XMMATRIX world, XMMATRIX view, XMMATRIX projection, Camera* camera, ID3D11ShaderResourceView* texture)
+{
+	XMMATRIX wvp = world * view * projection;
+	perParticleCb.wvp = XMMatrixTranspose(wvp);
+	perParticleCb.world = XMMatrixTranspose(world);
+
+	context->UpdateSubresource(perParticleBuffer, 0, nullptr, &perParticleCb, 0, 0);
+	context->VSSetConstantBuffers(0, 1, &perParticleBuffer);
+
+	// Set shader texture resource in the pixel shader.
+	context->PSSetShaderResources(0, 1, &texture);
+
+
+	return true;
+}
+
 void Shader::NewRenderShader(ID3D11DeviceContext* deviceContext, int indexCount, ID3D11SamplerState* sampler)
 {
 	// Set the vertex input layout.
@@ -506,13 +699,14 @@ void Shader::NewRenderShader(ID3D11DeviceContext* deviceContext, int indexCount,
 	/*deviceContext->VSSetShader(vertexShader, NULL, 0);
 	deviceContext->PSSetShader(pixelShader, NULL, 0);*/
 
+	// Set deferred shaders
 	deviceContext->VSSetShader(deferredVS, NULL, 0);
 	deviceContext->PSSetShader(deferredPS, NULL, 0);
 
 	// Set the sampler state in the pixel shader.
 	deviceContext->PSSetSamplers(0, 1, &sampler);
 
-	// Render the object.
+	// Render the objects.
 	deviceContext->DrawIndexed(indexCount, 0, 0);
 
 	// Set everything to null after draw call teehee
@@ -522,7 +716,6 @@ void Shader::NewRenderShader(ID3D11DeviceContext* deviceContext, int indexCount,
 	deviceContext->VSSetConstantBuffers(0, 1, &nullBuffer);
 	deviceContext->PSSetConstantBuffers(0, 1, &nullBuffer);
 	deviceContext->PSSetShaderResources(0, BUFFER_COUNT, nullSRV);
-
 
 	return;
 }

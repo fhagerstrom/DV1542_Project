@@ -18,8 +18,13 @@ struct CBPerObject
 {
 	XMMATRIX wvp;
 	XMMATRIX world;
-	/*XMMATRIX view;
-	XMMATRIX projection;*/
+};
+
+ALIGN16
+struct CBPerParticle
+{
+	XMMATRIX wvp;
+	XMMATRIX world;
 };
 
 ALIGN16
@@ -65,6 +70,13 @@ struct CBCamera
 	float padding;
 };
 
+//ALIGN16
+//struct CBParticleCount
+//{
+//	float numParticles;
+//	XMFLOAT3 padding;
+//};
+
 class Shader
 {
 private:
@@ -73,28 +85,43 @@ private:
 	void ShutdownShader();
 
 	bool SetCBuffers(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light);
+	bool SetParticleCBuffers(ID3D11DeviceContext* context, XMMATRIX world, XMMATRIX view, XMMATRIX projection, Camera* camera, ID3D11ShaderResourceView* texture);
 	void NewRenderShader(ID3D11DeviceContext* context, int indexCount, ID3D11SamplerState* sampler);
 
+	// REGULAR FORWARD SHADERS
 	ID3D11VertexShader* vertexShader;
 	ID3D11PixelShader* pixelShader;
 
+	// DEFERRED SHADERS
 	ID3D11VertexShader* deferredVS;
 	ID3D11PixelShader* deferredPS;
 	ID3D11ComputeShader* deferredCS;
+
+	// PARTICLE SHADERS
+	ID3D11VertexShader* particleVS;
+	ID3D11PixelShader* particlePS;
+	ID3D11ComputeShader* particleCS;
+	ID3D11GeometryShader* particleGS;
+	
+	// INPUT LAYOUT(S)
 	ID3D11InputLayout* defaultLayout;
+	ID3D11InputLayout* particleLayout;
 
 	DxHandler* dxHandler;
 	DeferredRender* deferredPtr;
 
 	// ID3D11 buffer declarations
 	ID3D11Buffer* perObjectBuffer;
+	ID3D11Buffer* perParticleBuffer;
 	ID3D11Buffer* lightBuffer;
 	ID3D11Buffer* cameraBuffer;
 	ID3D11Buffer* materialBuffer;
 	ID3D11Buffer* deferredBuffer;
+	ID3D11Buffer* particleBuffer;
 
 	// Struct buffer declarations
 	CBPerObject objectCb;
+	CBPerParticle perParticleCb;
 	CBCamera cameraCb;
 	CBLight lightCb;
 	CBMaterial materialCb;
@@ -108,6 +135,7 @@ private:
 	ID3DBlob* vertexShaderBlob;
 	ID3DBlob* pixelShaderBlob;
 	ID3DBlob* computeShaderBlob;
+	ID3DBlob* geometryShaderBlob;
 	ID3DBlob* errorBlob;
 
 	D3D11_BUFFER_DESC matrixBufferDesc;
@@ -128,14 +156,6 @@ private:
 	ID3D11RenderTargetView* nullRTV[BUFFER_COUNT] = { NULL };
 	ID3D11ShaderResourceView* nullSRV[BUFFER_COUNT] = { NULL };
 
-
-	// DESC is not in use at the moment, leaving them uncommented for now.
-	D3D11_BUFFER_DESC inputDataDesc;
-	D3D11_BUFFER_DESC outputDataDesc;
-	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
-	//_______________________________________________________________________________
-
 	D3D11_SAMPLER_DESC samplerDesc;
 
 public:
@@ -144,7 +164,9 @@ public:
 
 	bool InitializeShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileName, LPCWSTR psFileName, LPCSTR VSEntry, LPCSTR PSEntry);
 	bool IntializeDeferredShaders(ID3D11Device* device, DxHandler* dxHandler, HWND hwnd, LPCWSTR vsFileName, LPCWSTR psFileName, LPCWSTR csFileName, LPCSTR VSEntry, LPCSTR PSEntry, LPCSTR CSEntry);
+	bool InitializeParticleShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileName, LPCWSTR psFileName, LPCWSTR csFileName, LPCWSTR gsFileName, LPCSTR VSEntry, LPCSTR PSEntry, LPCSTR CSEntry, LPCSTR GSEntry);
 	bool CreateDefaultInputLayout(ID3D11Device* device);
+	bool CreateParticleInputLayout(ID3D11Device* device);
 
 	void BindGeometryPass(ID3D11DeviceContext* context);
 	void BindLightPass(ID3D11DeviceContext* context);

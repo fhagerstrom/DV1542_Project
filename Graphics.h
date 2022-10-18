@@ -6,6 +6,7 @@
 #include "Shaders.h"
 #include "Light.h"
 #include "Timer.h"
+#include "Particles.h"
 
 // IMGUI INCLUDES
 #include "assets/imgui/imgui.h"
@@ -45,10 +46,13 @@ private:
 	Model* sphere;
 	Model* triforce;
 
+	Particles* particles;
+
 	// Material modelMtl;
 
 	Shader* textureShader;
 	Shader* deferredShader;
+	Shader* particleShader;
 
 	Light* light;
 	int nrOfLights;
@@ -58,7 +62,7 @@ private:
 	std::vector<Model*> allModels;
 	std::vector<Light*> lightVector;
 
-	/* Input devices */
+	// Input devices
 	Input* input;
 	IDirectInput8* directInput;
 	IDirectInputDevice8* keyboard;
@@ -70,7 +74,6 @@ private:
 	// ImGui related variables.
 	// Bool to check enable/disable status
 	bool imguiEnabled = true;
-
 
 	// To be able to move light.
 	float movableLightPos[3];
