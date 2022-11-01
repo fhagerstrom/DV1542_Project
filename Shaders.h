@@ -85,8 +85,8 @@ private:
 	void ShutdownShader();
 
 	bool SetCBuffers(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light);
-	bool SetParticleCBuffers(ID3D11DeviceContext* context, XMMATRIX world, XMMATRIX view, XMMATRIX projection, Camera* camera, ID3D11ShaderResourceView* texture);
-	void NewRenderShader(ID3D11DeviceContext* context, int indexCount, ID3D11SamplerState* sampler);
+	bool SetParticleCBuffers(ID3D11DeviceContext* context, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* texture);
+	void RenderShader(ID3D11DeviceContext* context, int indexCount, ID3D11SamplerState* sampler);
 
 	// REGULAR FORWARD SHADERS
 	ID3D11VertexShader* vertexShader;
@@ -172,5 +172,6 @@ public:
 	void BindLightPass(ID3D11DeviceContext* context);
 
 	void Shutdown();
-	bool NewRender(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light, ID3D11SamplerState* sampler);
+	bool Render(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light, ID3D11SamplerState* sampler);
+	bool RenderParticles(ID3D11DeviceContext* context, int indexCount, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* textureSrv, ID3D11SamplerState* sampler);
 };

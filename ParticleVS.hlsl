@@ -12,7 +12,7 @@ struct VertexInput
 struct GSInput
 {
     float4 position : SV_POSITION;
-    float4 worldPos : POSITIONWS;
+    float3 worldPos : POSITIONWS;
 };
 
 GSInput main(VertexInput input)

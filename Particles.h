@@ -5,8 +5,8 @@
 struct Particle
 {
 	XMFLOAT3 position;
-	int seed;
 	XMFLOAT3 velocity;
+	bool active;
 };
 
 class Particles

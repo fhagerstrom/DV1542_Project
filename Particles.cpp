@@ -60,7 +60,6 @@ void Particles::Render(ID3D11DeviceContext* context)
 	unsigned int stride;
 	unsigned int offset;
 
-
 	// Set vertex buffer stride and offset.
 	stride = sizeof(Vertex);
 	offset = 0;
@@ -92,12 +91,7 @@ bool Particles::InitializeBuffers(ID3D11Device* device)
 		return false;
 
 	// Loop through all vertices of the particles and set values for them
-	for (int i = 0; i < vertexCount; i++)
-	{
-		particles[i].position = XMFLOAT3(0.0f, 30.0f, 0.0f);
-		particles[i].seed = 100;
-		particles[i].velocity = XMFLOAT3(0.0f, -0.5f, 0.0f);
-	}
+
 
 	// Create the index array.
 	indices = new unsigned long[indexCount];
@@ -137,7 +131,7 @@ bool Particles::InitializeBuffers(ID3D11Device* device)
 	ZeroMemory(&indexBufferDesc, sizeof(D3D11_BUFFER_DESC));
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	indexBufferDesc.ByteWidth = sizeof(unsigned long) * indexCount;
-	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER | D3D11_BIND_UNORDERED_ACCESS;
+	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags = 0;
 	indexBufferDesc.MiscFlags = 0;
 	indexBufferDesc.StructureByteStride = 0;
@@ -163,7 +157,7 @@ bool Particles::InitializeBuffers(ID3D11Device* device)
 	uavDesc.Format = DXGI_FORMAT_R32_FLOAT;
 	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
 	uavDesc.Buffer.FirstElement = 0;
-	uavDesc.Buffer.NumElements = particles->seed;
+	uavDesc.Buffer.NumElements = maxParticles * 3;
 	uavDesc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_APPEND;
 
 	hr = device->CreateUnorderedAccessView(structuredBuffer, &uavDesc, &particleUav);
@@ -186,7 +180,6 @@ bool Particles::UpdateBuffers(ID3D11DeviceContext* context)
 	particleUav->GetResource(&particleResource);
 
 	context->CopyResource(vertexBuffer, particleResource);
-
 	/*
 		Resource is mapped for writing, the previous contents of the resource will be undefined.
 		Map/Unmap is a common use with temporary buffers. - Dynamic usage of our vertexbuffer. (It is at least prefered)
@@ -208,6 +201,30 @@ bool Particles::UpdateBuffers(ID3D11DeviceContext* context)
 	//// Unlock the vertex buffer.
 	//context->Unmap(vertexBuffer, 0);
 	return true;
+}
+
+void Particles::CreateParticle(float frameTime)
+{
+	// Increment the frame time.
+	accumulatedTime += frameTime;
+
+	// Set emit particle to false for now.
+	bool emitParticle = false;
+
+	// Check if it is time to emit a new particle or not.
+	if (accumulatedTime > 0.1f) 
+	{
+		accumulatedTime = 0.0f;
+		emitParticle = true;
+	}
+}
+
+void Particles::UpdateParticle(float frameTime)
+{
+}
+
+void Particles::DeleteParticles()
+{
 }
 
 bool Particles::LoadTexture(ID3D11Device* device, LPCWSTR textureFile)

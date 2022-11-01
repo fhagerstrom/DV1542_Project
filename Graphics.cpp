@@ -193,29 +193,27 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Create the input layout for particles
-	// TODO: CANT CREATE INPUT LAYOUT - ENCODED SIGNATURE DOESNT MATCH SPECIFIED SIZE. 
-	// Lista ut varför de knasar sig här och sen fortsätt med resten av partikelsystemet
-	/*result = particleShader->CreateParticleInputLayout(dxHandler->GetDevice());
+	result = particleShader->CreateParticleInputLayout(dxHandler->GetDevice());
 	if (!result)
 	{
 		MessageBox(hwnd, L"Couldn't create particle input layout!", L"INPUT LAYOUT ERROR", MB_OK);
 		return false;
-	}*/
+	}
 
 	// Create particle object.
-	//particles = new Particles;
-	//if (!particles)
-	//{
-	//	return false;
-	//}
+	particles = new Particles;
+	if (!particles)
+	{
+		return false;
+	}
 
-	//// Initialize particle system.
-	//result = particles->Initialize(dxHandler->GetDevice(), dxHandler->GetDeviceContext());
-	//if (!result)
-	//{
-	//	MessageBox(hwnd, L"Couldn't initialize particle system!", L"PARTICLE ERROR", MB_OK);
-	//	return false;
-	//}
+	// Initialize particle system.
+	result = particles->Initialize(dxHandler->GetDevice(), dxHandler->GetDeviceContext());
+	if (!result)
+	{
+		MessageBox(hwnd, L"Couldn't initialize particle system!", L"PARTICLE ERROR", MB_OK);
+		return false;
+	}
 
 
 	// ImGui setup.
@@ -380,7 +378,7 @@ bool Graphics::Render(float dt)
 	// sphere->Render(dxHandler->GetDeviceContext());
 
 	// REGULAR "TEXTURE" SHADER / FORWARD RENDERING
- 	// result = textureShader->NewRender(dxHandler->GetDeviceContext(), cityTerrain, view, projection, camera, light, dxHandler->GetSampler());
+ 	// result = textureShader->Render(dxHandler->GetDeviceContext(), cityTerrain, view, projection, camera, light, dxHandler->GetSampler());
 
 	// ALL MODELS + DEFERRED RENDERING
 	// Bind first pass for the deferred shading
@@ -390,7 +388,7 @@ bool Graphics::Render(float dt)
 	for (int i = 0; i < allModels.size(); i++) 
 	{
 		allModels[i]->Render(dxHandler->GetDeviceContext());
-		result = deferredShader->NewRender(dxHandler->GetDeviceContext(), allModels[i], view, projection, camera, light, dxHandler->GetSampler());
+		result = deferredShader->Render(dxHandler->GetDeviceContext(), allModels[i], view, projection, camera, light, dxHandler->GetSampler());
 		if (!result)
 			return false;
 	}

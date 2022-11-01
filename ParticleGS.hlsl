@@ -4,10 +4,10 @@ cbuffer CBCamera
     float padding;
 };
 
-struct GSInput
-{
-    float4 position : SV_POSITION;
-};
+//struct GSInput
+//{
+//    float4 position : SV_POSITION;
+//};
 
 struct GSOutput
 {

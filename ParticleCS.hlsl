@@ -15,11 +15,11 @@ struct Particles
 // ConsumeStructuredBuffer<Particles> CurrentSimState : register(u1);
 RWStructuredBuffer<Particles> SimState : register(u0);
 
-[numthreads(512, 1, 1)]
+[numthreads(8, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
 {
     // Check for if this thread should run or not
-    uint checkID = DTid.x + DTid.y * 512 + DTid.z * 512 * 512;
+    uint checkID = DTid.x + DTid.y * 8 + DTid.z * 8 * 8;
     
     // Get current particle
     Particles particle = SimState[checkID];

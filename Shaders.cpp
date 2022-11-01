@@ -22,7 +22,7 @@ void Shader::Shutdown()
 	return;
 }
 
-bool Shader::NewRender(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light, ID3D11SamplerState* sampler)
+bool Shader::Render(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light, ID3D11SamplerState* sampler)
 {
 	bool result;
 	result = SetCBuffers(context, model, view, projection, camera, light);
@@ -30,7 +30,22 @@ bool Shader::NewRender(ID3D11DeviceContext* context, Model* model, XMMATRIX view
 		return false;
 	}
 
-	NewRenderShader(context, model->GetIndexCount(), sampler);
+	RenderShader(context, model->GetIndexCount(), sampler);
+
+	return true;
+}
+
+bool Shader::RenderParticles(ID3D11DeviceContext* context, int indexCount, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* textureSrv, ID3D11SamplerState* sampler)
+{
+	bool result;
+	result = SetParticleCBuffers(context, world, view, projection, textureSrv);
+	if (!result)
+	{
+		MessageBox(NULL, L"Couldn't set particle constant buffers!", L"SHADER ERROR", MB_OK);
+		return false;
+	}
+
+	RenderShader(context, indexCount, sampler);
 
 	return true;
 }
@@ -558,7 +573,6 @@ bool Shader::CreateDefaultInputLayout(ID3D11Device* device)
 	}
 
 	vertexShaderBlob->Release();
-	pixelShaderBlob->Release();
 
 	return true;
 }
@@ -574,7 +588,7 @@ bool Shader::CreateParticleInputLayout(ID3D11Device* device)
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,	0, D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
 
-	hr = device->CreateInputLayout(inputLayoutPos, ARRAYSIZE(inputLayoutPos), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &defaultLayout);
+	hr = device->CreateInputLayout(inputLayoutPos, ARRAYSIZE(inputLayoutPos), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &particleLayout);
 	if (FAILED(hr))
 	{
 		MessageBox(NULL, L"Couldn't create input layout for particles!", L"SHADER ERROR", MB_OK);
@@ -674,7 +688,7 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 	return true;
 }
 
-bool Shader::SetParticleCBuffers(ID3D11DeviceContext* context, XMMATRIX world, XMMATRIX view, XMMATRIX projection, Camera* camera, ID3D11ShaderResourceView* texture)
+bool Shader::SetParticleCBuffers(ID3D11DeviceContext* context, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* texture)
 {
 	XMMATRIX wvp = world * view * projection;
 	perParticleCb.wvp = XMMatrixTranspose(wvp);
@@ -687,10 +701,12 @@ bool Shader::SetParticleCBuffers(ID3D11DeviceContext* context, XMMATRIX world, X
 	context->PSSetShaderResources(0, 1, &texture);
 
 
+
+
 	return true;
 }
 
-void Shader::NewRenderShader(ID3D11DeviceContext* deviceContext, int indexCount, ID3D11SamplerState* sampler)
+void Shader::RenderShader(ID3D11DeviceContext* deviceContext, int indexCount, ID3D11SamplerState* sampler)
 {
 	// Set the vertex input layout.
 	deviceContext->IASetInputLayout(defaultLayout);
@@ -702,6 +718,13 @@ void Shader::NewRenderShader(ID3D11DeviceContext* deviceContext, int indexCount,
 	// Set deferred shaders
 	deviceContext->VSSetShader(deferredVS, NULL, 0);
 	deviceContext->PSSetShader(deferredPS, NULL, 0);
+	// Compute shader is set in separate function
+
+	// Set particle shaders
+	/*deviceContext->VSSetShader(particleVS, NULL, 0);
+	deviceContext->PSSetShader(particlePS, NULL, 0);
+	deviceContext->CSSetShader(particleCS, NULL, 0);
+	deviceContext->GSSetShader(particleGS, NULL, 0);*/
 
 	// Set the sampler state in the pixel shader.
 	deviceContext->PSSetSamplers(0, 1, &sampler);
