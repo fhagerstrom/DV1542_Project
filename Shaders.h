@@ -28,6 +28,14 @@ struct CBPerParticle
 };
 
 ALIGN16
+struct CBParticle
+{
+	float deltaTime;
+	float random;
+	XMFLOAT2 padding;
+};
+
+ALIGN16
 struct CBLight
 {
 	XMFLOAT4 ambientLight;
@@ -69,13 +77,6 @@ struct CBCamera
 	XMFLOAT3 cameraPos;
 	float padding;
 };
-
-//ALIGN16
-//struct CBParticleCount
-//{
-//	float numParticles;
-//	XMFLOAT3 padding;
-//};
 
 class Shader
 {
@@ -122,6 +123,7 @@ private:
 	// Struct buffer declarations
 	CBPerObject objectCb;
 	CBPerParticle perParticleCb;
+	CBParticle particleCb;
 	CBCamera cameraCb;
 	CBLight lightCb;
 	CBMaterial materialCb;

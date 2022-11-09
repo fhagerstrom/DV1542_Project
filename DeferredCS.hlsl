@@ -10,6 +10,12 @@ static const int MAX_LIGHTS = 8;
 
 cbuffer DeferredLighting : register(b0)
 {
+    //float4 ambientLight;
+    //float4 diffuseLight;
+    //float4 specularLight;
+    //float3 lightPosition;
+    //float lightRange;
+    
     float4 lightColor;
     float3 lightPosition;
     float3 cameraPosition;
@@ -30,7 +36,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
     float4 specular = texSpecular[DTid.xy]; /*.Load(int3(DTid.xy, 0));*/
     
     float4 lighting = (0.0f, 0.0f, 0.0f, 1.0f);
-    float4 lightColor = (0.0f, 0.0f, 0.0f, 1.0f);
+    float4 lightColor = (1.0f, 1.0f, 1.0f, 1.0f);
     float4 ambientLighting;
     float4 diffuseLighting;
     float4 specularLighting;
@@ -59,7 +65,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
             float3 lightReflection = reflect(-lightVector, normal.xyz);
             float specularShade = pow(max(dot(lightReflection, viewDirection), 0.0f), specular.w); // w = "shine"
                 
-            diffuseLighting = diffuseFactor * lightColor;
+            diffuseLighting = diffuseFactor * diffuse * lightColor;
             specularLighting = specular * specularShade;
     
             //if (diffuseFactor > 0.0f)
@@ -73,8 +79,8 @@ void main( uint3 DTid : SV_DispatchThreadID )
             //    specularLighting = specular * specularShade;
             //}
             
-        lighting += saturate(ambientLighting + diffuseLighting + specularLighting);
+        lighting += saturate(ambient * diffuse * lightColor);
         // } // For loop clause
     }
-    backBuffer[DTid.xy] = lighting * ambient;
+    backBuffer[DTid.xy] = lighting * ambientLighting;
 }

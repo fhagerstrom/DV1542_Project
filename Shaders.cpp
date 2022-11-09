@@ -334,19 +334,19 @@ bool Shader::InitializeParticleShaders(ID3D11Device* device, HWND hwnd, LPCWSTR 
 	}
 
 	//// Setup the description of the particle constant buffer that is in the compute shader.
-	//ZeroMemory(&cBufferDescription, sizeof(D3D11_BUFFER_DESC));
-	//cBufferDescription.Usage = D3D11_USAGE_DEFAULT;
-	//cBufferDescription.ByteWidth = static_cast<uint32_t>(sizeof(CBParticles) + (16 - (sizeof(CBParticles) % 16)));
-	//cBufferDescription.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	//cBufferDescription.CPUAccessFlags = 0;
-	//cBufferDescription.MiscFlags = 0;
-	//cBufferDescription.StructureByteStride = 0;
+	ZeroMemory(&cBufferDescription, sizeof(D3D11_BUFFER_DESC));
+	cBufferDescription.Usage = D3D11_USAGE_DEFAULT;
+	cBufferDescription.ByteWidth = static_cast<uint32_t>(sizeof(CBParticle) + (16 - (sizeof(CBParticle) % 16)));
+	cBufferDescription.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cBufferDescription.CPUAccessFlags = 0;
+	cBufferDescription.MiscFlags = 0;
+	cBufferDescription.StructureByteStride = 0;
 
-	//hr = device->CreateBuffer(&cBufferDescription, NULL, &particleBuffer);
-	//if (FAILED(hr))
-	//{
-	//	return false;
-	//}
+	hr = device->CreateBuffer(&cBufferDescription, NULL, &particleBuffer);
+	if (FAILED(hr))
+	{
+		return false;
+	}
 
 	// Setup the description of the camera constant buffer that is in the geometry shader.
 	ZeroMemory(&cBufferDescription, sizeof(D3D11_BUFFER_DESC));

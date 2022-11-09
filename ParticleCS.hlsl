@@ -1,38 +1,31 @@
-struct Particles
+cbuffer Particles
 {
-    float3 position;
-    float3 velocity;
-    // float frameTime;
+    float deltaTime;
+    float random;
+    float2 padding;
 };
 
-//cbuffer ParticleCount
-//{
-//    float numParticles;
-//    float3 padding;
-//};
-
-// AppendStructuredBuffer<Particles> NewSimState : register(u0);
-// ConsumeStructuredBuffer<Particles> CurrentSimState : register(u1);
-RWStructuredBuffer<Particles> SimState : register(u0);
+RWBuffer<float> particlePosition;
 
 [numthreads(8, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
 {
-    // Check for if this thread should run or not
-    uint checkID = DTid.x + DTid.y * 8 + DTid.z * 8 * 8;
+    // Keep track of particles current position.
+    float3 currentPosition = float3(particlePosition[DTid.x * 3 + 0], particlePosition[DTid.y * 3 + 1], particlePosition[DTid.z * 3 + 2]);
     
-    // Get current particle
-    Particles particle = SimState[checkID];
-        
-    // Keep track of the time for emitted particles
-    // particle.frameTime += frac(dot(DTid.x + 1, float2(12.9898, 78.233)) * 43758.5453123);
-        
-    // Set the particles velocity for updating the position
-    particle.velocity = (0.0f, -0.2f, 0.0f);
-        
-    // Update position of particle for making them fall down
-    particle.position.xyz = particle.position.xyz + particle.velocity;
-        
-    SimState[checkID] = particle;
-
+    // Set position to fall down on y axis
+    currentPosition.y = -2.5 * deltaTime;
+    
+    // If the current position on the y axis is less than 10...
+    if(currentPosition.y < 10)
+    {
+        // Randomize the particles
+        currentPosition = (10 * random);
+    }
+    
+    // Update particle position
+    particlePosition[DTid.x * 3 + 0] = currentPosition.x; //x
+    particlePosition[DTid.x * 3 + 1] = currentPosition.y; //y
+    particlePosition[DTid.x * 3 + 2] = currentPosition.z; //z
+    
 }

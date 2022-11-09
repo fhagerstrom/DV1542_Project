@@ -74,13 +74,13 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 
 	// Set lighting values.
-	light->SetAmbientColor(1.0f, 1.0f, 1.0f, 1.0f);
+	light->SetAmbientColor(0.5f, 0.5f, 0.5f, 1.0f);
 	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light->SetLightPosition(0.0f, 10.0f, -5.0f);
+	light->SetLightPosition(0.0f, 10.0f, -25.0f);
 	light->SetAttenuation(1.0f, 0.02f, 0.0f);
-	light->SetLightRange(250.0f);
-	lightVector.push_back(light);
+	light->SetLightRange(500.0f);
+	// lightVector.push_back(light);
 
 	/*light1->SetAmbientColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light1->SetDiffuseColor(1.0f, 0.0f, 0.0f, 1.0f);
@@ -100,6 +100,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	torusRing = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), torusRing, L"assets/models/torusDonut.obj", true, false);
 	torusRing->SetWorldMatrix(XMMatrixTranslation(-4.0f, 0.0f, 0.0f));
+	torusRing->GetMaterials()[0].ambientMtl = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f);
 	torusRing->GetMaterials()[0].diffuseMtl = XMFLOAT4(0.5f, 0.0f, 0.0f, 1.0f);
 	torusRing->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
 	// torusRing->GetMaterials()[0].hasTexture = false;
@@ -109,6 +110,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	suzanne = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), suzanne, L"assets/models/monkey_triangulated.obj", true, false);
 	suzanne->SetWorldMatrix(XMMatrixTranslation(4.0f, 0.0f, 0.0f));
+	suzanne->GetMaterials()[0].ambientMtl = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f);
 	suzanne->GetMaterials()[0].diffuseMtl = XMFLOAT4(0.0f, 0.0f, 0.5f, 1.0f);
 	suzanne->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
 	// suzanne->GetMaterials()[0].hasTexture = false;
@@ -118,6 +120,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	sphere = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), sphere, L"assets/models/sphere.obj", true, false);
 	sphere->SetWorldMatrix(XMMatrixTranslation(0.0f, 0.0f, 0.0f));
+	sphere->GetMaterials()[0].ambientMtl = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f);
 	sphere->GetMaterials()[0].diffuseMtl = XMFLOAT4(0.0f, 0.5f, 0.0f, 1.0f);
 	sphere->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
 	// sphere->GetMaterials()[0].hasTexture = false;
