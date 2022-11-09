@@ -334,26 +334,26 @@ void Graphics::Update(float dt)
 
 	/* Update particles and do the billboarding */
 
-	//XMFLOAT3 cameraPosition;
-	//cameraPosition = camera->GetPosition();
+	XMFLOAT3 cameraPosition;
+	cameraPosition = camera->GetPosition();
 
-	//XMFLOAT3 particlePosition;
-	//particlePosition.x = 0.0f;
-	//particlePosition.y = 30.0f;
-	//particlePosition.z = -5.0f;
+	XMFLOAT3 particlePosition;
+	particlePosition.x = 0.0f;
+	particlePosition.y = 30.0f;
+	particlePosition.z = -5.0f;
 
-	//// Set an angle and rotation value for the particles for the billboarding
-	//float particleAngle = atan2(particlePosition.x - cameraPosition.x, particlePosition.z - cameraPosition.z) * (180.0 / XM_PI);
-	//float particleRotation = particleAngle * 0.0174532925f;
+	// Set an angle and rotation value for the particles for the billboarding
+	float particleAngle = atan2(particlePosition.x - cameraPosition.x, particlePosition.z - cameraPosition.z) * (180.0 / XM_PI);
+	float particleRotation = particleAngle * 0.0174532925f;
 
-	//// Set matrix and rotations for the particles.
-	//XMMATRIX worldParticles = XMMatrixIdentity();
-	//XMMATRIX particlesRotationY = XMMatrixRotationY(particleRotation);
-	//XMMATRIX particlesTranslation = XMMatrixTranslation(particlePosition.x, particlePosition.y, particlePosition.z);
-	//worldParticles = particlesRotationY * particlesTranslation;
-	//particles->SetWorldMatrix(worldParticles);
+	// Set matrix and rotations for the particles.
+	XMMATRIX worldParticles = XMMatrixIdentity();
+	XMMATRIX particlesRotationY = XMMatrixRotationY(particleRotation);
+	XMMATRIX particlesTranslation = XMMatrixTranslation(particlePosition.x, particlePosition.y, particlePosition.z);
+	worldParticles = particlesRotationY * particlesTranslation;
+	particles->SetWorldMatrix(worldParticles);
 
-	//particles->Update(dt, dxHandler->GetDeviceContext());
+	particles->Update(dt, dxHandler->GetDeviceContext());
 }
 
 bool Graphics::Render(float dt)
@@ -396,10 +396,10 @@ bool Graphics::Render(float dt)
 			return false;
 	}
 
-	// particles->Render(dxHandler->GetDeviceContext());
-	// result = particleShader->RenderParticles(dx11->GetContext(), particles->GetIndexCount(), particles->GetWorldMatrix(), view, projection, particles->GetTexture(), dx11->GetMinMagMipSampler());
-	/*if (!result)
-		return false;*/
+	 particles->Render(dxHandler->GetDeviceContext());
+	 result = particleShader->RenderParticles(dxHandler->GetDeviceContext(), particles->GetIndexCount(), particles->GetWorldMatrix(), view, projection, particles->GetTexture(), dxHandler->GetSampler());
+	if (!result)
+		return false;
 
 	// Bind the second pass for the deferred shading
 	deferredShader->BindLightPass(dxHandler->GetDeviceContext());

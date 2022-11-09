@@ -318,12 +318,12 @@ bool Shader::InitializeParticleShaders(ID3D11Device* device, HWND hwnd, LPCWSTR 
 
 	D3D11_BUFFER_DESC cBufferDescription;
 
-	// Setup the description of the particle constant buffer that is in the compute shader.
+	// Setup the description of the particle constant buffer that is in the vertex shader.
 	ZeroMemory(&cBufferDescription, sizeof(D3D11_BUFFER_DESC));
-	cBufferDescription.Usage = D3D11_USAGE_DEFAULT;
+	cBufferDescription.Usage = D3D11_USAGE_DYNAMIC;
 	cBufferDescription.ByteWidth = static_cast<uint32_t>(sizeof(CBPerParticle) + (16 - (sizeof(CBPerParticle) % 16)));
 	cBufferDescription.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	cBufferDescription.CPUAccessFlags = 0;
+	cBufferDescription.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	cBufferDescription.MiscFlags = 0;
 	cBufferDescription.StructureByteStride = 0;
 
@@ -333,12 +333,12 @@ bool Shader::InitializeParticleShaders(ID3D11Device* device, HWND hwnd, LPCWSTR 
 		return false;
 	}
 
-	//// Setup the description of the particle constant buffer that is in the compute shader.
+	// Setup the description of the particle constant buffer that is in the compute shader.
 	ZeroMemory(&cBufferDescription, sizeof(D3D11_BUFFER_DESC));
-	cBufferDescription.Usage = D3D11_USAGE_DEFAULT;
+	cBufferDescription.Usage = D3D11_USAGE_DYNAMIC;
 	cBufferDescription.ByteWidth = static_cast<uint32_t>(sizeof(CBParticle) + (16 - (sizeof(CBParticle) % 16)));
 	cBufferDescription.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	cBufferDescription.CPUAccessFlags = 0;
+	cBufferDescription.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	cBufferDescription.MiscFlags = 0;
 	cBufferDescription.StructureByteStride = 0;
 
@@ -694,14 +694,16 @@ bool Shader::SetParticleCBuffers(ID3D11DeviceContext* context, XMMATRIX world, X
 	perParticleCb.wvp = XMMatrixTranspose(wvp);
 	perParticleCb.world = XMMatrixTranspose(world);
 
+	float particleSeed = rand() % 20 - 10;
+
+	// particleCb.deltaTime = deltaTime;
+	particleCb.random = particleSeed;
+
 	context->UpdateSubresource(perParticleBuffer, 0, nullptr, &perParticleCb, 0, 0);
 	context->VSSetConstantBuffers(0, 1, &perParticleBuffer);
 
 	// Set shader texture resource in the pixel shader.
 	context->PSSetShaderResources(0, 1, &texture);
-
-
-
 
 	return true;
 }

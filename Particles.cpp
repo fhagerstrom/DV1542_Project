@@ -106,10 +106,10 @@ bool Particles::InitializeBuffers(ID3D11Device* device)
 	// Set up the description of the dynamic vertex buffer.
 	D3D11_BUFFER_DESC vertexBufferDesc;
 	ZeroMemory(&vertexBufferDesc, sizeof(D3D11_BUFFER_DESC));
-	vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	vertexBufferDesc.ByteWidth = sizeof(Vertex) * vertexCount;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER | D3D11_BIND_UNORDERED_ACCESS;
-	vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.MiscFlags = 0;
 	vertexBufferDesc.StructureByteStride = 0;
 
@@ -129,7 +129,7 @@ bool Particles::InitializeBuffers(ID3D11Device* device)
 	// Set up the description of the static index buffer
 	D3D11_BUFFER_DESC indexBufferDesc;
 	ZeroMemory(&indexBufferDesc, sizeof(D3D11_BUFFER_DESC));
-	indexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	indexBufferDesc.ByteWidth = sizeof(unsigned long) * indexCount;
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags = 0;
@@ -158,9 +158,9 @@ bool Particles::InitializeBuffers(ID3D11Device* device)
 	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
 	uavDesc.Buffer.FirstElement = 0;
 	uavDesc.Buffer.NumElements = maxParticles * 3;
-	uavDesc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_APPEND;
+	uavDesc.Buffer.Flags = 0;
 
-	hr = device->CreateUnorderedAccessView(structuredBuffer, &uavDesc, &particleUav);
+	hr = device->CreateUnorderedAccessView(vertexBuffer, &uavDesc, &particleUav);
 	if (FAILED(hr))
 	{
 		MessageBox(NULL, L"Couldn't create UAV for particle system!", L"PARTICLES ERROR", MB_OK);
@@ -173,33 +173,33 @@ bool Particles::InitializeBuffers(ID3D11Device* device)
 bool Particles::UpdateBuffers(ID3D11DeviceContext* context)
 {
 	HRESULT hr;
-	/*D3D11_MAPPED_SUBRESOURCE mappedResource;
-	Vertex* vertexPtr;*/
-	ID3D11Resource* particleResource;
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	Vertex* vertexPtr;
+	// ID3D11Resource* particleResource;
 
-	particleUav->GetResource(&particleResource);
+	// particleUav->GetResource(&particleResource);
 
-	context->CopyResource(vertexBuffer, particleResource);
+	// context->CopyResource(vertexBuffer, particleResource);
 	/*
 		Resource is mapped for writing, the previous contents of the resource will be undefined.
 		Map/Unmap is a common use with temporary buffers. - Dynamic usage of our vertexbuffer. (It is at least prefered)
 	*/
 
-	// Lock the vertex buffer.
-	//hr = context->Map(vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);	// maybe D3D11_MAP_WRITE_NO_OVERWRITE
-	//if (FAILED(hr))
-	//{
-	//	return false;
-	//}
+	// Lock the vertex buffer
+	hr = context->Map(vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);	// maybe D3D11_MAP_WRITE_NO_OVERWRITE
+	if (FAILED(hr))
+	{
+		return false;
+	}
 
-	//// Get a pointer to the data in the vertex buffer.
-	//vertexPtr = (Vertex*)mappedResource.pData;
+	// Get a pointer to the data in the vertex buffer
+	vertexPtr = (Vertex*)mappedResource.pData;
 
-	//// Copy the data into the vertex buffer.
-	//memcpy(vertexPtr, (void*)vertices, (sizeof(Vertex) * vertexCount));
+	// Copy the data into the vertex buffer
+	memcpy(vertexPtr, (void*)vertices, (sizeof(Vertex) * vertexCount));
 
-	//// Unlock the vertex buffer.
-	//context->Unmap(vertexBuffer, 0);
+	// Unlock the vertex buffer
+	context->Unmap(vertexBuffer, 0);
 	return true;
 }
 
