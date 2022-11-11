@@ -24,8 +24,8 @@ void main( uint3 DTid : SV_DispatchThreadID )
     }
     
     // Update particle position
-    particlePosition[DTid.x * 3 + 0] = currentPosition.x; //x
-    particlePosition[DTid.x * 3 + 1] = currentPosition.y; //y
-    particlePosition[DTid.x * 3 + 2] = currentPosition.z; //z
+    particlePosition[DTid.x * 3 + 0] = currentPosition.x; // x
+    particlePosition[DTid.x * 3 + 1] = currentPosition.y; // y
+    particlePosition[DTid.x * 3 + 2] = currentPosition.z; // z
     
 }

@@ -186,20 +186,20 @@ bool Particles::UpdateBuffers(ID3D11DeviceContext* context)
 	*/
 
 	// Lock the vertex buffer
-	hr = context->Map(vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);	// maybe D3D11_MAP_WRITE_NO_OVERWRITE
-	if (FAILED(hr))
-	{
-		return false;
-	}
+	//hr = context->Map(vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);	// maybe D3D11_MAP_WRITE_NO_OVERWRITE
+	//if (FAILED(hr))
+	//{
+	//	return false;
+	//}
 
-	// Get a pointer to the data in the vertex buffer
-	vertexPtr = (Vertex*)mappedResource.pData;
+	//// Get a pointer to the data in the vertex buffer
+	//vertexPtr = (Vertex*)mappedResource.pData;
 
-	// Copy the data into the vertex buffer
-	memcpy(vertexPtr, (void*)vertices, (sizeof(Vertex) * vertexCount));
+	//// Copy the data into the vertex buffer
+	//memcpy(vertexPtr, (void*)vertices, (sizeof(Vertex) * vertexCount));
 
-	// Unlock the vertex buffer
-	context->Unmap(vertexBuffer, 0);
+	//// Unlock the vertex buffer
+	//context->Unmap(vertexBuffer, 0);
 	return true;
 }
 

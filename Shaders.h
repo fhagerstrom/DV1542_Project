@@ -8,6 +8,7 @@
 #include "Light.h"
 #include "Camera.h"
 #include "DeferredRender.h"
+#include "Particles.h"
 
 using namespace DirectX;
 
@@ -176,4 +177,5 @@ public:
 	void Shutdown();
 	bool Render(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light, ID3D11SamplerState* sampler);
 	bool RenderParticles(ID3D11DeviceContext* context, int indexCount, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* textureSrv, ID3D11SamplerState* sampler);
+	void UpdateParticleShaders(ID3D11DeviceContext* context, float deltaTime, Particles* particles);
 };

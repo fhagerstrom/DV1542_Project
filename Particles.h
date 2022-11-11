@@ -33,7 +33,6 @@ private:
 
 	// Read about append / consume buffers 
 	ID3D11Buffer* vertexBuffer, *indexBuffer;
-	ID3D11Buffer* structuredBuffer;
 	ID3D11ShaderResourceView* particleSrv;
 	ID3D11UnorderedAccessView* particleUav;
 
@@ -57,5 +56,6 @@ public:
 	XMMATRIX GetWorldMatrix() { return this->world; };
 
 	ID3D11ShaderResourceView* GetTexture() { return this->particleSrv; }
+	ID3D11UnorderedAccessView* GetUav() { return particleUav; }
 	int GetIndexCount() { return this->indexCount; }
 };
