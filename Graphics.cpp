@@ -103,8 +103,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	torusRing->GetMaterials()[0].ambientMtl = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f);
 	torusRing->GetMaterials()[0].diffuseMtl = XMFLOAT4(0.5f, 0.0f, 0.0f, 1.0f);
 	torusRing->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
-	// torusRing->GetMaterials()[0].hasTexture = false;
-	// torusRing->GetMaterials()[0].hasReflection = false;
+	torusRing->GetMaterials()[0].hasTexture = true;
+	torusRing->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(torusRing);
 
 	suzanne = new Model;
@@ -113,18 +113,18 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	suzanne->GetMaterials()[0].ambientMtl = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f);
 	suzanne->GetMaterials()[0].diffuseMtl = XMFLOAT4(0.0f, 0.0f, 0.5f, 1.0f);
 	suzanne->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
-	// suzanne->GetMaterials()[0].hasTexture = false;
-	// suzanne->GetMaterials()[0].hasReflection = false;
+	suzanne->GetMaterials()[0].hasTexture = true;
+	suzanne->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(suzanne);
 
 	sphere = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), sphere, L"assets/models/sphere.obj", true, false);
-	sphere->SetWorldMatrix(XMMatrixTranslation(0.0f, 0.0f, 0.0f));
+	sphere->SetWorldMatrix(XMMatrixScaling(5.0f, 5.0f, 5.0f) * XMMatrixTranslation(20.0f, 40.0f, 20.0f));
 	sphere->GetMaterials()[0].ambientMtl = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f);
 	sphere->GetMaterials()[0].diffuseMtl = XMFLOAT4(0.0f, 0.5f, 0.0f, 1.0f);
 	sphere->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
-	// sphere->GetMaterials()[0].hasTexture = false;
-	// sphere->GetMaterials()[0].hasReflection = false;
+	sphere->GetMaterials()[0].hasTexture = true;
+	sphere->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(sphere);
 
 	triforce = new Model;
@@ -196,12 +196,12 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Create the input layout for particles
-	result = particleShader->CreateParticleInputLayout(dxHandler->GetDevice());
+	/*result = particleShader->CreateParticleInputLayout(dxHandler->GetDevice());
 	if (!result)
 	{
 		MessageBox(hwnd, L"Couldn't create particle input layout!", L"INPUT LAYOUT ERROR", MB_OK);
 		return false;
-	}
+	}*/
 
 	// Create particle object.
 	particles = new Particles;
@@ -211,12 +211,12 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Initialize particle system.
-	result = particles->Initialize(dxHandler->GetDevice(), dxHandler->GetDeviceContext());
+	/*result = particles->Initialize(dxHandler->GetDevice(), dxHandler->GetDeviceContext());
 	if (!result)
 	{
 		MessageBox(hwnd, L"Couldn't initialize particle system!", L"PARTICLE ERROR", MB_OK);
 		return false;
-	}
+	}*/
 
 
 	// ImGui setup.
@@ -396,10 +396,10 @@ bool Graphics::Render(float dt)
 			return false;
 	}
 
-	 particles->Render(dxHandler->GetDeviceContext());
-	 result = particleShader->RenderParticles(dxHandler->GetDeviceContext(), particles->GetIndexCount(), particles->GetWorldMatrix(), view, projection, particles->GetTexture(), dxHandler->GetSampler());
+	/*particles->Render(dxHandler->GetDeviceContext());
+	result = particleShader->RenderParticles(dxHandler->GetDeviceContext(), particles->GetIndexCount(), particles->GetWorldMatrix(), view, projection, particles->GetTexture(), dxHandler->GetSampler());
 	if (!result)
-		return false;
+		return false;*/
 
 	// Bind the second pass for the deferred shading
 	deferredShader->BindLightPass(dxHandler->GetDeviceContext());

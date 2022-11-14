@@ -66,9 +66,14 @@ struct CBMaterial
 ALIGN16
 struct CBDeferredLight
 {
-	XMFLOAT4 lightColor;
+	XMFLOAT4 ambientLight;
+	XMFLOAT4 diffuseLight;
+	XMFLOAT4 specularLight;
 	XMFLOAT3 lightPosition;
+	float lightRange;
+
 	XMFLOAT3 cameraPosition;
+	float padding;
 	// int nrOfLights;
 };
 

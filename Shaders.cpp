@@ -676,9 +676,9 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 	context->PSSetConstantBuffers(1, 1, &materialBuffer);
 
 	/* Deferred buffer - Compute shader */
-	deferredLightCb.lightColor = light->GetAmbientColor();
-	deferredLightCb.lightColor = light->GetDiffuseColor();
-	deferredLightCb.lightColor = light->GetSpecularColor();
+	deferredLightCb.ambientLight = light->GetAmbientColor();
+	deferredLightCb.diffuseLight = light->GetDiffuseColor();
+	deferredLightCb.specularLight = light->GetSpecularColor();
 	deferredLightCb.lightPosition = light->GetLightPosition();
 	deferredLightCb.cameraPosition = camera->GetPosition();
 
@@ -737,10 +737,10 @@ void Shader::RenderShader(ID3D11DeviceContext* deviceContext, int indexCount, ID
 	// Compute shader is set in separate function
 
 	// Set particle shaders
-	deviceContext->VSSetShader(particleVS, NULL, 0);
+	/*deviceContext->VSSetShader(particleVS, NULL, 0);
 	deviceContext->PSSetShader(particlePS, NULL, 0);
 	deviceContext->CSSetShader(particleCS, NULL, 0);
-	deviceContext->GSSetShader(particleGS, NULL, 0);
+	deviceContext->GSSetShader(particleGS, NULL, 0);*/
 
 	// Set the sampler state in the pixel shader.
 	deviceContext->PSSetSamplers(0, 1, &sampler);
