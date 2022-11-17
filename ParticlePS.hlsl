@@ -3,22 +3,18 @@ SamplerState particleSampler : register(s0);
 
 struct PixelInput
 {
-    float4 position : SV_POSITION;
-    float4 worldPosition : POSITION;
-    float2 uv : TEXCOORD;
-    float4 color : COLOR;
+    float4 pos : SV_POSITION;
+    float2 tex : TEXCOORD0;
 };
 
 float4 main(PixelInput input) : SV_TARGET
 {
-    float4 textureColor = { 0.0f, 0.0f, 0.0f, 1.0f };
-    float4 finalColor = { 0.0f, 0.0f, 0.0f, 1.0f };
-    
-    // Sample the pixel color from the texture using the sampler at this texture coordinate location.
-    textureColor = particleTexture.Sample(particleSampler, input.uv);
-    
-    // Combine the texture color and the particle color to get the final color result.
-    finalColor = textureColor * input.color;
-    
-    return finalColor;
+    float4 output = particleTexture.Sample(particleSampler, input.tex);
+
+    output.x = output.x - 0.4 + cos(0.1 * 0.4);
+    output.y = output.y - 0.6 + cos(0.6 * 0.6);
+    output.z = output.z - 0.4 + sin(0.3 * 0.4);
+
+
+    return output;
 }

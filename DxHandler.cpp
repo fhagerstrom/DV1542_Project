@@ -76,7 +76,7 @@ bool DxHandler::Initialize(int screenWidth, int screenHeight, HWND hwnd, float s
 	swapChainDesc.Flags = 0;
 
 	// Set the feature level to DirectX 11.
-	featureLevel = D3D_FEATURE_LEVEL_11_0;
+	featureLevel = D3D_FEATURE_LEVEL_11_1;
 
 	UINT flags = 0;
 

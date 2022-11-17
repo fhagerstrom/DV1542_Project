@@ -55,6 +55,7 @@ private:
 	Shader* particleShader;
 
 	Light* light;
+	Light* light1;
 	int nrOfLights;
 
 	ObjReader reader;

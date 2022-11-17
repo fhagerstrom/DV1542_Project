@@ -12,28 +12,13 @@
 
 using namespace DirectX;
 
-static const int MAX_LIGHTS = 8;
+static const int MAX_LIGHTS = 4;
 
 ALIGN16
 struct CBPerObject
 {
 	XMMATRIX wvp;
 	XMMATRIX world;
-};
-
-ALIGN16
-struct CBPerParticle
-{
-	XMMATRIX wvp;
-	XMMATRIX world;
-};
-
-ALIGN16
-struct CBParticle
-{
-	float deltaTime;
-	float random;
-	XMFLOAT2 padding;
 };
 
 ALIGN16
@@ -58,8 +43,8 @@ struct CBMaterial
 	XMFLOAT4 reflectionMtl;
 
 	float shine;
-	int hasTexture;
-	int hasReflection;
+	bool hasTexture;
+	bool hasReflection;
 	int padding;
 };
 
@@ -75,13 +60,46 @@ struct CBDeferredLight
 	XMFLOAT3 cameraPosition;
 	float padding;
 	// int nrOfLights;
+
+	XMMATRIX projection;
+	XMMATRIX lightVP;
 };
+
+ALIGN16
+struct CBConstantParticles
+{
+	unsigned int maxParticles;
+};
+
+ALIGN16
+struct CBDynamicParticles
+{
+	float deltaTime;
+	XMFLOAT3 padding;
+};
+
 
 ALIGN16
 struct CBCamera
 {
 	XMFLOAT3 cameraPos;
 	float padding;
+};
+
+// GEOMETRY SHADER - PARTICLES
+ALIGN16
+struct CBView
+{
+	XMMATRIX view;
+	XMFLOAT3 cameraPosition;
+	float time;
+};
+
+ALIGN16
+struct CBConstantResource
+{
+	float quadLength;
+	XMMATRIX projection;
 };
 
 class Shader
@@ -92,8 +110,9 @@ private:
 	void ShutdownShader();
 
 	bool SetCBuffers(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light);
-	bool SetParticleCBuffers(ID3D11DeviceContext* context, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* texture);
+	bool SetConstantParticleCBuffers(ID3D11DeviceContext* context, Particles particles, int maxParticles, XMMATRIX projection, float quadLength);
 	void RenderShader(ID3D11DeviceContext* context, int indexCount, ID3D11SamplerState* sampler);
+	void RenderParticleShaders(ID3D11DeviceContext* context, int maxParticles);
 
 	// REGULAR FORWARD SHADERS
 	ID3D11VertexShader* vertexShader;
@@ -112,32 +131,43 @@ private:
 	
 	// INPUT LAYOUT(S)
 	ID3D11InputLayout* defaultLayout;
-	ID3D11InputLayout* particleLayout;
+	// ID3D11InputLayout* particleLayout;
 
 	DxHandler* dxHandler;
 	DeferredRender* deferredPtr;
 
 	// ID3D11 buffer declarations
 	ID3D11Buffer* perObjectBuffer;
-	ID3D11Buffer* perParticleBuffer;
 	ID3D11Buffer* lightBuffer;
 	ID3D11Buffer* cameraBuffer;
 	ID3D11Buffer* materialBuffer;
 	ID3D11Buffer* deferredBuffer;
 	ID3D11Buffer* particleBuffer;
 
+	// PARTICLES
+	ID3D11Buffer* constantVariablesBuffer;
+	ID3D11Buffer* dynamicVariablesBuffer;
+	ID3D11Buffer* viewBuffer;
+	ID3D11Buffer* constantResourceBuffer;
+
 	// Struct buffer declarations
 	CBPerObject objectCb;
-	CBPerParticle perParticleCb;
-	CBParticle particleCb;
 	CBCamera cameraCb;
 	CBLight lightCb;
 	CBMaterial materialCb;
 	CBDeferredLight deferredLightCb;
 
+	// Compute shader constant buffers for particles.
+	CBConstantParticles constantParticleCb;
+	CBDynamicParticles dynamicParticleCb;
+	CBView viewMatrixCb;
+	CBConstantResource constantResourceCb;
+
 	// Textures / Resources
 	ID3D11SamplerState* samplerState;
 	ID3D11ShaderResourceView* textureSRV;
+	ID3D11ShaderResourceView* particleSrv;
+	ID3D11UnorderedAccessView* particleUav;
 
 	HRESULT hr;
 	ID3DBlob* vertexShaderBlob;
@@ -174,13 +204,13 @@ public:
 	bool IntializeDeferredShaders(ID3D11Device* device, DxHandler* dxHandler, HWND hwnd, LPCWSTR vsFileName, LPCWSTR psFileName, LPCWSTR csFileName, LPCSTR VSEntry, LPCSTR PSEntry, LPCSTR CSEntry);
 	bool InitializeParticleShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileName, LPCWSTR psFileName, LPCWSTR csFileName, LPCWSTR gsFileName, LPCSTR VSEntry, LPCSTR PSEntry, LPCSTR CSEntry, LPCSTR GSEntry);
 	bool CreateDefaultInputLayout(ID3D11Device* device);
-	bool CreateParticleInputLayout(ID3D11Device* device);
+	// bool CreateEmptyParticleInputLayout(ID3D11Device* device); // Empty because we perform vertex pulling on shader side
 
 	void BindGeometryPass(ID3D11DeviceContext* context);
 	void BindLightPass(ID3D11DeviceContext* context);
 
 	void Shutdown();
 	bool Render(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light, ID3D11SamplerState* sampler);
-	bool RenderParticles(ID3D11DeviceContext* context, int indexCount, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* textureSrv, ID3D11SamplerState* sampler);
-	void UpdateParticleShaders(ID3D11DeviceContext* context, float deltaTime, Particles* particles);
+	bool RenderParticles(ID3D11DeviceContext* context, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* textureSrv, ID3D11SamplerState* sampler);
+	void UpdateParticleShaders(ID3D11DeviceContext* context, Particles particles, XMMATRIX view, XMFLOAT3& cameraPosition, float deltaTime);
 };

@@ -26,26 +26,25 @@ bool Shader::Render(ID3D11DeviceContext* context, Model* model, XMMATRIX view, X
 {
 	bool result;
 	result = SetCBuffers(context, model, view, projection, camera, light);
-	if (!result) {
+	if (!result) 
 		return false;
-	}
 
 	RenderShader(context, model->GetIndexCount(), sampler);
 
 	return true;
 }
 
-bool Shader::RenderParticles(ID3D11DeviceContext* context, int indexCount, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* textureSrv, ID3D11SamplerState* sampler)
+bool Shader::RenderParticles(ID3D11DeviceContext* context, int indexCount, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* textureSrv, ID3D11SamplerState* sampler)
 {
 	bool result;
-	result = SetParticleCBuffers(context, world, view, projection, textureSrv);
+	result = SetConstantParticleCBuffers(context, world, view, projection, textureSrv);
 	if (!result)
 	{
 		MessageBox(NULL, L"Couldn't set particle constant buffers!", L"SHADER ERROR", MB_OK);
 		return false;
 	}
 
-	RenderShader(context, indexCount, sampler);
+	RenderParticleShaders(context);
 
 	return true;
 }
@@ -314,50 +313,85 @@ bool Shader::InitializeParticleShaders(ID3D11Device* device, HWND hwnd, LPCWSTR 
 		return false;
 	}
 
+	// SAMPLER STATE FOR PARTICLES - LEAVE COMMENTED FOR NOW TILL STUFF WORKS.
+	
+	D3D11_SAMPLER_DESC colorMapDesc;
+	ZeroMemory(&colorMapDesc, sizeof(colorMapDesc));
+
+	colorMapDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	colorMapDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	colorMapDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	colorMapDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	colorMapDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	colorMapDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	hr = device->CreateSamplerState(&colorMapDesc, &particleSampler);
+
+	if (FAILED(hr)) 
+	{
+		MessageBox(NULL, L"Error creating sampler state!", L"SHADER ERROR", 0);
+		return false;
+	}
+
 	/* CONSTANT BUFFER DESCRIPTIONS */
 
 	D3D11_BUFFER_DESC cBufferDescription;
 
-	// Setup the description of the particle constant buffer that is in the vertex shader.
+	// Setup the description of the constant particle constant buffer that is in the compute shader.
 	ZeroMemory(&cBufferDescription, sizeof(D3D11_BUFFER_DESC));
 	cBufferDescription.Usage = D3D11_USAGE_DEFAULT;
-	cBufferDescription.ByteWidth = static_cast<uint32_t>(sizeof(CBPerParticle) + (16 - (sizeof(CBPerParticle) % 16)));
+	cBufferDescription.ByteWidth = static_cast<uint32_t>(sizeof(CBConstantParticles) + (16 - (sizeof(CBConstantParticles) % 16)));
 	cBufferDescription.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	cBufferDescription.CPUAccessFlags = 0;
 	cBufferDescription.MiscFlags = 0;
 	cBufferDescription.StructureByteStride = 0;
 
-	hr = device->CreateBuffer(&cBufferDescription, NULL, &perParticleBuffer);
+	hr = device->CreateBuffer(&cBufferDescription, NULL, &constantVariablesBuffer);
 	if (FAILED(hr))
 	{
 		return false;
 	}
 
-	// Setup the description of the particle constant buffer that is in the compute shader.
+	// Setup the description of the dynamic particle constant buffer that is in the compute shader.
 	ZeroMemory(&cBufferDescription, sizeof(D3D11_BUFFER_DESC));
 	cBufferDescription.Usage = D3D11_USAGE_DYNAMIC;
-	cBufferDescription.ByteWidth = static_cast<uint32_t>(sizeof(CBParticle) + (16 - (sizeof(CBParticle) % 16)));
+	cBufferDescription.ByteWidth = static_cast<uint32_t>(sizeof(CBDynamicParticles) + (16 - (sizeof(CBDynamicParticles) % 16)));
 	cBufferDescription.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	cBufferDescription.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	cBufferDescription.MiscFlags = 0;
 	cBufferDescription.StructureByteStride = 0;
 
-	hr = device->CreateBuffer(&cBufferDescription, NULL, &particleBuffer);
+	hr = device->CreateBuffer(&cBufferDescription, NULL, &dynamicVariablesBuffer);
 	if (FAILED(hr))
 	{
 		return false;
 	}
 
-	// Setup the description of the camera constant buffer that is in the geometry shader.
+	// Setup the description of the constant particle constant buffer that is in the geometry shader.
 	ZeroMemory(&cBufferDescription, sizeof(D3D11_BUFFER_DESC));
 	cBufferDescription.Usage = D3D11_USAGE_DEFAULT;
-	cBufferDescription.ByteWidth = static_cast<uint32_t>(sizeof(CBCamera) + (16 - (sizeof(CBCamera) % 16)));
+	cBufferDescription.ByteWidth = static_cast<uint32_t>(sizeof(CBConstantResource) + (16 - (sizeof(CBConstantResource) % 16)));
 	cBufferDescription.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	cBufferDescription.CPUAccessFlags = 0;
 	cBufferDescription.MiscFlags = 0;
 	cBufferDescription.StructureByteStride = 0;
 
-	hr = device->CreateBuffer(&cBufferDescription, NULL, &cameraBuffer);
+	hr = device->CreateBuffer(&cBufferDescription, NULL, &constantResourceBuffer);
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	// Setup the description of the dynamic particle constant buffer that is in the geometry shader.
+	ZeroMemory(&cBufferDescription, sizeof(D3D11_BUFFER_DESC));
+	cBufferDescription.Usage = D3D11_USAGE_DYNAMIC;
+	cBufferDescription.ByteWidth = static_cast<uint32_t>(sizeof(CBView) + (16 - (sizeof(CBView) % 16)));
+	cBufferDescription.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cBufferDescription.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	cBufferDescription.MiscFlags = 0;
+	cBufferDescription.StructureByteStride = 0;
+
+	hr = device->CreateBuffer(&cBufferDescription, NULL, &viewBuffer);
 	if (FAILED(hr))
 	{
 		return false;
@@ -577,28 +611,26 @@ bool Shader::CreateDefaultInputLayout(ID3D11Device* device)
 	return true;
 }
 
-
-
-bool Shader::CreateParticleInputLayout(ID3D11Device* device)
-{
-	/* CREATE INPUT LAYOUT DESCRIPTION */
-
-	D3D11_INPUT_ELEMENT_DESC inputLayoutPos[] =
-	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,	0, D3D11_INPUT_PER_VERTEX_DATA, 0}
-	};
-
-	hr = device->CreateInputLayout(inputLayoutPos, ARRAYSIZE(inputLayoutPos), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &particleLayout);
-	if (FAILED(hr))
-	{
-		MessageBox(NULL, L"Couldn't create input layout for particles!", L"SHADER ERROR", MB_OK);
-		return false;
-	}
-
-	vertexShaderBlob->Release();
-
-	return true;
-}
+//bool Shader::CreateEmptyParticleInputLayout(ID3D11Device* device)
+//{
+//	/* CREATE INPUT LAYOUT DESCRIPTION */
+//
+//	D3D11_INPUT_ELEMENT_DESC inputLayoutPos[] =
+//	{
+//		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,	0, D3D11_INPUT_PER_VERTEX_DATA, 0}
+//	};
+//
+//	hr = device->CreateInputLayout(inputLayoutPos, ARRAYSIZE(inputLayoutPos), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &particleLayout);
+//	if (FAILED(hr))
+//	{
+//		MessageBox(NULL, L"Couldn't create input layout for particles!", L"SHADER ERROR", MB_OK);
+//		return false;
+//	}
+//
+//	vertexShaderBlob->Release();
+//
+//	return true;
+//}
 
 void Shader::BindGeometryPass(ID3D11DeviceContext* context)
 {
@@ -623,6 +655,7 @@ void Shader::BindLightPass(ID3D11DeviceContext* context)
 
 	context->Dispatch(60, 128, 1);
 
+	// NULL resources and buffers
 	context->CSSetShaderResources(0, BUFFER_COUNT, nullSRV);
 	context->CSSetConstantBuffers(0, NULL, &nullBuffer);
 	context->CSSetUnorderedAccessViews(0, 1, &nullUAV, NULL);
@@ -652,8 +685,8 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 	context->UpdateSubresource(cameraBuffer, 0, nullptr, &cameraCb, 0, 0);
 	context->VSSetConstantBuffers(1, 1, &cameraBuffer);
 	
-	/* Set Light buffer	- Pixel shader */
-	lightCb.ambientLight = light->GetAmbientColor();
+	/* Set Default light buffer	- Pixel shader */
+	/*lightCb.ambientLight = light->GetAmbientColor();
 	lightCb.diffuseLight = light->GetDiffuseColor();
 	lightCb.specularLight = light->GetSpecularColor();
 	lightCb.lightPosition = light->GetLightPosition();
@@ -661,7 +694,7 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 	lightCb.attenuation = light->GetAttenuation();
 
 	context->UpdateSubresource(lightBuffer, 0, nullptr, &lightCb, 0, 0);
-	context->PSSetConstantBuffers(0, 1, &lightBuffer);
+	context->PSSetConstantBuffers(0, 1, &lightBuffer);*/
 
 	/* Material buffer - Pixel shader */
 	materialCb.ambientMtl = model->GetMaterials()[0].ambientMtl;
@@ -675,7 +708,7 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 	context->UpdateSubresource(materialBuffer, 0, nullptr, &materialCb, 0, 0);
 	context->PSSetConstantBuffers(1, 1, &materialBuffer);
 
-	/* Deferred buffer - Compute shader */
+	/* Deferred light buffer - Compute shader */
 	deferredLightCb.ambientLight = light->GetAmbientColor();
 	deferredLightCb.diffuseLight = light->GetDiffuseColor();
 	deferredLightCb.specularLight = light->GetSpecularColor();
@@ -688,37 +721,50 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 	return true;
 }
 
-bool Shader::SetParticleCBuffers(ID3D11DeviceContext* context, XMMATRIX world, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* texture)
+bool Shader::SetConstantParticleCBuffers(ID3D11DeviceContext* context, Particles particles, int maxParticles, XMMATRIX projection, float quadLength)
 {
-	XMMATRIX wvp = world * view * projection;
-	perParticleCb.wvp = XMMatrixTranspose(wvp);
-	perParticleCb.world = XMMatrixTranspose(world);
+	particleBuffer = particles.GetParticleBuffer();
+	// COMPUTE SHADER BUFFER
+	constantParticleCb.maxParticles = maxParticles;
 
-	context->UpdateSubresource(perParticleBuffer, 0, nullptr, &perParticleCb, 0, 0);
-	context->VSSetConstantBuffers(0, 1, &perParticleBuffer);
+	particleBuffer = particles.GetParticleBuffer();
 
-	// Set shader texture resource in the pixel shader.
-	context->PSSetShaderResources(0, 1, &texture);
+	context->UpdateSubresource(particleBuffer, 0, NULL, &constantParticleCb, 0, 0);
+	context->CSSetConstantBuffers(0, 1, &particleBuffer);
+
+	// GEOMETRY SHADER BUFFER
+	constantResourceCb.quadLength = quadLength;
+	constantResourceCb.projection = projection;
+
+	context->UpdateSubresource(particleBuffer, 0, NULL, &constantResourceCb, 0, 0);
+	context->GSSetConstantBuffers(1, 1, &particleBuffer);
 
 	return true;
 }
 
-void Shader::UpdateParticleShaders(ID3D11DeviceContext* context, float deltaTime, Particles* particles)
+void Shader::UpdateParticleShaders(ID3D11DeviceContext* context, Particles particles, XMMATRIX view, XMFLOAT3& cameraPosition, float deltaTime)
 {
-	particles = new Particles;
-	float particleSeed = rand() % 20 - 10;
+	// COMPUTE SHADER BUFFER
+	dynamicParticleCb.deltaTime = deltaTime;
 
-	particleCb.deltaTime = deltaTime;
-	particleCb.random = particleSeed;
+	// GEOMETRY SHADER BUFFER
+	viewMatrixCb.view = view;
+	viewMatrixCb.cameraPosition = cameraPosition;
+	viewMatrixCb.time = deltaTime;
+
+	particleUav = particles.GetUav();
+	particleBuffer = particles.GetParticleBuffer();
+
+	context->UpdateSubresource(particleBuffer, 0, NULL, &viewMatrixCb, 0, 0);
+	context->GSSetConstantBuffers(0, 1, &particleBuffer);
 
 	context->CSSetShader(particleCS, NULL, 0);
-	context->CSSetConstantBuffers(0, 1, &particleBuffer);
-	// context->CSSetUnorderedAccessViews(0, 1, &particles->GetUav(), NULL);
+	context->CSSetConstantBuffers(1, 1, &particleBuffer);
+	context->CSSetUnorderedAccessViews(0, 1, &particleUav, NULL);
+	context->Dispatch(32, 1, 1); // 32 threads on x ID
 
-	// TODO: call UAV object when setting it above ^^^^
-	// Call dispatch for CS with the size of the particle (Check CS numthreads for appropriate values).
-	// Set UAV to NULL
-	// Double check semantics on shaders (VS, PS, GS) because of linkage errors.
+	ID3D11UnorderedAccessView* nullUav = NULL;
+	context->CSSetUnorderedAccessViews(0, 1, &nullUav, NULL);
 
 }
 
@@ -737,10 +783,10 @@ void Shader::RenderShader(ID3D11DeviceContext* deviceContext, int indexCount, ID
 	// Compute shader is set in separate function
 
 	// Set particle shaders
-	/*deviceContext->VSSetShader(particleVS, NULL, 0);
-	deviceContext->PSSetShader(particlePS, NULL, 0);
-	deviceContext->CSSetShader(particleCS, NULL, 0);
-	deviceContext->GSSetShader(particleGS, NULL, 0);*/
+	//deviceContext->VSSetShader(particleVS, NULL, 0);
+	//deviceContext->PSSetShader(particlePS, NULL, 0);
+	//// Compute shader set in separate function here as well
+	//deviceContext->GSSetShader(particleGS, NULL, 0);
 
 	// Set the sampler state in the pixel shader.
 	deviceContext->PSSetSamplers(0, 1, &sampler);
@@ -757,4 +803,8 @@ void Shader::RenderShader(ID3D11DeviceContext* deviceContext, int indexCount, ID
 	deviceContext->PSSetShaderResources(0, BUFFER_COUNT, nullSRV);
 
 	return;
+}
+
+void Shader::RenderParticleShaders(ID3D11DeviceContext* context, int maxParticles)
+{
 }

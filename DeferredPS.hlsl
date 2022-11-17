@@ -1,7 +1,20 @@
 Texture2D texAmbient : register(t0);
 Texture2D texDiffuse : register(t1);
 Texture2D texSpecular : register(t2);
-SamplerState deferredSampler;
+SamplerState deferredSampler : register(s0);
+
+cbuffer CBMaterial : register(b1)
+{
+    float4 diffuseMtl;
+    float4 ambientMtl;
+    float4 specularMtl;
+    float4 reflectionMtl;
+
+    float shine;
+    bool hasTexture;
+    bool hasReflection;
+    int padding;
+};
 
 struct PixelInput
 {
@@ -21,28 +34,26 @@ struct PixelOutput
     float4 specular : SV_Target4;
 };
 
-cbuffer DeferredMtl
-{
-    float4 diffuseMtl;
-    float4 ambientMtl;
-    float4 specularMtl;
-    float4 reflectionMtl;
-
-    float shine;
-    bool hasTexture;
-    bool hasReflection;
-    int padding2;
-};
-
 PixelOutput main(PixelInput input)
 {
     PixelOutput output;
     
     output.position = input.worldPos;
     output.normal = float4(input.normal.xyz, 1);
-    output.ambient = texAmbient.Sample(deferredSampler, input.tex) * ambientMtl;
-    output.diffuse = texDiffuse.Sample(deferredSampler, input.tex) * diffuseMtl;
-    output.specular = texSpecular.Sample(deferredSampler, input.tex) * specularMtl;
+    
+    if (hasTexture)
+    {
+        output.ambient = texAmbient.Sample(deferredSampler, input.tex) * ambientMtl;
+        output.diffuse = texDiffuse.Sample(deferredSampler, input.tex) * diffuseMtl;
+        output.specular = texSpecular.Sample(deferredSampler, input.tex) * specularMtl;
+    }
+    else
+    {
+        output.ambient = ambientMtl;
+        output.diffuse = diffuseMtl;
+        output.specular = specularMtl;
+    }
+    
     output.specular.w = specularMtl.w;
     
 	return output;

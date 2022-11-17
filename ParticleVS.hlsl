@@ -1,27 +1,36 @@
-cbuffer CBPerParticle
+//cbuffer CBPerParticle
+//{
+//    matrix wvp;
+//    matrix world;
+//};
+
+struct Particle
 {
-    matrix wvp;
-    matrix world;
+    float3 currentPosition : POSITION;
+    float3 oldPosition;
 };
 
 struct VertexInput
 { 
-    float3 position : POSITION;
+    uint vertexID : SV_VertexID;
 };
 
 struct GSInput
 {
     float4 position : SV_POSITION;
-    float3 worldPos : POSITIONWS;
+    float2 tex : TEXCOORD;
 };
+
+StructuredBuffer<Particle> particleBuffer : register(t0);
 
 GSInput main(VertexInput input)
 {
     GSInput output;
-    
-    // Calculate the position of the vertex against the world View Projection (WVP) and the world matrix
-    output.position = mul(float4(input.position, 1.0f), wvp);
-    output.worldPos = mul(float4(input.position, 1.0f), world);
+
+    output.position.xyz = particleBuffer[input.vertexID].currentPosition;
+    output.position.w = 1.0f;
+	
+    output.tex = float2(0, 0);
         
 	return output;
 }

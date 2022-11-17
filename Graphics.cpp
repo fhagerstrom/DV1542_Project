@@ -57,42 +57,36 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	if (!testCube)
 		return false;
 
-	/*result = testCube->InitializeCube(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/iceGlass.jpg");
-	if (!result)
-	{
-		MessageBox(NULL, L"Couldn't initialize cube. Check the file paths!", L"MODEL ERROR", MB_OK);
-		return false;
-	}
-	testCube->SetWorldMatrix(XMMatrixTranslation(0.0f, 10.0f, -10.0f));
-
-	allModels.push_back(testCube);*/
-
-
 	// Create light object.
 	light = new Light;
 	if (!light)
 		return false;
 
+	light1 = new Light;
+	if (!light)
+		return false;
+
 	// Set lighting values.
-	light->SetAmbientColor(0.5f, 0.5f, 0.5f, 1.0f);
+	light->SetAmbientColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light->SetLightPosition(0.0f, 10.0f, -25.0f);
+	light->SetLightPosition(0.0f, 0.0f, -10.0f);
 	light->SetAttenuation(1.0f, 0.02f, 0.0f);
 	light->SetLightRange(500.0f);
-	// lightVector.push_back(light);
+	lightVector.push_back(light);
 
-	/*light1->SetAmbientColor(1.0f, 1.0f, 1.0f, 1.0f);
+	light1->SetAmbientColor(0.3f, 0.3f, 0.3f, 1.0f);
 	light1->SetDiffuseColor(1.0f, 0.0f, 0.0f, 1.0f);
 	light1->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light1->SetLightPosition(0.0f, 10.0f, -5.0f);
+	light1->SetLightPosition(0.0f, 10.0f, 15.0f);
 	light1->SetAttenuation(1.0f, 0.02f, 0.0f);
-	light1->SetLightRange(500.0f);*/
+	light1->SetLightRange(500.0f);
+	// lightVector.push_back(light1);
 
 	cityTerrain = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), cityTerrain, L"assets/models/scifi_city.obj", true, false);
 	cityTerrain->SetWorldMatrix(XMMatrixTranslation(0.0f, -2.0f, 0.0f));
-	cityTerrain->GetMaterials()[0].ambientMtl = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f);
+	cityTerrain->GetMaterials()[0].ambientMtl = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	cityTerrain->GetMaterials()[0].hasTexture = true;
 	cityTerrain->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(cityTerrain);
@@ -100,7 +94,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	torusRing = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), torusRing, L"assets/models/torusDonut.obj", true, false);
 	torusRing->SetWorldMatrix(XMMatrixTranslation(-4.0f, 0.0f, 0.0f));
-	torusRing->GetMaterials()[0].ambientMtl = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f);
+	torusRing->GetMaterials()[0].ambientMtl = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	torusRing->GetMaterials()[0].diffuseMtl = XMFLOAT4(0.5f, 0.0f, 0.0f, 1.0f);
 	torusRing->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
 	torusRing->GetMaterials()[0].hasTexture = true;
@@ -110,17 +104,17 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	suzanne = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), suzanne, L"assets/models/monkey_triangulated.obj", true, false);
 	suzanne->SetWorldMatrix(XMMatrixTranslation(4.0f, 0.0f, 0.0f));
-	suzanne->GetMaterials()[0].ambientMtl = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f);
+	suzanne->GetMaterials()[0].ambientMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
 	suzanne->GetMaterials()[0].diffuseMtl = XMFLOAT4(0.0f, 0.0f, 0.5f, 1.0f);
 	suzanne->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
-	suzanne->GetMaterials()[0].hasTexture = true;
+	suzanne->GetMaterials()[0].hasTexture = false;
 	suzanne->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(suzanne);
 
 	sphere = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), sphere, L"assets/models/sphere.obj", true, false);
-	sphere->SetWorldMatrix(XMMatrixScaling(5.0f, 5.0f, 5.0f) * XMMatrixTranslation(20.0f, 40.0f, 20.0f));
-	sphere->GetMaterials()[0].ambientMtl = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.0f);
+	sphere->SetWorldMatrix(XMMatrixScaling(5.0f, 5.0f, 5.0f) * XMMatrixTranslation(-20.0f, 40.0f, 20.0f));
+	sphere->GetMaterials()[0].ambientMtl = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	sphere->GetMaterials()[0].diffuseMtl = XMFLOAT4(0.0f, 0.5f, 0.0f, 1.0f);
 	sphere->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
 	sphere->GetMaterials()[0].hasTexture = true;
@@ -131,16 +125,11 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	reader.LoadObj(dxHandler->GetDevice(), triforce, L"assets/models/triforce.obj", true, false);
 	// WORLD MATRIX IS SET IN UPDATE DUE TO ROTATION
 	triforce->GetMaterials()[0].ambientMtl = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	triforce->GetMaterials()[0].diffuseMtl = XMFLOAT4(0.5f, 1.0f, 0.5f, 1.0f);
 	triforce->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
 	triforce->GetMaterials()[0].hasTexture = true;
 	triforce->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(triforce);
-
-	// Set model material
-	// modelMtl.ambientMtl = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-
-	// Initialize particle system.
-
 
 	// Create the texture shader object.
 	textureShader = new Shader;
@@ -315,6 +304,9 @@ void Graphics::Update(float dt)
 	keyboard->Acquire();
 	keyboard->GetDeviceState(sizeof(keyboardState), (LPVOID)&keyboardState);
 
+	// Update particles
+	// particles->Update(dt, dxHandler->GetDeviceContext());
+
 	/*if (keyboardState[DIK_I] & 0x80)
 		DisableImgui();
 
@@ -330,30 +322,6 @@ void Graphics::Update(float dt)
 	XMMATRIX rotTriforceRotation = XMMatrixRotationRollPitchYawFromVector(rotTriforceAxis);
 	XMMATRIX triforceTranslation = XMMatrixTranslation(0.0f, 5.0f, 0.0f);
 	triforce->SetWorldMatrix(rotTriforceRotation * triforceTranslation);
-
-
-	/* Update particles and do the billboarding */
-
-	XMFLOAT3 cameraPosition;
-	cameraPosition = camera->GetPosition();
-
-	XMFLOAT3 particlePosition;
-	particlePosition.x = 0.0f;
-	particlePosition.y = 30.0f;
-	particlePosition.z = -5.0f;
-
-	// Set an angle and rotation value for the particles for the billboarding
-	float particleAngle = atan2(particlePosition.x - cameraPosition.x, particlePosition.z - cameraPosition.z) * (180.0 / XM_PI);
-	float particleRotation = particleAngle * 0.0174532925f;
-
-	// Set matrix and rotations for the particles.
-	XMMATRIX worldParticles = XMMatrixIdentity();
-	XMMATRIX particlesRotationY = XMMatrixRotationY(particleRotation);
-	XMMATRIX particlesTranslation = XMMatrixTranslation(particlePosition.x, particlePosition.y, particlePosition.z);
-	worldParticles = particlesRotationY * particlesTranslation;
-	particles->SetWorldMatrix(worldParticles);
-
-	particles->Update(dt, dxHandler->GetDeviceContext());
 }
 
 bool Graphics::Render(float dt)
