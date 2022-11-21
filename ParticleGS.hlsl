@@ -15,18 +15,17 @@ struct GSInput // VSOutput
 {
     float4 position : SV_POSITION;
     float2 tex : TEXCOORD;
-    float3 color;
+    // float3 color : COLOR;
 };
 
 struct GSOutput // PSInput
 {
 	float4 position : SV_POSITION;
     float2 tex : TEXCOORD;
-    float3 color : COLOR;
 };
 
-[maxvertexcount(4)]
-void main(point GSOutput input[1], inout TriangleStream<GSOutput> output)
+[maxvertexcount(6)]
+void main(point GSInput input[1], inout TriangleStream<GSOutput> output)
 {
     GSOutput p1 = (GSOutput)0;
     
@@ -46,28 +45,24 @@ void main(point GSOutput input[1], inout TriangleStream<GSOutput> output)
     p1.position = input[0].position + rightVector * (quadLength) + upVector * (quadLength);
     p1.tex = float2(1.0f, 0.0f);
     p1.position = mul(p1.position, projection);
-    p1.color = input[0].color;
     output.Append(p1);
 
     // TOP RIGHT
     p1.position = input[0].position + rightVector * (quadLength) + upVector * (-quadLength);
     p1.tex = float2(1.0f, 1.0f);
     p1.position = mul(p1.position, projection);
-    p1.color = input[0].color;
     output.Append(p1);
 
     // BOTTOM LEFT (ORIGO)
     p1.position = input[0].position + rightVector * (-quadLength) + upVector * (quadLength);
     p1.tex = float2(0.0f, 0.0f);
     p1.position = mul(p1.position, projection);
-    p1.color = input[0].color;
     output.Append(p1);
 
     // TOP LEFT
     p1.position = input[0].position + rightVector * (-quadLength) + upVector * (-quadLength);
     p1.tex = float2(0.0f, 1.0f);
     p1.position = mul(p1.position, projection);
-    p1.color = input[0].color;
     output.Append(p1);
     
     

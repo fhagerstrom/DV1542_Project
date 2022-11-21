@@ -25,7 +25,7 @@ void Shader::Shutdown()
 bool Shader::Render(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light, ID3D11SamplerState* sampler)
 {
 	bool result;
-	result = SetCBuffers(context, model, view, projection, camera, light);
+	result = SetObjectCBuffers(context, model, view, projection, camera, light);
 	if (!result) 
 		return false;
 
@@ -34,10 +34,10 @@ bool Shader::Render(ID3D11DeviceContext* context, Model* model, XMMATRIX view, X
 	return true;
 }
 
-bool Shader::RenderParticles(ID3D11DeviceContext* context, int indexCount, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* textureSrv, ID3D11SamplerState* sampler)
+bool Shader::RenderParticles(ID3D11DeviceContext* context, ParticleSystem* particles, int maxParticles, XMMATRIX projection, float quadLength)
 {
 	bool result;
-	result = SetConstantParticleCBuffers(context, world, view, projection, textureSrv);
+	result = SetConstantParticleCBuffers(context, particles, maxParticles, projection, quadLength);
 	if (!result)
 	{
 		MessageBox(NULL, L"Couldn't set particle constant buffers!", L"SHADER ERROR", MB_OK);
@@ -313,7 +313,7 @@ bool Shader::InitializeParticleShaders(ID3D11Device* device, HWND hwnd, LPCWSTR 
 		return false;
 	}
 
-	// SAMPLER STATE FOR PARTICLES - LEAVE COMMENTED FOR NOW TILL STUFF WORKS.
+	// SAMPLER STATE FOR PARTICLES
 	
 	D3D11_SAMPLER_DESC colorMapDesc;
 	ZeroMemory(&colorMapDesc, sizeof(colorMapDesc));
@@ -325,7 +325,7 @@ bool Shader::InitializeParticleShaders(ID3D11Device* device, HWND hwnd, LPCWSTR 
 	colorMapDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	colorMapDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-	hr = device->CreateSamplerState(&colorMapDesc, &particleSampler);
+	hr = device->CreateSamplerState(&colorMapDesc, &samplerState);
 
 	if (FAILED(hr)) 
 	{
@@ -661,7 +661,7 @@ void Shader::BindLightPass(ID3D11DeviceContext* context)
 	context->CSSetUnorderedAccessViews(0, 1, &nullUAV, NULL);
 }
 
-bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XMMATRIX view, DirectX::XMMATRIX projection, Camera* camera, Light* light)
+bool Shader::SetObjectCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XMMATRIX view, DirectX::XMMATRIX projection, Camera* camera, Light* light)
 {
 	// OBJECT / MATRIX BUFFERS
 	XMMATRIX worldViewProjection;
@@ -721,50 +721,70 @@ bool Shader::SetCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XM
 	return true;
 }
 
-bool Shader::SetConstantParticleCBuffers(ID3D11DeviceContext* context, Particles particles, int maxParticles, XMMATRIX projection, float quadLength)
+bool Shader::SetConstantParticleCBuffers(ID3D11DeviceContext* context, ParticleSystem* particleSystem, int maxParticles, XMMATRIX projection, float quadLength)
 {
-	particleBuffer = particles.GetParticleBuffer();
+	particleBuffer = particleSystem->GetParticleBuffer();
+
 	// COMPUTE SHADER BUFFER
 	constantParticleCb.maxParticles = maxParticles;
 
-	particleBuffer = particles.GetParticleBuffer();
-
 	context->UpdateSubresource(particleBuffer, 0, NULL, &constantParticleCb, 0, 0);
-	context->CSSetConstantBuffers(0, 1, &particleBuffer);
+	context->CSSetConstantBuffers(0, 1, &constantVariablesBuffer);
 
 	// GEOMETRY SHADER BUFFER
 	constantResourceCb.quadLength = quadLength;
 	constantResourceCb.projection = projection;
 
 	context->UpdateSubresource(particleBuffer, 0, NULL, &constantResourceCb, 0, 0);
-	context->GSSetConstantBuffers(1, 1, &particleBuffer);
+	context->GSSetConstantBuffers(1, 1, &constantResourceBuffer);
 
 	return true;
 }
 
-void Shader::UpdateParticleShaders(ID3D11DeviceContext* context, Particles particles, XMMATRIX view, XMFLOAT3& cameraPosition, float deltaTime)
+void Shader::UpdateParticleShaders(ID3D11DeviceContext* context, ParticleSystem* particleSystem, XMMATRIX view, XMFLOAT3 cameraPosition, float deltaTime)
 {
 	// COMPUTE SHADER BUFFER
 	dynamicParticleCb.deltaTime = deltaTime;
+
+	D3D11_MAPPED_SUBRESOURCE mapResource;
+	ZeroMemory(&mapResource, sizeof(mapResource));
+
+	context->Map(dynamicVariablesBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapResource);
+
+	CBDynamicParticles* ptr = static_cast<CBDynamicParticles*>(mapResource.pData);
+
+	memcpy(ptr, &dynamicParticleCb, sizeof(CBDynamicParticles));
+
+	context->Unmap(dynamicVariablesBuffer, 0);
 
 	// GEOMETRY SHADER BUFFER
 	viewMatrixCb.view = view;
 	viewMatrixCb.cameraPosition = cameraPosition;
 	viewMatrixCb.time = deltaTime;
 
-	particleUav = particles.GetUav();
-	particleBuffer = particles.GetParticleBuffer();
+	ZeroMemory(&mapResource, sizeof(mapResource));
 
-	context->UpdateSubresource(particleBuffer, 0, NULL, &viewMatrixCb, 0, 0);
-	context->GSSetConstantBuffers(0, 1, &particleBuffer);
+	context->Map(viewBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapResource);
+
+	CBView* ptrVMB = static_cast<CBView*>(mapResource.pData);
+	memcpy(ptrVMB, &viewMatrixCb, sizeof(CBView));
+
+	context->Unmap(viewBuffer, 0);
+
+	particleSrv = particleSystem->GetSrv();
+	particleUav = particleSystem->GetUav();
+	particleBuffer = particleSystem->GetParticleBuffer();
+
+	context->GSSetConstantBuffers(0, 1, &viewBuffer);
 
 	context->CSSetShader(particleCS, NULL, 0);
-	context->CSSetConstantBuffers(1, 1, &particleBuffer);
+	context->CSSetConstantBuffers(1, 1, &dynamicVariablesBuffer);
 	context->CSSetUnorderedAccessViews(0, 1, &particleUav, NULL);
 	context->Dispatch(32, 1, 1); // 32 threads on x ID
 
 	ID3D11UnorderedAccessView* nullUav = NULL;
 	context->CSSetUnorderedAccessViews(0, 1, &nullUav, NULL);
+	context->VSSetShaderResources(0, 1, &particleSrv);
 
 }
 
@@ -781,12 +801,6 @@ void Shader::RenderShader(ID3D11DeviceContext* deviceContext, int indexCount, ID
 	deviceContext->VSSetShader(deferredVS, NULL, 0);
 	deviceContext->PSSetShader(deferredPS, NULL, 0);
 	// Compute shader is set in separate function
-
-	// Set particle shaders
-	//deviceContext->VSSetShader(particleVS, NULL, 0);
-	//deviceContext->PSSetShader(particlePS, NULL, 0);
-	//// Compute shader set in separate function here as well
-	//deviceContext->GSSetShader(particleGS, NULL, 0);
 
 	// Set the sampler state in the pixel shader.
 	deviceContext->PSSetSamplers(0, 1, &sampler);
@@ -805,6 +819,11 @@ void Shader::RenderShader(ID3D11DeviceContext* deviceContext, int indexCount, ID
 	return;
 }
 
-void Shader::RenderParticleShaders(ID3D11DeviceContext* context, int maxParticles)
+void Shader::RenderParticleShaders(ID3D11DeviceContext* context)
 {
+	context->VSSetShader(particleVS, NULL, 0);
+	context->GSSetShader(particleGS, NULL, 0);
+	context->PSSetShader(particlePS, NULL, 0);
+	// context->PSSetShaderResources(0, 1, &color);
+	context->PSSetSamplers(0, 1, &samplerState);
 }

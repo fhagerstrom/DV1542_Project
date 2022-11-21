@@ -8,7 +8,7 @@
 #include "Light.h"
 #include "Camera.h"
 #include "DeferredRender.h"
-#include "Particles.h"
+#include "ParticleSystem.h"
 
 using namespace DirectX;
 
@@ -66,9 +66,17 @@ struct CBDeferredLight
 };
 
 ALIGN16
+struct CBCamera
+{
+	XMFLOAT3 cameraPos;
+	float padding;
+};
+
+// PARTICLES - COMPUTE SHADER
+ALIGN16
 struct CBConstantParticles
 {
-	unsigned int maxParticles;
+	UINT maxParticles;
 };
 
 ALIGN16
@@ -78,15 +86,7 @@ struct CBDynamicParticles
 	XMFLOAT3 padding;
 };
 
-
-ALIGN16
-struct CBCamera
-{
-	XMFLOAT3 cameraPos;
-	float padding;
-};
-
-// GEOMETRY SHADER - PARTICLES
+// PARTICLES - GEOMETRY SHADERS
 ALIGN16
 struct CBView
 {
@@ -109,10 +109,10 @@ private:
 
 	void ShutdownShader();
 
-	bool SetCBuffers(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light);
-	bool SetConstantParticleCBuffers(ID3D11DeviceContext* context, Particles particles, int maxParticles, XMMATRIX projection, float quadLength);
+	bool SetObjectCBuffers(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light);
+	bool SetConstantParticleCBuffers(ID3D11DeviceContext* context, ParticleSystem* particleSystem, int maxParticles, XMMATRIX projection, float quadLength);
 	void RenderShader(ID3D11DeviceContext* context, int indexCount, ID3D11SamplerState* sampler);
-	void RenderParticleShaders(ID3D11DeviceContext* context, int maxParticles);
+	void RenderParticleShaders(ID3D11DeviceContext* context);
 
 	// REGULAR FORWARD SHADERS
 	ID3D11VertexShader* vertexShader;
@@ -131,7 +131,6 @@ private:
 	
 	// INPUT LAYOUT(S)
 	ID3D11InputLayout* defaultLayout;
-	// ID3D11InputLayout* particleLayout;
 
 	DxHandler* dxHandler;
 	DeferredRender* deferredPtr;
@@ -157,7 +156,7 @@ private:
 	CBMaterial materialCb;
 	CBDeferredLight deferredLightCb;
 
-	// Compute shader constant buffers for particles.
+	// Compute shader / Geometry shader constant buffers for particles.
 	CBConstantParticles constantParticleCb;
 	CBDynamicParticles dynamicParticleCb;
 	CBView viewMatrixCb;
@@ -211,6 +210,6 @@ public:
 
 	void Shutdown();
 	bool Render(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light, ID3D11SamplerState* sampler);
-	bool RenderParticles(ID3D11DeviceContext* context, XMMATRIX view, XMMATRIX projection, ID3D11ShaderResourceView* textureSrv, ID3D11SamplerState* sampler);
-	void UpdateParticleShaders(ID3D11DeviceContext* context, Particles particles, XMMATRIX view, XMFLOAT3& cameraPosition, float deltaTime);
+	bool RenderParticles(ID3D11DeviceContext* context, ParticleSystem* particleSystem, int maxParticles, XMMATRIX projection, float quadLength);
+	void UpdateParticleShaders(ID3D11DeviceContext* context, ParticleSystem* particleSystem, XMMATRIX view, XMFLOAT3 cameraPosition, float deltaTime);
 };

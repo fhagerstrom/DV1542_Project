@@ -1,20 +1,24 @@
-#include "Particles.h"
+#include "ParticleSystem.h"
 
-Particles::Particles()
+ParticleSystem::ParticleSystem()
 {
 }
 
-Particles::~Particles()
+ParticleSystem::~ParticleSystem()
 {
 }
 
-bool Particles::Initialize(ID3D11Device* device, ID3D11DeviceContext* context, int maxParticles)
+bool ParticleSystem::Initialize(ID3D11Device* device, ID3D11DeviceContext* context, Particle* particles, int maxParticles)
 {
 	bool result;
 
+	result = InitializeBuffers(device, particles, maxParticles);
+	if (!result)
+	{
+		return false;
+	}
 
-
-	result = InitializeBuffers(device, maxParticles);
+	result = LoadParticles(maxParticles);
 	if (!result)
 	{
 		return false;
@@ -23,33 +27,18 @@ bool Particles::Initialize(ID3D11Device* device, ID3D11DeviceContext* context, i
 	return true;
 }
 
-bool Particles::Update(float deltaTime)
+bool ParticleSystem::Update(float deltaTime)
 {
 	bool result;
 
-
-
-
-	//// Call UpdateBuffers
-	//result = UpdateBuffers(context);
-	//if (!result)
-	//{
-	//	return false;
-	//}
+	// UPDATE FUNCTION IS DONE IN SHADER HANDLER INSTEAD DUE TO CS 
 
 
 	return true;
 }
 
-void Particles::Render(ID3D11DeviceContext* context, int maxParticles)
+void ParticleSystem::Render(ID3D11DeviceContext* context, int maxParticles)
 {
-	unsigned int stride;
-	unsigned int offset;
-
-	// Set vertex buffer stride and offset.
-	/*stride = sizeof(Vertex);
-	offset = 0;*/
-
 	// Set a nulled input layout for particles since we perform vertex pulling instead of using vertex / index buffers.
 	context->IASetInputLayout(NULL);
 
@@ -59,12 +48,12 @@ void Particles::Render(ID3D11DeviceContext* context, int maxParticles)
 
 }
 
-void Particles::Shutdown()
+void ParticleSystem::Shutdown()
 {
 	delete camera;
 }
 
-bool Particles::InitializeBuffers(ID3D11Device* device, int maxParticles)
+bool ParticleSystem::InitializeBuffers(ID3D11Device* device, Particle* particles, int maxParticles)
 {
 	HRESULT hr;
 
@@ -145,7 +134,7 @@ bool Particles::InitializeBuffers(ID3D11Device* device, int maxParticles)
 	return true;
 }
 
-//bool Particles::UpdateBuffers(ID3D11DeviceContext* context)
+//bool ParticleSystem::UpdateBuffers(ID3D11DeviceContext* context)
 //{
 //
 //	// DO THIS IN SHADER HANDLER INSTEAD
@@ -182,7 +171,7 @@ bool Particles::InitializeBuffers(ID3D11Device* device, int maxParticles)
 //	return true;
 //}
 
-bool Particles::LoadParticles()
+bool ParticleSystem::LoadParticles(int maxParticles)
 {
 	Particle* particles = new Particle[maxParticles];
 	float rndX, rndY, rndZ;
@@ -201,7 +190,7 @@ bool Particles::LoadParticles()
 	return true;
 }
 
-//void Particles::CreateParticle(float frameTime)
+//void ParticleSystem::CreateParticle(float frameTime)
 //{
 //	// Increment the frame time.
 //	accumulatedTime += frameTime;
@@ -217,7 +206,7 @@ bool Particles::LoadParticles()
 //	}
 //}
 
-bool Particles::LoadTexture(ID3D11Device* device, LPCWSTR textureFile)
+bool ParticleSystem::LoadTexture(ID3D11Device* device, LPCWSTR textureFile)
 {
 	bool result;
 

@@ -15,6 +15,9 @@ Graphics::Graphics(Input* input)
 	textureShader = 0;
 	deferredShader = 0;
 	light = 0;
+
+	maxParticles = 500;
+	quadLength = 50;
 }
 
 Graphics::~Graphics()
@@ -184,29 +187,27 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	// Create the input layout for particles
-	/*result = particleShader->CreateParticleInputLayout(dxHandler->GetDevice());
-	if (!result)
+	// Create particle system object.
+	particleSystem = new ParticleSystem;
+	if (!particleSystem)
 	{
-		MessageBox(hwnd, L"Couldn't create particle input layout!", L"INPUT LAYOUT ERROR", MB_OK);
 		return false;
-	}*/
+	}
 
-	// Create particle object.
-	particles = new Particles;
+	// Create particle object
+	particles = new Particle;
 	if (!particles)
 	{
 		return false;
 	}
 
 	// Initialize particle system.
-	/*result = particles->Initialize(dxHandler->GetDevice(), dxHandler->GetDeviceContext());
+	result = particleSystem->Initialize(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), particles, maxParticles);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Couldn't initialize particle system!", L"PARTICLE ERROR", MB_OK);
 		return false;
-	}*/
-
+	}
 
 	// ImGui setup.
 	IMGUI_CHECKVERSION();
@@ -304,9 +305,6 @@ void Graphics::Update(float dt)
 	keyboard->Acquire();
 	keyboard->GetDeviceState(sizeof(keyboardState), (LPVOID)&keyboardState);
 
-	// Update particles
-	// particles->Update(dt, dxHandler->GetDeviceContext());
-
 	/*if (keyboardState[DIK_I] & 0x80)
 		DisableImgui();
 
@@ -364,10 +362,13 @@ bool Graphics::Render(float dt)
 			return false;
 	}
 
-	/*particles->Render(dxHandler->GetDeviceContext());
-	result = particleShader->RenderParticles(dxHandler->GetDeviceContext(), particles->GetIndexCount(), particles->GetWorldMatrix(), view, projection, particles->GetTexture(), dxHandler->GetSampler());
+	// PARTICLES
+	/*particleSystem->Render(dxHandler->GetDeviceContext(), maxParticles);
+	result = particleShader->RenderParticles(dxHandler->GetDeviceContext(), particleSystem, maxParticles, projection, quadLength);
 	if (!result)
-		return false;*/
+		return false;
+
+	particleShader->UpdateParticleShaders(dxHandler->GetDeviceContext(), particleSystem, view, camera->GetPosition(), dt);*/
 
 	// Bind the second pass for the deferred shading
 	deferredShader->BindLightPass(dxHandler->GetDeviceContext());

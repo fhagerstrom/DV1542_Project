@@ -6,7 +6,7 @@
 #include "Shaders.h"
 #include "Light.h"
 #include "Timer.h"
-#include "Particles.h"
+#include "ParticleSystem.h"
 
 // IMGUI INCLUDES
 #include "assets/imgui/imgui.h"
@@ -46,7 +46,10 @@ private:
 	Model* sphere;
 	Model* triforce;
 
-	Particles* particles;
+	ParticleSystem* particleSystem;
+	Particle* particles;
+	int maxParticles;
+	int quadLength;
 
 	// Material modelMtl;
 
