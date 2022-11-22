@@ -203,7 +203,6 @@ public:
 	bool IntializeDeferredShaders(ID3D11Device* device, DxHandler* dxHandler, HWND hwnd, LPCWSTR vsFileName, LPCWSTR psFileName, LPCWSTR csFileName, LPCSTR VSEntry, LPCSTR PSEntry, LPCSTR CSEntry);
 	bool InitializeParticleShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileName, LPCWSTR psFileName, LPCWSTR csFileName, LPCWSTR gsFileName, LPCSTR VSEntry, LPCSTR PSEntry, LPCSTR CSEntry, LPCSTR GSEntry);
 	bool CreateDefaultInputLayout(ID3D11Device* device);
-	// bool CreateEmptyParticleInputLayout(ID3D11Device* device); // Empty because we perform vertex pulling on shader side
 
 	void BindGeometryPass(ID3D11DeviceContext* context);
 	void BindLightPass(ID3D11DeviceContext* context);

@@ -611,27 +611,6 @@ bool Shader::CreateDefaultInputLayout(ID3D11Device* device)
 	return true;
 }
 
-//bool Shader::CreateEmptyParticleInputLayout(ID3D11Device* device)
-//{
-//	/* CREATE INPUT LAYOUT DESCRIPTION */
-//
-//	D3D11_INPUT_ELEMENT_DESC inputLayoutPos[] =
-//	{
-//		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,	0, D3D11_INPUT_PER_VERTEX_DATA, 0}
-//	};
-//
-//	hr = device->CreateInputLayout(inputLayoutPos, ARRAYSIZE(inputLayoutPos), vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &particleLayout);
-//	if (FAILED(hr))
-//	{
-//		MessageBox(NULL, L"Couldn't create input layout for particles!", L"SHADER ERROR", MB_OK);
-//		return false;
-//	}
-//
-//	vertexShaderBlob->Release();
-//
-//	return true;
-//}
-
 void Shader::BindGeometryPass(ID3D11DeviceContext* context)
 {
 	deferredPtr->SetRenderTargets(context);
@@ -729,7 +708,7 @@ bool Shader::SetConstantParticleCBuffers(ID3D11DeviceContext* context, ParticleS
 	constantParticleCb.maxParticles = maxParticles;
 
 	context->UpdateSubresource(particleBuffer, 0, NULL, &constantParticleCb, 0, 0);
-	context->CSSetConstantBuffers(0, 1, &constantVariablesBuffer);
+	context->CSSetConstantBuffers(2, 1, &constantVariablesBuffer);
 
 	// GEOMETRY SHADER BUFFER
 	constantResourceCb.quadLength = quadLength;
@@ -778,45 +757,47 @@ void Shader::UpdateParticleShaders(ID3D11DeviceContext* context, ParticleSystem*
 	context->GSSetConstantBuffers(0, 1, &viewBuffer);
 
 	context->CSSetShader(particleCS, NULL, 0);
-	context->CSSetConstantBuffers(1, 1, &dynamicVariablesBuffer);
-	context->CSSetUnorderedAccessViews(0, 1, &particleUav, NULL);
+	context->CSSetConstantBuffers(3, 1, &dynamicVariablesBuffer);
+	context->CSSetUnorderedAccessViews(1, 1, &particleUav, NULL);
 	context->Dispatch(32, 1, 1); // 32 threads on x ID
 
 	ID3D11UnorderedAccessView* nullUav = NULL;
-	context->CSSetUnorderedAccessViews(0, 1, &nullUav, NULL);
+	ID3D11ShaderResourceView* nullSrv = NULL;
+	context->CSSetUnorderedAccessViews(1, 1, &nullUav, NULL);
 	context->VSSetShaderResources(0, 1, &particleSrv);
-
+	context->VSSetShaderResources(0, 1, &nullSrv);
 }
 
-void Shader::RenderShader(ID3D11DeviceContext* deviceContext, int indexCount, ID3D11SamplerState* sampler)
+void Shader::RenderShader(ID3D11DeviceContext* context, int indexCount, ID3D11SamplerState* sampler)
 {
 	// Set the vertex input layout.
-	deviceContext->IASetInputLayout(defaultLayout);
+	context->IASetInputLayout(defaultLayout);
 
 	// Set the vertex and pixel shaders that will be used to render all objects and the light.
-	/*deviceContext->VSSetShader(vertexShader, NULL, 0);
-	deviceContext->PSSetShader(pixelShader, NULL, 0);*/
+	/*context->VSSetShader(vertexShader, NULL, 0);
+	context->PSSetShader(pixelShader, NULL, 0);*/
 
 	// Set deferred shaders
-	deviceContext->VSSetShader(deferredVS, NULL, 0);
-	deviceContext->PSSetShader(deferredPS, NULL, 0);
+	context->VSSetShader(deferredVS, NULL, 0);
+	context->PSSetShader(deferredPS, NULL, 0);
 	// Compute shader is set in separate function
+	context->GSSetShader(NULL, NULL, 0); // Set Geometry shader as NULL for later stage (e.g particle system)
+	context->DSSetShader(NULL, NULL, 0);
+	context->HSSetShader(NULL, NULL, 0);
 
 	// Set the sampler state in the pixel shader.
-	deviceContext->PSSetSamplers(0, 1, &sampler);
+	context->PSSetSamplers(0, 1, &sampler);
 
 	// Render the objects.
-	deviceContext->DrawIndexed(indexCount, 0, 0);
+	context->DrawIndexed(indexCount, 0, 0);
 
 	// Set everything to null after draw call teehee
-	deviceContext->VSSetShader(nullVs, NULL, 0);
-	deviceContext->PSSetShader(nullPs, NULL, 0);
+	context->VSSetShader(nullVs, NULL, 0);
+	context->PSSetShader(nullPs, NULL, 0);
 
-	deviceContext->VSSetConstantBuffers(0, 1, &nullBuffer);
-	deviceContext->PSSetConstantBuffers(0, 1, &nullBuffer);
-	deviceContext->PSSetShaderResources(0, BUFFER_COUNT, nullSRV);
-
-	return;
+	context->VSSetConstantBuffers(0, 1, &nullBuffer);
+	context->PSSetConstantBuffers(0, 1, &nullBuffer);
+	context->PSSetShaderResources(0, BUFFER_COUNT, nullSRV);
 }
 
 void Shader::RenderParticleShaders(ID3D11DeviceContext* context)

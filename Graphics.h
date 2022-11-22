@@ -38,9 +38,8 @@ private:
 	DxHandler* dxHandler;
 	Camera* camera;
 
-	Model* testCube;
-	Model* testQuad;
 	Model* cityTerrain;
+	Model* cornellBox;
 	Model* torusRing;
 	Model* suzanne;
 	Model* sphere;

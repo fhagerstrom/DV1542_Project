@@ -1,9 +1,9 @@
-cbuffer CBConstantParticles : register(b0)
+cbuffer CBConstantParticles : register(b2)
 {
     uint maxParticles;
 };
 
-cbuffer CBDynamicParticles : register(b1)
+cbuffer CBDynamicParticles : register(b3)
 {
     float deltaTime;
     float3 padding;

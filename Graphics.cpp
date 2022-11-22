@@ -10,8 +10,6 @@ Graphics::Graphics(Input* input)
 
 	dxHandler = 0;
 	camera = 0;
-	testCube = 0;
-	testQuad = 0;
 	textureShader = 0;
 	deferredShader = 0;
 	light = 0;
@@ -56,10 +54,6 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	camera->SetPosition(0.0f, 10.0f, -50.0f);
 	camera->GetInputs(input);
 
-	testCube = new Model;
-	if (!testCube)
-		return false;
-
 	// Create light object.
 	light = new Light;
 	if (!light)
@@ -93,6 +87,14 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	cityTerrain->GetMaterials()[0].hasTexture = true;
 	cityTerrain->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(cityTerrain);
+
+	cornellBox = new Model;
+	reader.LoadObj(dxHandler->GetDevice(), cornellBox, L"assets/models/cornellBox.obj", true, false);
+	cornellBox->SetWorldMatrix(XMMatrixTranslation(0.0f, 50.0f, 0.0f));
+	cornellBox->GetMaterials()[0].ambientMtl = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	cornellBox->GetMaterials()[0].hasTexture = false;
+	cornellBox->GetMaterials()[0].hasReflection = false;
+	allModels.push_back(cornellBox);
 
 	torusRing = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), torusRing, L"assets/models/torusDonut.obj", true, false);
@@ -245,22 +247,6 @@ void Graphics::Shutdown()
 		light = 0;
 	}
 
-	// Release the testCube object.
-	if (testCube)
-	{
-		testCube->Shutdown();
-		delete testCube;
-		testCube = 0;
-	}
-
-	// Release the testCube object.
-	if (testQuad)
-	{
-		testQuad->Shutdown();
-		delete testQuad;
-		testQuad = 0;
-	}
-
 	// Release the camera object.
 	if (camera)
 	{
@@ -363,12 +349,13 @@ bool Graphics::Render(float dt)
 	}
 
 	// PARTICLES
-	/*particleSystem->Render(dxHandler->GetDeviceContext(), maxParticles);
 	result = particleShader->RenderParticles(dxHandler->GetDeviceContext(), particleSystem, maxParticles, projection, quadLength);
 	if (!result)
 		return false;
 
-	particleShader->UpdateParticleShaders(dxHandler->GetDeviceContext(), particleSystem, view, camera->GetPosition(), dt);*/
+	particleSystem->Render(dxHandler->GetDeviceContext(), maxParticles);
+
+	particleShader->UpdateParticleShaders(dxHandler->GetDeviceContext(), particleSystem, view, camera->GetPosition(), dt);
 
 	// Bind the second pass for the deferred shading
 	deferredShader->BindLightPass(dxHandler->GetDeviceContext());
