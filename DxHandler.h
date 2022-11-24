@@ -18,11 +18,13 @@ public:
 
 	/* GET FUNCTIONS */
 	ID3D11Device* GetDevice() { return devicePtr; }
-	ID3D11DeviceContext* GetDeviceContext() { return contextPtr; }
-	IDXGISwapChain* GetSwapChain() { return swapChain; }
-	ID3D11Texture2D* GetBackBuffer() { return backBufferPtr; }
-
+	ID3D11DeviceContext* GetDeviceContext() { return this->contextPtr; }
+	IDXGISwapChain* GetSwapChain() { return this->swapChain; }
+	ID3D11Texture2D* GetBackBuffer() { return this->backBufferPtr; }
 	ID3D11SamplerState* GetSampler() { return this->sampler; }
+	ID3D11BlendState* GetBlendState() { return this->blendState; }
+	ID3D11RenderTargetView* GetRtv() { return this->renderTargetView; }
+	ID3D11DepthStencilView* GetDsv() { return this->depthStencilView; }
 
 	void GetProjectionMatrix(XMMATRIX& projectionMatrix) { projectionMatrix = this->projectionMatrix; }
 	void GetWorldMatrix(XMMATRIX& worldMatrix) { worldMatrix = this->worldMatrix; }
@@ -32,6 +34,7 @@ private:
 	ID3D11Device* devicePtr;
 	ID3D11DeviceContext* contextPtr;
 	ID3D11RenderTargetView* renderTargetView;
+	ID3D11BlendState* blendState;
 	ID3D11Texture2D* depthStencilBuffer;
 	ID3D11Texture2D* backBufferPtr;
 	ID3D11DepthStencilState* depthStencilState;

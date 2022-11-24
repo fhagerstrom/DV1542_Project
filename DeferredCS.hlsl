@@ -17,8 +17,11 @@ cbuffer DeferredLighting : register(b0)
     float3 lightPosition;
     float lightRange;
     
-    float3 cameraPosition;
+    float3 attenuation;
     float padding;
+    
+    float3 cameraPosition;
+    float padding2;
     // int nrOfLights;
     
     matrix projection;
@@ -53,6 +56,10 @@ void main( uint3 DTid : SV_DispatchThreadID )
     // {
     float3 lightVector = normalize(lightPosition.xyz - pos.xyz);
     float viewDirection = normalize(cameraPosition.xyz - pos.xyz);
+    float distance = length(lightVector);
+    
+    // Normalize lightvector
+    lightVector /= distance;
     
     // SHADOWMAPPING
     float4 shadowCam = pos;
@@ -66,6 +73,9 @@ void main( uint3 DTid : SV_DispatchThreadID )
     // Calculate lighting
     // AMBIENT
     ambientLighting = ambient * ambientLight /** lightColor*/;
+    
+    //if (distance > lightRange)
+    //    backBuffer[DTid.xy] = 0;
     
     // Set values for shadow mapping and necessary checks
     float bias = 0.00001f;
@@ -110,6 +120,13 @@ void main( uint3 DTid : SV_DispatchThreadID )
     float3 lightReflection = reflect(-lightVector, normal.xyz);
     float specularShade = pow(max(dot(lightReflection, viewDirection), 0.0f), specular.w); // w = shininess
     specularLighting = specular * specularShade * specularLight /** lightColor*/;
+    
+    // Calc attenuation factor
+    float attenuationFactor = 1.0f / attenuation[0] + attenuation[1] * distance + attenuation[2] * distance * distance;
+    
+    // Multiply attenuation to diffuse and specular
+    diffuseLighting *= attenuationFactor;
+    specularLighting *= attenuationFactor;
             
     diffuseLighting = saturate(diffuseLighting);
     specularLighting = saturate(specularLighting);

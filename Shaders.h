@@ -57,8 +57,11 @@ struct CBDeferredLight
 	XMFLOAT3 lightPosition;
 	float lightRange;
 
+	XMFLOAT3 attenuation;
+	float padding1;
+
 	XMFLOAT3 cameraPosition;
-	float padding;
+	float padding2;
 	// int nrOfLights;
 
 	XMMATRIX projection;
@@ -112,7 +115,6 @@ private:
 	bool SetObjectCBuffers(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light);
 	bool SetConstantParticleCBuffers(ID3D11DeviceContext* context, ParticleSystem* particleSystem, int maxParticles, XMMATRIX projection, float quadLength);
 	void RenderShader(ID3D11DeviceContext* context, int indexCount, ID3D11SamplerState* sampler);
-	void RenderParticleShaders(ID3D11DeviceContext* context);
 
 	// REGULAR FORWARD SHADERS
 	ID3D11VertexShader* vertexShader;
@@ -164,6 +166,7 @@ private:
 
 	// Textures / Resources
 	ID3D11SamplerState* samplerState;
+	ID3D11SamplerState* particleSamplerState;
 	ID3D11ShaderResourceView* textureSRV;
 	ID3D11ShaderResourceView* particleSrv;
 	ID3D11UnorderedAccessView* particleUav;
@@ -186,12 +189,14 @@ private:
 	ID3D11ShaderResourceView* shaderResourceViewArray[BUFFER_COUNT];
 
 	// Declare null pointers for clearing shaders, CBuffers, SRVs and RTVs
-	ID3D11VertexShader* nullVs = NULL;
-	ID3D11PixelShader* nullPs = NULL;
+	ID3D11VertexShader* nullVS = NULL;
+	ID3D11PixelShader* nullPS = NULL;
 	ID3D11Buffer* nullBuffer = NULL;
-	ID3D11UnorderedAccessView* nullUAV = NULL;
-	ID3D11RenderTargetView* nullRTV[BUFFER_COUNT] = { NULL };
-	ID3D11ShaderResourceView* nullSRV[BUFFER_COUNT] = { NULL };
+	ID3D11RenderTargetView* nullSingleRtv = NULL;
+	ID3D11ShaderResourceView* nullSingleSrv = NULL;
+	ID3D11UnorderedAccessView* nullUav = NULL;
+	ID3D11RenderTargetView* nullRtvArray[BUFFER_COUNT] = { NULL };
+	ID3D11ShaderResourceView* nullSrvArray[BUFFER_COUNT] = { NULL };
 
 	D3D11_SAMPLER_DESC samplerDesc;
 
@@ -210,5 +215,7 @@ public:
 	void Shutdown();
 	bool Render(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light, ID3D11SamplerState* sampler);
 	bool RenderParticles(ID3D11DeviceContext* context, ParticleSystem* particleSystem, int maxParticles, XMMATRIX projection, float quadLength);
-	void UpdateParticleShaders(ID3D11DeviceContext* context, ParticleSystem* particleSystem, XMMATRIX view, XMFLOAT3 cameraPosition, float deltaTime);
+	bool SetParticleShaders(ID3D11DeviceContext* context, ParticleSystem* particleSystem);
+	void UpdateParticleCBuffers(ID3D11DeviceContext* context, ParticleSystem* particleSystem, XMMATRIX view, XMFLOAT3 cameraPosition, float deltaTime);
+	void UpdateParticleCompute(ID3D11DeviceContext* context, ParticleSystem* particleSystem);
 };

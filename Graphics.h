@@ -36,7 +36,11 @@ private:
 	bool Render(float dt);
 
 	DxHandler* dxHandler;
+	
 	Camera* camera;
+	Light* light;
+	Light* light1;
+	int nrOfLights;
 
 	Model* cityTerrain;
 	Model* cornellBox;
@@ -44,6 +48,7 @@ private:
 	Model* suzanne;
 	Model* sphere;
 	Model* triforce;
+	Model* n64Logo;
 
 	ParticleSystem* particleSystem;
 	Particle* particles;
@@ -55,10 +60,6 @@ private:
 	Shader* textureShader;
 	Shader* deferredShader;
 	Shader* particleShader;
-
-	Light* light;
-	Light* light1;
-	int nrOfLights;
 
 	ObjReader reader;
 
@@ -83,4 +84,5 @@ private:
 
 	// Rotation related variables for models that will rotate.
 	float rotTriforceAngle = 0.0f;
+	float rotN64Angle = 0.0f;
 };

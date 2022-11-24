@@ -8,7 +8,7 @@ ParticleSystem::~ParticleSystem()
 {
 }
 
-bool ParticleSystem::Initialize(ID3D11Device* device, ID3D11DeviceContext* context, Particle* particles, int maxParticles)
+bool ParticleSystem::Initialize(ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR textureFile, Particle* particles, int maxParticles)
 {
 	bool result;
 
@@ -19,6 +19,12 @@ bool ParticleSystem::Initialize(ID3D11Device* device, ID3D11DeviceContext* conte
 	}
 
 	result = LoadParticles(maxParticles);
+	if (!result)
+	{
+		return false;
+	}
+
+	result = LoadTexture(device, textureFile);
 	if (!result)
 	{
 		return false;
@@ -45,7 +51,6 @@ void ParticleSystem::Render(ID3D11DeviceContext* context, int maxParticles)
 	// Set the type of primitive that should be rendered for particles.
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 	context->Draw(maxParticles, 0);
-
 }
 
 void ParticleSystem::Shutdown()
@@ -56,29 +61,6 @@ void ParticleSystem::Shutdown()
 bool ParticleSystem::InitializeBuffers(ID3D11Device* device, Particle* particles, int maxParticles)
 {
 	HRESULT hr;
-
-	/* OLD CODE, KEEP AS BACKUP */
-	//vertexCount = maxParticles * 6;
-	//indexCount = vertexCount;
-
-	//// Create the vertex array for the particles that will be rendered
-	//vertices = new Vertex[vertexCount];
-	//if (!vertices)
-	//	return false;
-
-	//// Create the index array.
-	//indices = new unsigned long[indexCount];
-	//if (!indices)
-	//	return false;
-
-	//for (int i = 0; i < indexCount; i++) 
-	//{
-	//	indices[i] = i;
-	//}
-
-	//// Release the index array since it is no longer needed.
-	//delete[] indices;
-	//indices = 0;
 
 	// Set up the description of the dynamic particle buffer.
 	D3D11_BUFFER_DESC particleBufferDesc;
@@ -104,7 +86,7 @@ bool ParticleSystem::InitializeBuffers(ID3D11Device* device, Particle* particles
 
 	// Setup an SRV for the particles
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-	srvDesc.Format = DXGI_FORMAT_UNKNOWN; // // Need to be UNKNOWN in case of structured buffer
+	srvDesc.Format = DXGI_FORMAT_UNKNOWN; // Need to be UNKNOWN in case of structured buffer
 	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
 	srvDesc.Buffer.FirstElement = 0;
 	srvDesc.Buffer.NumElements = maxParticles;
@@ -134,43 +116,6 @@ bool ParticleSystem::InitializeBuffers(ID3D11Device* device, Particle* particles
 	return true;
 }
 
-//bool ParticleSystem::UpdateBuffers(ID3D11DeviceContext* context)
-//{
-//
-//	// DO THIS IN SHADER HANDLER INSTEAD
-//	
-//	
-//	
-//	// HRESULT hr;
-//	// D3D11_MAPPED_SUBRESOURCE mappedResource;
-//	// ID3D11Resource* particleResource;
-//
-//	// particleUav->GetResource(&particleResource);
-//
-//	// context->CopyResource(vertexBuffer, particleResource);
-//	/*
-//		Resource is mapped for writing, the previous contents of the resource will be undefined.
-//		Map/Unmap is a common use with temporary buffers. - Dynamic usage of our vertexbuffer. (It is at least prefered)
-//	*/
-//
-//	// Lock the vertex buffer
-//	//hr = context->Map(vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);	// maybe D3D11_MAP_WRITE_NO_OVERWRITE
-//	//if (FAILED(hr))
-//	//{
-//	//	return false;
-//	//}
-//
-//	//// Get a pointer to the data in the vertex buffer
-//	//vertexPtr = (Vertex*)mappedResource.pData;
-//
-//	//// Copy the data into the vertex buffer
-//	//memcpy(vertexPtr, (void*)vertices, (sizeof(Vertex) * vertexCount));
-//
-//	//// Unlock the vertex buffer
-//	//context->Unmap(vertexBuffer, 0);
-//	return true;
-//}
-
 bool ParticleSystem::LoadParticles(int maxParticles)
 {
 	Particle* particles = new Particle[maxParticles];
@@ -179,7 +124,7 @@ bool ParticleSystem::LoadParticles(int maxParticles)
 	for (int i = 0; i < maxParticles; ++i) 
 	{
 		rndX = 0;
-		rndY = 50.0f;
+		rndY = 40.0f;
 		rndZ = 0.0f;
 		particles[i].currentPosition = XMFLOAT3(rndX, rndY, rndZ);
 		particles[i].oldPosition = XMFLOAT3(rndX, rndY, rndZ);
@@ -189,22 +134,6 @@ bool ParticleSystem::LoadParticles(int maxParticles)
 
 	return true;
 }
-
-//void ParticleSystem::CreateParticle(float frameTime)
-//{
-//	// Increment the frame time.
-//	accumulatedTime += frameTime;
-//
-//	// Set emit particle to false for now.
-//	bool emitParticle = false;
-//
-//	// Check if it is time to emit a new particle or not.
-//	if (accumulatedTime > 0.1f) 
-//	{
-//		accumulatedTime = 0.0f;
-//		emitParticle = true;
-//	}
-//}
 
 bool ParticleSystem::LoadTexture(ID3D11Device* device, LPCWSTR textureFile)
 {

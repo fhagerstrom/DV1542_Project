@@ -32,6 +32,7 @@ bool DxHandler::Initialize(int screenWidth, int screenHeight, HWND hwnd, float s
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
 	D3D11_RASTERIZER_DESC rasterDesc;
+	D3D11_BLEND_DESC blendDesc;
 	D3D11_VIEWPORT viewport;
 	float fieldOfView, screenAspect;
 
@@ -209,6 +210,21 @@ bool DxHandler::Initialize(int screenWidth, int screenHeight, HWND hwnd, float s
 	// Now set the rasterizer state.
 	contextPtr->RSSetState(rasterState);
 
+	ZeroMemory(&blendDesc, sizeof(blendDesc));
+
+	blendDesc.IndependentBlendEnable = false;
+	blendDesc.AlphaToCoverageEnable = true;
+	blendDesc.RenderTarget[0].BlendEnable = true;
+	blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	devicePtr->CreateBlendState(&blendDesc, &blendState);
+
 	// Setup the viewport for rendering.
 	viewport.Width = (float)screenWidth;
 	viewport.Height = (float)screenHeight;
@@ -221,7 +237,7 @@ bool DxHandler::Initialize(int screenWidth, int screenHeight, HWND hwnd, float s
 	contextPtr->RSSetViewports(1, &viewport);
 
 	// Setup the projection matrix.
-	fieldOfView = XM_PI / 4.0f;
+	fieldOfView = XM_PI / 3.0f; // 60 degrees
 	screenAspect = (float)screenWidth / (float)screenHeight;
 
 	// Create the projection matrix for 3D rendering.
@@ -318,13 +334,10 @@ void DxHandler::Shutdown()
 
 void DxHandler::BeginScene(float red, float green, float blue, float alpha)
 {
-	float color[4];
+	float color[4] = { red, green, blue, alpha };
+	float blendFactor[4] = { 1.25f, 1.25f, 1.25f, 0.0f };
 
-	// Setup the color to clear the buffer to.
-	color[0] = red;
-	color[1] = green;
-	color[2] = blue;
-	color[3] = alpha;
+	// contextPtr->OMSetBlendState(blendState, blendFactor, 0xFFFFFFFF);
 
 	// Clear the back buffer.
 	contextPtr->ClearRenderTargetView(renderTargetView, color);

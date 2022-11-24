@@ -67,7 +67,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	light->SetAmbientColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light->SetLightPosition(0.0f, 0.0f, -10.0f);
+	light->SetLightPosition(0.0f, 0.0f, 0.0f);
 	light->SetAttenuation(1.0f, 0.02f, 0.0f);
 	light->SetLightRange(500.0f);
 	lightVector.push_back(light);
@@ -90,7 +90,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	cornellBox = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), cornellBox, L"assets/models/cornellBox.obj", true, false);
-	cornellBox->SetWorldMatrix(XMMatrixTranslation(0.0f, 50.0f, 0.0f));
+	cornellBox->SetWorldMatrix(XMMatrixTranslation(0.0f, 30.0f, 0.0f));
 	cornellBox->GetMaterials()[0].ambientMtl = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	cornellBox->GetMaterials()[0].hasTexture = false;
 	cornellBox->GetMaterials()[0].hasReflection = false;
@@ -110,7 +110,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	reader.LoadObj(dxHandler->GetDevice(), suzanne, L"assets/models/monkey_triangulated.obj", true, false);
 	suzanne->SetWorldMatrix(XMMatrixTranslation(4.0f, 0.0f, 0.0f));
 	suzanne->GetMaterials()[0].ambientMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-	suzanne->GetMaterials()[0].diffuseMtl = XMFLOAT4(0.0f, 0.0f, 0.5f, 1.0f);
+	suzanne->GetMaterials()[0].diffuseMtl = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
 	suzanne->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
 	suzanne->GetMaterials()[0].hasTexture = false;
 	suzanne->GetMaterials()[0].hasReflection = false;
@@ -135,6 +135,16 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	triforce->GetMaterials()[0].hasTexture = true;
 	triforce->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(triforce);
+
+	n64Logo = new Model;
+	reader.LoadObj(dxHandler->GetDevice(), n64Logo, L"assets/models/n64Logo.obj", true, false);
+	// WORLD MATRIX IS SET IN UPDATE DUE TO ROTATION
+	n64Logo->GetMaterials()[0].ambientMtl = XMFLOAT4(0.5f, 0.75f, 0.5f, 1.0f);
+	n64Logo->GetMaterials()[0].diffuseMtl = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	n64Logo->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
+	n64Logo->GetMaterials()[0].hasTexture = false;
+	n64Logo->GetMaterials()[0].hasReflection = false;
+	allModels.push_back(n64Logo);
 
 	// Create the texture shader object.
 	textureShader = new Shader;
@@ -204,7 +214,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Initialize particle system.
-	result = particleSystem->Initialize(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), particles, maxParticles);
+	result = particleSystem->Initialize(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/rainDrop.png", particles, maxParticles);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Couldn't initialize particle system!", L"PARTICLE ERROR", MB_OK);
@@ -287,6 +297,9 @@ bool Graphics::Frame(float dt)
 
 void Graphics::Update(float dt)
 {
+	XMMATRIX view;
+	camera->GetViewMatrix(view);
+
 	// Acquire keyboard for inputs
 	keyboard->Acquire();
 	keyboard->GetDeviceState(sizeof(keyboardState), (LPVOID)&keyboardState);
@@ -302,10 +315,22 @@ void Graphics::Update(float dt)
 	if (rotTriforceAngle > 2 * XM_PI)
 		rotTriforceAngle = 0.0f;
 
-	XMVECTOR rotTriforceAxis = XMVectorSet(0.0f, rotTriforceAngle, rotTriforceAngle, 0.0f);
+	XMVECTOR rotTriforceAxis = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	XMMATRIX rotTriforceRotation = XMMatrixRotationRollPitchYawFromVector(rotTriforceAxis);
-	XMMATRIX triforceTranslation = XMMatrixTranslation(0.0f, 5.0f, 0.0f);
+	XMMATRIX triforceTranslation = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
 	triforce->SetWorldMatrix(rotTriforceRotation * triforceTranslation);
+
+	rotN64Angle += 1.5f * dt;
+	if (rotN64Angle > 2 * XM_PI)
+		rotN64Angle = 0.0f;
+
+	XMVECTOR rotN64Axis = XMVectorSet(0.0f, rotN64Angle, 0.0f, 0.0f);
+	XMMATRIX rotN64Rotation = XMMatrixRotationRollPitchYawFromVector(rotN64Axis);
+	XMMATRIX n64Translation = XMMatrixTranslation(0.0f, 5.0f, 0.0f);
+	n64Logo->SetWorldMatrix(rotN64Rotation * n64Translation);
+
+	// PARTICLES
+	particleShader->UpdateParticleCBuffers(dxHandler->GetDeviceContext(), particleSystem, view, camera->GetPosition(), dt);
 }
 
 bool Graphics::Render(float dt)
@@ -314,7 +339,8 @@ bool Graphics::Render(float dt)
 	XMMATRIX view, projection;
 
 	// Clear the buffers to begin the scene.
-	dxHandler->BeginScene(0.3f, 0.3f, 0.3f, 1.0f);
+	dxHandler->BeginScene(0.1f, 0.0f, 0.3f, 1.0f);
+
 
 	// PUT RENDERS BELOW HERE
 	//___________________________________________________________________________________________________
@@ -335,8 +361,8 @@ bool Graphics::Render(float dt)
 	// REGULAR "TEXTURE" SHADER / FORWARD RENDERING
  	// result = textureShader->Render(dxHandler->GetDeviceContext(), cityTerrain, view, projection, camera, light, dxHandler->GetSampler());
 
-	// ALL MODELS + DEFERRED RENDERING
-	// Bind first pass for the deferred shading
+	// DEFERRED RENDERING
+	// Bind first (geometry) pass for the deferred shading
 	deferredShader->BindGeometryPass(dxHandler->GetDeviceContext());
 
 	// Loop through all models and render them.
@@ -353,12 +379,13 @@ bool Graphics::Render(float dt)
 	if (!result)
 		return false;
 
+	particleShader->UpdateParticleCompute(dxHandler->GetDeviceContext(), particleSystem);
+
 	particleSystem->Render(dxHandler->GetDeviceContext(), maxParticles);
 
-	particleShader->UpdateParticleShaders(dxHandler->GetDeviceContext(), particleSystem, view, camera->GetPosition(), dt);
-
-	// Bind the second pass for the deferred shading
+	// Bind the second (light) pass for the deferred shading
 	deferredShader->BindLightPass(dxHandler->GetDeviceContext());
+
 
 	//___________________________________________________________________________________________________
 

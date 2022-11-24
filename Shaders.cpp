@@ -34,17 +34,36 @@ bool Shader::Render(ID3D11DeviceContext* context, Model* model, XMMATRIX view, X
 	return true;
 }
 
-bool Shader::RenderParticles(ID3D11DeviceContext* context, ParticleSystem* particles, int maxParticles, XMMATRIX projection, float quadLength)
+bool Shader::RenderParticles(ID3D11DeviceContext* context, ParticleSystem* particleSystem, int maxParticles, XMMATRIX projection, float quadLength)
 {
 	bool result;
-	result = SetConstantParticleCBuffers(context, particles, maxParticles, projection, quadLength);
+	result = SetConstantParticleCBuffers(context, particleSystem, maxParticles, projection, quadLength);
 	if (!result)
 	{
 		MessageBox(NULL, L"Couldn't set particle constant buffers!", L"SHADER ERROR", MB_OK);
 		return false;
 	}
 
-	RenderParticleShaders(context);
+	SetParticleShaders(context, particleSystem);
+
+	return true;
+}
+
+bool Shader::SetParticleShaders(ID3D11DeviceContext* context, ParticleSystem* particleSystem)
+{
+
+	particleSrv = particleSystem->GetSrv();
+
+	context->GSSetConstantBuffers(0, 1, &viewBuffer);
+	context->GSSetConstantBuffers(1, 1, &constantResourceBuffer);
+
+	context->IASetInputLayout(NULL);
+
+	context->VSSetShader(particleVS, 0, 0);
+	context->GSSetShader(particleGS, 0, 0);
+	context->PSSetShader(particlePS, 0, 0);
+	context->PSSetSamplers(0, 1, &particleSamplerState);
+	// context->PSSetShaderResources(0, 1, &particleSrv);
 
 	return true;
 }
@@ -218,8 +237,10 @@ bool Shader::IntializeDeferredShaders(ID3D11Device* device, DxHandler* dxHandler
 
 bool Shader::InitializeParticleShaders(ID3D11Device* device, HWND hwnd, LPCWSTR vsFileName, LPCWSTR psFileName, LPCWSTR csFileName, LPCWSTR gsFileName, LPCSTR VSEntry, LPCSTR PSEntry, LPCSTR CSEntry, LPCSTR GSEntry)
 {
+	UINT shaderCompileFlags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+
 	// Compile vertex shader
-	hr = D3DCompileFromFile(vsFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, VSEntry, "vs_5_0", D3DCOMPILE_ENABLE_STRICTNESS, NULL, &vertexShaderBlob, &errorBlob);
+	hr = D3DCompileFromFile(vsFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, VSEntry, "vs_5_0", shaderCompileFlags, NULL, &vertexShaderBlob, &errorBlob);
 	if (FAILED(hr))
 	{
 		if (errorBlob)
@@ -234,7 +255,7 @@ bool Shader::InitializeParticleShaders(ID3D11Device* device, HWND hwnd, LPCWSTR 
 	}
 
 	// Compile pixel shader
-	hr = D3DCompileFromFile(psFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, PSEntry, "ps_5_0", D3DCOMPILE_ENABLE_STRICTNESS, NULL, &pixelShaderBlob, &errorBlob);
+	hr = D3DCompileFromFile(psFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, PSEntry, "ps_5_0", shaderCompileFlags, NULL, &pixelShaderBlob, &errorBlob);
 	if (FAILED(hr))
 	{
 		if (errorBlob)
@@ -248,11 +269,8 @@ bool Shader::InitializeParticleShaders(ID3D11Device* device, HWND hwnd, LPCWSTR 
 		assert(false);
 	}
 
-	UINT csFlags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-
-
 	// Compile compute shader
-	hr = D3DCompileFromFile(csFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, CSEntry, "cs_5_0", csFlags, NULL, &computeShaderBlob, &errorBlob);
+	hr = D3DCompileFromFile(csFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, CSEntry, "cs_5_0", shaderCompileFlags, NULL, &computeShaderBlob, &errorBlob);
 	if (FAILED(hr))
 	{
 		if (errorBlob)
@@ -267,7 +285,7 @@ bool Shader::InitializeParticleShaders(ID3D11Device* device, HWND hwnd, LPCWSTR 
 	}
 
 	// Compile geometry shader
-	hr = D3DCompileFromFile(gsFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, GSEntry, "gs_5_0", csFlags, NULL, &geometryShaderBlob, &errorBlob);
+	hr = D3DCompileFromFile(gsFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, GSEntry, "gs_5_0", shaderCompileFlags, NULL, &geometryShaderBlob, &errorBlob);
 	if (FAILED(hr))
 	{
 		if (errorBlob)
@@ -315,17 +333,17 @@ bool Shader::InitializeParticleShaders(ID3D11Device* device, HWND hwnd, LPCWSTR 
 
 	// SAMPLER STATE FOR PARTICLES
 	
-	D3D11_SAMPLER_DESC colorMapDesc;
-	ZeroMemory(&colorMapDesc, sizeof(colorMapDesc));
+	D3D11_SAMPLER_DESC particleSamplerDesc;
+	ZeroMemory(&particleSamplerDesc, sizeof(particleSamplerDesc));
 
-	colorMapDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	colorMapDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	colorMapDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	colorMapDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	colorMapDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	colorMapDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	particleSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	particleSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	particleSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	particleSamplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	particleSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	particleSamplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-	hr = device->CreateSamplerState(&colorMapDesc, &samplerState);
+	hr = device->CreateSamplerState(&particleSamplerDesc, &particleSamplerState);
 
 	if (FAILED(hr)) 
 	{
@@ -616,16 +634,16 @@ void Shader::BindGeometryPass(ID3D11DeviceContext* context)
 	deferredPtr->SetRenderTargets(context);
 	context->ClearDepthStencilView(deferredPtr->depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0.0f);
 
-	float color[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
+	float color[4] = { 0.1f, 0.0f, 0.3f, 1.0f };
 
 	deferredPtr->ClearRenderTargets(context, color[0], color[1], color[2], color[3]);
 }
 
 void Shader::BindLightPass(ID3D11DeviceContext* context)
 {
-	float color[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
+	float color[4] = { 0.1f, 0.0f, 0.3f, 1.0f };
 
-	context->OMSetRenderTargets(BUFFER_COUNT, nullRTV, NULL);
+	context->OMSetRenderTargets(BUFFER_COUNT, nullRtvArray, NULL);
 
 	context->CSSetShader(deferredCS, NULL, 0);
 
@@ -635,9 +653,9 @@ void Shader::BindLightPass(ID3D11DeviceContext* context)
 	context->Dispatch(60, 128, 1);
 
 	// NULL resources and buffers
-	context->CSSetShaderResources(0, BUFFER_COUNT, nullSRV);
+	context->CSSetShaderResources(0, BUFFER_COUNT, nullSrvArray);
 	context->CSSetConstantBuffers(0, NULL, &nullBuffer);
-	context->CSSetUnorderedAccessViews(0, 1, &nullUAV, NULL);
+	context->CSSetUnorderedAccessViews(0, 1, &nullUav, NULL);
 }
 
 bool Shader::SetObjectCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XMMATRIX view, DirectX::XMMATRIX projection, Camera* camera, Light* light)
@@ -692,6 +710,8 @@ bool Shader::SetObjectCBuffers(ID3D11DeviceContext* context, Model* model, Direc
 	deferredLightCb.diffuseLight = light->GetDiffuseColor();
 	deferredLightCb.specularLight = light->GetSpecularColor();
 	deferredLightCb.lightPosition = light->GetLightPosition();
+	deferredLightCb.lightRange = light->GetLightRange();
+	deferredLightCb.attenuation = light->GetAttenuation();
 	deferredLightCb.cameraPosition = camera->GetPosition();
 
 	context->UpdateSubresource(deferredBuffer, 0, NULL, &deferredLightCb, 0, 0);
@@ -720,8 +740,10 @@ bool Shader::SetConstantParticleCBuffers(ID3D11DeviceContext* context, ParticleS
 	return true;
 }
 
-void Shader::UpdateParticleShaders(ID3D11DeviceContext* context, ParticleSystem* particleSystem, XMMATRIX view, XMFLOAT3 cameraPosition, float deltaTime)
+void Shader::UpdateParticleCBuffers(ID3D11DeviceContext* context, ParticleSystem* particleSystem, XMMATRIX view, XMFLOAT3 cameraPosition, float deltaTime)
 {
+	context->CSSetUnorderedAccessViews(0, 1, &nullUav, NULL);
+
 	// COMPUTE SHADER BUFFER
 	dynamicParticleCb.deltaTime = deltaTime;
 
@@ -749,23 +771,25 @@ void Shader::UpdateParticleShaders(ID3D11DeviceContext* context, ParticleSystem*
 	memcpy(ptrVMB, &viewMatrixCb, sizeof(CBView));
 
 	context->Unmap(viewBuffer, 0);
+}
 
+void Shader::UpdateParticleCompute(ID3D11DeviceContext* context, ParticleSystem* particleSystem)
+{
 	particleSrv = particleSystem->GetSrv();
 	particleUav = particleSystem->GetUav();
 	particleBuffer = particleSystem->GetParticleBuffer();
 
-	context->GSSetConstantBuffers(0, 1, &viewBuffer);
-
 	context->CSSetShader(particleCS, NULL, 0);
+	context->CSSetConstantBuffers(2, 1, &constantVariablesBuffer);
 	context->CSSetConstantBuffers(3, 1, &dynamicVariablesBuffer);
 	context->CSSetUnorderedAccessViews(1, 1, &particleUav, NULL);
-	context->Dispatch(32, 1, 1); // 32 threads on x ID
+	context->Dispatch(32, 1, 1);
 
-	ID3D11UnorderedAccessView* nullUav = NULL;
-	ID3D11ShaderResourceView* nullSrv = NULL;
+	context->CSSetUnorderedAccessViews(0, 1, &nullUav, NULL);
 	context->CSSetUnorderedAccessViews(1, 1, &nullUav, NULL);
+
+	context->VSSetShaderResources(0, 1, &nullSingleSrv);
 	context->VSSetShaderResources(0, 1, &particleSrv);
-	context->VSSetShaderResources(0, 1, &nullSrv);
 }
 
 void Shader::RenderShader(ID3D11DeviceContext* context, int indexCount, ID3D11SamplerState* sampler)
@@ -792,19 +816,10 @@ void Shader::RenderShader(ID3D11DeviceContext* context, int indexCount, ID3D11Sa
 	context->DrawIndexed(indexCount, 0, 0);
 
 	// Set everything to null after draw call teehee
-	context->VSSetShader(nullVs, NULL, 0);
-	context->PSSetShader(nullPs, NULL, 0);
+	context->VSSetShader(nullVS, NULL, 0);
+	context->PSSetShader(nullPS, NULL, 0);
 
 	context->VSSetConstantBuffers(0, 1, &nullBuffer);
 	context->PSSetConstantBuffers(0, 1, &nullBuffer);
-	context->PSSetShaderResources(0, BUFFER_COUNT, nullSRV);
-}
-
-void Shader::RenderParticleShaders(ID3D11DeviceContext* context)
-{
-	context->VSSetShader(particleVS, NULL, 0);
-	context->GSSetShader(particleGS, NULL, 0);
-	context->PSSetShader(particlePS, NULL, 0);
-	// context->PSSetShaderResources(0, 1, &color);
-	context->PSSetSamplers(0, 1, &samplerState);
+	context->PSSetShaderResources(0, BUFFER_COUNT, nullSrvArray);
 }
