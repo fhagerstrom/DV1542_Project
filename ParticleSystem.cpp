@@ -33,16 +33,6 @@ bool ParticleSystem::Initialize(ID3D11Device* device, ID3D11DeviceContext* conte
 	return true;
 }
 
-bool ParticleSystem::Update(float deltaTime)
-{
-	bool result;
-
-	// UPDATE FUNCTION IS DONE IN SHADER HANDLER INSTEAD DUE TO CS 
-
-
-	return true;
-}
-
 void ParticleSystem::Render(ID3D11DeviceContext* context, int maxParticles)
 {
 	// Set a nulled input layout for particles since we perform vertex pulling instead of using vertex / index buffers.

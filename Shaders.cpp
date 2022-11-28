@@ -44,24 +44,38 @@ bool Shader::RenderParticles(ID3D11DeviceContext* context, ParticleSystem* parti
 		return false;
 	}
 
-	SetParticleShaders(context, particleSystem);
+	SetParticleShaders(context, particleSystem, projection, maxParticles, quadLength);
 
 	return true;
 }
 
-bool Shader::SetParticleShaders(ID3D11DeviceContext* context, ParticleSystem* particleSystem)
+bool Shader::SetParticleShaders(ID3D11DeviceContext* context, ParticleSystem* particleSystem, XMMATRIX projection, int maxParticles, float quadLength)
 {
-
 	particleSrv = particleSystem->GetSrv();
+	particleBuffer = particleSystem->GetParticleBuffer();
+
+	// COMPUTE SHADER BUFFER
+	constantParticleCb.maxParticles = maxParticles;
+	context->UpdateSubresource(particleBuffer, 0, NULL, &constantParticleCb, 0, 0);
 
 	context->GSSetConstantBuffers(0, 1, &viewBuffer);
 	context->GSSetConstantBuffers(1, 1, &constantResourceBuffer);
+
+	// GEOMETRY SHADER BUFFER
+	constantResourceCb.quadLength = quadLength;
+	constantResourceCb.projection = projection;
+
+	context->UpdateSubresource(particleBuffer, 0, NULL, &constantResourceCb, 0, 0);
 
 	context->IASetInputLayout(NULL);
 
 	context->VSSetShader(particleVS, 0, 0);
 	context->GSSetShader(particleGS, 0, 0);
 	context->PSSetShader(particlePS, 0, 0);
+
+	context->VSSetShaderResources(0, 1, &nullSingleSrv);
+	context->VSSetShaderResources(0, 1, &particleSrv);
+
 	context->PSSetSamplers(0, 1, &particleSamplerState);
 	// context->PSSetShaderResources(0, 1, &particleSrv);
 
@@ -650,7 +664,7 @@ void Shader::BindLightPass(ID3D11DeviceContext* context)
 	context->CSSetShaderResources(0, BUFFER_COUNT, deferredPtr->shaderResourceViewArray);
 	context->CSSetUnorderedAccessViews(0, 1, &deferredPtr->deferredUav, NULL);
 
-	context->Dispatch(60, 128, 1);
+	context->Dispatch(64, 128, 1);
 
 	// NULL resources and buffers
 	context->CSSetShaderResources(0, BUFFER_COUNT, nullSrvArray);
@@ -658,7 +672,7 @@ void Shader::BindLightPass(ID3D11DeviceContext* context)
 	context->CSSetUnorderedAccessViews(0, 1, &nullUav, NULL);
 }
 
-bool Shader::SetObjectCBuffers(ID3D11DeviceContext* context, Model* model, DirectX::XMMATRIX view, DirectX::XMMATRIX projection, Camera* camera, Light* light)
+bool Shader::SetObjectCBuffers(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light)
 {
 	// OBJECT / MATRIX BUFFERS
 	XMMATRIX worldViewProjection;
@@ -743,6 +757,7 @@ bool Shader::SetConstantParticleCBuffers(ID3D11DeviceContext* context, ParticleS
 void Shader::UpdateParticleCBuffers(ID3D11DeviceContext* context, ParticleSystem* particleSystem, XMMATRIX view, XMFLOAT3 cameraPosition, float deltaTime)
 {
 	context->CSSetUnorderedAccessViews(0, 1, &nullUav, NULL);
+	context->PSSetShaderResources(0, 1, &nullSingleSrv);
 
 	// COMPUTE SHADER BUFFER
 	dynamicParticleCb.deltaTime = deltaTime;
@@ -775,6 +790,8 @@ void Shader::UpdateParticleCBuffers(ID3D11DeviceContext* context, ParticleSystem
 
 void Shader::UpdateParticleCompute(ID3D11DeviceContext* context, ParticleSystem* particleSystem)
 {
+	context->CSSetUnorderedAccessViews(0, 1, &nullUav, NULL);
+
 	particleSrv = particleSystem->GetSrv();
 	particleUav = particleSystem->GetUav();
 	particleBuffer = particleSystem->GetParticleBuffer();
@@ -785,11 +802,7 @@ void Shader::UpdateParticleCompute(ID3D11DeviceContext* context, ParticleSystem*
 	context->CSSetUnorderedAccessViews(1, 1, &particleUav, NULL);
 	context->Dispatch(32, 1, 1);
 
-	context->CSSetUnorderedAccessViews(0, 1, &nullUav, NULL);
 	context->CSSetUnorderedAccessViews(1, 1, &nullUav, NULL);
-
-	context->VSSetShaderResources(0, 1, &nullSingleSrv);
-	context->VSSetShaderResources(0, 1, &particleSrv);
 }
 
 void Shader::RenderShader(ID3D11DeviceContext* context, int indexCount, ID3D11SamplerState* sampler)

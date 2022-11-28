@@ -23,13 +23,11 @@ public:
 	~ParticleSystem();
 
 	bool Initialize(ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR textureFile, Particle* particles, int maxParticles);
-	bool Update(float deltaTime);
 	void Render(ID3D11DeviceContext* context, int maxParticles);
 	void Shutdown();
 
 	ID3D11ShaderResourceView* GetSrv() { return this->particleSrv; }
 	ID3D11UnorderedAccessView* GetUav() { return this->particleUav; }
-	int GetMaxParticles() { return this->maxParticles; }
 	ID3D11Buffer* GetParticleBuffer() { return this->particleBuffer; }
 
 private:

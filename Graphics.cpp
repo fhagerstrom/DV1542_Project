@@ -383,9 +383,9 @@ bool Graphics::Render(float dt)
 
 	particleSystem->Render(dxHandler->GetDeviceContext(), maxParticles);
 
+
 	// Bind the second (light) pass for the deferred shading
 	deferredShader->BindLightPass(dxHandler->GetDeviceContext());
-
 
 	//___________________________________________________________________________________________________
 
@@ -400,7 +400,7 @@ bool Graphics::Render(float dt)
 	//ImGui::Begin("CHANGE PROPERTIES");
 	//ImGui::DragFloat3("Light pos (x, y, z): ", movableLightPos, 0.1f, -50.0f, 50.0f);
 	//light->SetLightPosition(movableLightPos[0], movableLightPos[1], movableLightPos[2]);
-	// light1->SetLightPosition(movableLightPos[0], movableLightPos[1], movableLightPos[2]);
+	//light1->SetLightPosition(movableLightPos[0], movableLightPos[1], movableLightPos[2]);
 
 	// ImGui::End();
 

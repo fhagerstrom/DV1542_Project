@@ -215,7 +215,7 @@ public:
 	void Shutdown();
 	bool Render(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light, ID3D11SamplerState* sampler);
 	bool RenderParticles(ID3D11DeviceContext* context, ParticleSystem* particleSystem, int maxParticles, XMMATRIX projection, float quadLength);
-	bool SetParticleShaders(ID3D11DeviceContext* context, ParticleSystem* particleSystem);
+	bool SetParticleShaders(ID3D11DeviceContext* context, ParticleSystem* particleSystem, XMMATRIX projection, int maxParticles, float quadLength);
 	void UpdateParticleCBuffers(ID3D11DeviceContext* context, ParticleSystem* particleSystem, XMMATRIX view, XMFLOAT3 cameraPosition, float deltaTime);
 	void UpdateParticleCompute(ID3D11DeviceContext* context, ParticleSystem* particleSystem);
 };

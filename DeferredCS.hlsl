@@ -33,7 +33,7 @@ cbuffer DeferredLighting : register(b0)
 [numthreads(32, 8, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
 {
-     // Set shadowmapping size to same as window size
+    // Set shadowmapping size to same as window size
     const int shadowWidth = 1280;
     const int shadowHeight = 720;
     
