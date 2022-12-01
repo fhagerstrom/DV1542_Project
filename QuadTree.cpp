@@ -188,8 +188,8 @@ bool QuadTree::IsModelContained(int index, float positionX, float positionZ, flo
 	// Get the index into the vertex list.
 	Model* tempModel = modelList[index];
 
-	xCenter = tempModel->posForQuads.x; //model coords
-	zCenter = tempModel->posForQuads.z;
+	// xCenter = tempModel->posForQuads.x; // Model coords. DOUBLE CHECK
+	// zCenter = tempModel->posForQuads.z; 
 
 
 	if (xCenter <= positionX + radius)

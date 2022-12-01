@@ -32,10 +32,10 @@ void main( uint3 DTid : SV_DispatchThreadID )
     particleProcess.currentPosition = tempPosition;
     
     // Keep all the particles inside a specific range.
-    if (length(particleProcess.currentPosition) > 55)
+    if (length(particleProcess.currentPosition) > 20)
     {
         float3 norm = normalize(particleProcess.currentPosition);
-        particleProcess.currentPosition = norm * 55;
+        particleProcess.currentPosition = norm * 20;
     }
     
     Particles[DTid.x] = particleProcess;

@@ -170,6 +170,8 @@ private:
 	ID3D11ShaderResourceView* textureSRV;
 	ID3D11ShaderResourceView* particleSrv;
 	ID3D11UnorderedAccessView* particleUav;
+	ID3D11RenderTargetView* particleRtv;
+	ID3D11DepthStencilView* particleDsv;
 
 	HRESULT hr;
 	ID3DBlob* vertexShaderBlob;
@@ -214,8 +216,8 @@ public:
 
 	void Shutdown();
 	bool Render(ID3D11DeviceContext* context, Model* model, XMMATRIX view, XMMATRIX projection, Camera* camera, Light* light, ID3D11SamplerState* sampler);
-	bool RenderParticles(ID3D11DeviceContext* context, ParticleSystem* particleSystem, int maxParticles, XMMATRIX projection, float quadLength);
-	bool SetParticleShaders(ID3D11DeviceContext* context, ParticleSystem* particleSystem, XMMATRIX projection, int maxParticles, float quadLength);
+	bool RenderParticles(ID3D11DeviceContext* context, DxHandler* dxHandler, ParticleSystem* particleSystem, int maxParticles, XMMATRIX projection, float quadLength);
+	bool SetParticleShaders(ID3D11DeviceContext* context, DxHandler* dxHandler, ParticleSystem* particleSystem, XMMATRIX projection, int maxParticles, float quadLength);
 	void UpdateParticleCBuffers(ID3D11DeviceContext* context, ParticleSystem* particleSystem, XMMATRIX view, XMFLOAT3 cameraPosition, float deltaTime);
 	void UpdateParticleCompute(ID3D11DeviceContext* context, ParticleSystem* particleSystem);
 };

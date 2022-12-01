@@ -52,10 +52,6 @@ private:
 
 	ParticleSystem* particleSystem;
 	Particle* particles;
-	int maxParticles;
-	int quadLength;
-
-	// Material modelMtl;
 
 	Shader* textureShader;
 	Shader* deferredShader;

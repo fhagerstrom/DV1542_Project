@@ -2,23 +2,26 @@
 
 ParticleSystem::ParticleSystem()
 {
+	maxParticles = 50;
+	radius = 100;
+	quadLength = 50.0f;
 }
 
 ParticleSystem::~ParticleSystem()
 {
 }
 
-bool ParticleSystem::Initialize(ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR textureFile, Particle* particles, int maxParticles)
+bool ParticleSystem::Initialize(ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR textureFile, Particle* particles, int maxParticles, int radius)
 {
 	bool result;
 
-	result = InitializeBuffers(device, particles, maxParticles);
+	result = InitializeBuffers(device, context, particles, maxParticles);
 	if (!result)
 	{
 		return false;
 	}
 
-	result = LoadParticles(maxParticles);
+	result = LoadParticles(maxParticles, radius);
 	if (!result)
 	{
 		return false;
@@ -33,22 +36,15 @@ bool ParticleSystem::Initialize(ID3D11Device* device, ID3D11DeviceContext* conte
 	return true;
 }
 
-void ParticleSystem::Render(ID3D11DeviceContext* context, int maxParticles)
+void ParticleSystem::Render(ID3D11DeviceContext* context)
 {
-	// Set a nulled input layout for particles since we perform vertex pulling instead of using vertex / index buffers.
-	context->IASetInputLayout(NULL);
-
-	// Set the type of primitive that should be rendered for particles.
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-	context->Draw(maxParticles, 0);
 }
 
 void ParticleSystem::Shutdown()
 {
-	delete camera;
 }
 
-bool ParticleSystem::InitializeBuffers(ID3D11Device* device, Particle* particles, int maxParticles)
+bool ParticleSystem::InitializeBuffers(ID3D11Device* device, ID3D11DeviceContext* context, Particle* particles, int maxParticles)
 {
 	HRESULT hr;
 
@@ -58,19 +54,19 @@ bool ParticleSystem::InitializeBuffers(ID3D11Device* device, Particle* particles
 	particleBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	particleBufferDesc.ByteWidth = sizeof(Particle) * maxParticles;
 	particleBufferDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
-	particleBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE | 0;
+	particleBufferDesc.CPUAccessFlags = 0;
 	particleBufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
 	particleBufferDesc.StructureByteStride = sizeof(Particle);
 
 	// Give the subresource structure a pointer to the vertex data.
-	D3D11_SUBRESOURCE_DATA vertexData;
-	ZeroMemory(&vertexData, sizeof(D3D11_SUBRESOURCE_DATA));
-	vertexData.pSysMem = particles;
-	vertexData.SysMemPitch = 0;
-	vertexData.SysMemSlicePitch = 0;
+	D3D11_SUBRESOURCE_DATA bufferData;
+	ZeroMemory(&bufferData, sizeof(D3D11_SUBRESOURCE_DATA));
+	bufferData.pSysMem = particles;
+	bufferData.SysMemPitch = 0;
+	bufferData.SysMemSlicePitch = 0;
 
 	// Now finally create the particle buffer.
-	hr = device->CreateBuffer(&particleBufferDesc, &vertexData, &particleBuffer);
+	hr = device->CreateBuffer(&particleBufferDesc, &bufferData, &particleBuffer);
 	if (FAILED(hr))
 		return false;
 
@@ -106,21 +102,28 @@ bool ParticleSystem::InitializeBuffers(ID3D11Device* device, Particle* particles
 	return true;
 }
 
-bool ParticleSystem::LoadParticles(int maxParticles)
+bool ParticleSystem::LoadParticles(int maxParticles, int radius)
 {
 	Particle* particles = new Particle[maxParticles];
 	float rndX, rndY, rndZ;
 
+	std::mt19937 mt; // mt = Mersenne Twister, generate random numbers
+	std::uniform_real_distribution<float> dist(-radius, radius); // Produces random floating-point values between two numbers
+
 	for (int i = 0; i < maxParticles; ++i) 
 	{
+		rndX = dist(mt);
+		rndY = dist(mt);
+		rndZ = dist(mt);
+
 		rndX = 0;
-		rndY = 40.0f;
+		rndY = 15.0f;
 		rndZ = 0.0f;
 		particles[i].currentPosition = XMFLOAT3(rndX, rndY, rndZ);
 		particles[i].oldPosition = XMFLOAT3(rndX, rndY, rndZ);
 	}
 
-	delete[] particles;
+	// delete[] particles;
 
 	return true;
 }

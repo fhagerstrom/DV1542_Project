@@ -13,9 +13,6 @@ Graphics::Graphics(Input* input)
 	textureShader = 0;
 	deferredShader = 0;
 	light = 0;
-
-	maxParticles = 500;
-	quadLength = 50;
 }
 
 Graphics::~Graphics()
@@ -81,7 +78,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	// lightVector.push_back(light1);
 
 	cityTerrain = new Model;
-	reader.LoadObj(dxHandler->GetDevice(), cityTerrain, L"assets/models/scifi_city.obj", true, false);
+	reader.LoadObj(dxHandler->GetDevice(), cityTerrain, L"assets/models/plane.obj", true, false);
 	cityTerrain->SetWorldMatrix(XMMatrixTranslation(0.0f, -2.0f, 0.0f));
 	cityTerrain->GetMaterials()[0].ambientMtl = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	cityTerrain->GetMaterials()[0].hasTexture = true;
@@ -214,7 +211,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Initialize particle system.
-	result = particleSystem->Initialize(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/rainDrop.png", particles, maxParticles);
+	result = particleSystem->Initialize(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/rainDrop.png", particles, particleSystem->GetMaxParticles(), particleSystem->GetRadius());
 	if (!result)
 	{
 		MessageBox(hwnd, L"Couldn't initialize particle system!", L"PARTICLE ERROR", MB_OK);
@@ -338,10 +335,6 @@ bool Graphics::Render(float dt)
 	bool result;
 	XMMATRIX view, projection;
 
-	// Clear the buffers to begin the scene.
-	dxHandler->BeginScene(0.1f, 0.0f, 0.3f, 1.0f);
-
-
 	// PUT RENDERS BELOW HERE
 	//___________________________________________________________________________________________________
 
@@ -363,6 +356,7 @@ bool Graphics::Render(float dt)
 
 	// DEFERRED RENDERING
 	// Bind first (geometry) pass for the deferred shading
+	// Sets render targets and clears them
 	deferredShader->BindGeometryPass(dxHandler->GetDeviceContext());
 
 	// Loop through all models and render them.
@@ -374,18 +368,18 @@ bool Graphics::Render(float dt)
 			return false;
 	}
 
+	// Bind the second (light) pass for the deferred shading
+	deferredShader->BindLightPass(dxHandler->GetDeviceContext());
+
 	// PARTICLES
-	result = particleShader->RenderParticles(dxHandler->GetDeviceContext(), particleSystem, maxParticles, projection, quadLength);
+	// particleSystem->Render(dxHandler->GetDeviceContext()); // I DONT DO ANYTHING IN THIS FUNCTION FOR THE TIME BEING
+	
+	particleShader->UpdateParticleCompute(dxHandler->GetDeviceContext(), particleSystem);
+
+	result = particleShader->RenderParticles(dxHandler->GetDeviceContext(), dxHandler, particleSystem, particleSystem->GetMaxParticles(), projection, particleSystem->GetQuadLength());
 	if (!result)
 		return false;
 
-	particleShader->UpdateParticleCompute(dxHandler->GetDeviceContext(), particleSystem);
-
-	particleSystem->Render(dxHandler->GetDeviceContext(), maxParticles);
-
-
-	// Bind the second (light) pass for the deferred shading
-	deferredShader->BindLightPass(dxHandler->GetDeviceContext());
 
 	//___________________________________________________________________________________________________
 

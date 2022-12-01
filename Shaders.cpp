@@ -34,7 +34,7 @@ bool Shader::Render(ID3D11DeviceContext* context, Model* model, XMMATRIX view, X
 	return true;
 }
 
-bool Shader::RenderParticles(ID3D11DeviceContext* context, ParticleSystem* particleSystem, int maxParticles, XMMATRIX projection, float quadLength)
+bool Shader::RenderParticles(ID3D11DeviceContext* context, DxHandler* dxHandler, ParticleSystem* particleSystem, int maxParticles, XMMATRIX projection, float quadLength)
 {
 	bool result;
 	result = SetConstantParticleCBuffers(context, particleSystem, maxParticles, projection, quadLength);
@@ -44,12 +44,12 @@ bool Shader::RenderParticles(ID3D11DeviceContext* context, ParticleSystem* parti
 		return false;
 	}
 
-	SetParticleShaders(context, particleSystem, projection, maxParticles, quadLength);
+	SetParticleShaders(context, dxHandler, particleSystem, projection, maxParticles, quadLength);
 
 	return true;
 }
 
-bool Shader::SetParticleShaders(ID3D11DeviceContext* context, ParticleSystem* particleSystem, XMMATRIX projection, int maxParticles, float quadLength)
+bool Shader::SetParticleShaders(ID3D11DeviceContext* context, DxHandler* dxHandler, ParticleSystem* particleSystem, XMMATRIX projection, int maxParticles, float quadLength)
 {
 	particleSrv = particleSystem->GetSrv();
 	particleBuffer = particleSystem->GetParticleBuffer();
@@ -67,17 +67,29 @@ bool Shader::SetParticleShaders(ID3D11DeviceContext* context, ParticleSystem* pa
 
 	context->UpdateSubresource(particleBuffer, 0, NULL, &constantResourceCb, 0, 0);
 
-	context->IASetInputLayout(NULL);
-
+	// Set shaders themselves
 	context->VSSetShader(particleVS, 0, 0);
 	context->GSSetShader(particleGS, 0, 0);
 	context->PSSetShader(particlePS, 0, 0);
 
-	context->VSSetShaderResources(0, 1, &nullSingleSrv);
+	context->PSSetSamplers(0, 1, &particleSamplerState);
 	context->VSSetShaderResources(0, 1, &particleSrv);
 
-	context->PSSetSamplers(0, 1, &particleSamplerState);
-	// context->PSSetShaderResources(0, 1, &particleSrv);
+	// Set RTV for particles
+	particleRtv = dxHandler->GetRtv();
+	particleDsv = dxHandler->GetDsv();
+
+	// Set a nulled input layout for particles since we perform vertex pulling instead of using vertex / index buffers.
+	context->IASetInputLayout(NULL);
+
+	// Set the type of primitive that should be rendered for particles.
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+
+	// Set specific RTV for the particles to test.
+	context->OMSetRenderTargets(1, &particleRtv, particleDsv);
+	context->Draw(maxParticles, 0);
+
+	context->VSSetShaderResources(0, 1, &nullSingleSrv);
 
 	return true;
 }
@@ -664,7 +676,7 @@ void Shader::BindLightPass(ID3D11DeviceContext* context)
 	context->CSSetShaderResources(0, BUFFER_COUNT, deferredPtr->shaderResourceViewArray);
 	context->CSSetUnorderedAccessViews(0, 1, &deferredPtr->deferredUav, NULL);
 
-	context->Dispatch(64, 128, 1);
+	context->Dispatch(60, 135, 1);
 
 	// NULL resources and buffers
 	context->CSSetShaderResources(0, BUFFER_COUNT, nullSrvArray);
@@ -756,7 +768,6 @@ bool Shader::SetConstantParticleCBuffers(ID3D11DeviceContext* context, ParticleS
 
 void Shader::UpdateParticleCBuffers(ID3D11DeviceContext* context, ParticleSystem* particleSystem, XMMATRIX view, XMFLOAT3 cameraPosition, float deltaTime)
 {
-	context->CSSetUnorderedAccessViews(0, 1, &nullUav, NULL);
 	context->PSSetShaderResources(0, 1, &nullSingleSrv);
 
 	// COMPUTE SHADER BUFFER
@@ -800,7 +811,7 @@ void Shader::UpdateParticleCompute(ID3D11DeviceContext* context, ParticleSystem*
 	context->CSSetConstantBuffers(2, 1, &constantVariablesBuffer);
 	context->CSSetConstantBuffers(3, 1, &dynamicVariablesBuffer);
 	context->CSSetUnorderedAccessViews(1, 1, &particleUav, NULL);
-	context->Dispatch(32, 1, 1);
+	context->Dispatch(std::ceil(particleSystem->GetMaxParticles() / 32), 1, 1);
 
 	context->CSSetUnorderedAccessViews(1, 1, &nullUav, NULL);
 }
