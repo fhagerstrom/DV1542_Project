@@ -2,7 +2,7 @@ cbuffer CBView : register(b0)
 {
     matrix view;
     float3 cameraPosition;
-    float time;
+    // float time;
 };
 
 cbuffer CBConstantResource : register(b1)
@@ -24,7 +24,7 @@ struct GSOutput // PSInput
     float2 tex : TEXCOORD;
 };
 
-[maxvertexcount(6)]
+[maxvertexcount(4)]
 void main(point GSInput input[1], inout TriangleStream<GSOutput> output)
 {
     GSOutput p1 = (GSOutput)0;

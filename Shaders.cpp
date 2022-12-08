@@ -34,66 +34,6 @@ bool Shader::Render(ID3D11DeviceContext* context, Model* model, XMMATRIX view, X
 	return true;
 }
 
-bool Shader::RenderParticles(ID3D11DeviceContext* context, DxHandler* dxHandler, ParticleSystem* particleSystem, int maxParticles, XMMATRIX projection, float quadLength)
-{
-	bool result;
-	result = SetConstantParticleCBuffers(context, particleSystem, maxParticles, projection, quadLength);
-	if (!result)
-	{
-		MessageBox(NULL, L"Couldn't set particle constant buffers!", L"SHADER ERROR", MB_OK);
-		return false;
-	}
-
-	SetParticleShaders(context, dxHandler, particleSystem, projection, maxParticles, quadLength);
-
-	return true;
-}
-
-bool Shader::SetParticleShaders(ID3D11DeviceContext* context, DxHandler* dxHandler, ParticleSystem* particleSystem, XMMATRIX projection, int maxParticles, float quadLength)
-{
-	particleSrv = particleSystem->GetSrv();
-	particleBuffer = particleSystem->GetParticleBuffer();
-
-	// COMPUTE SHADER BUFFER
-	constantParticleCb.maxParticles = maxParticles;
-	context->UpdateSubresource(particleBuffer, 0, NULL, &constantParticleCb, 0, 0);
-
-	context->GSSetConstantBuffers(0, 1, &viewBuffer);
-	context->GSSetConstantBuffers(1, 1, &constantResourceBuffer);
-
-	// GEOMETRY SHADER BUFFER
-	constantResourceCb.quadLength = quadLength;
-	constantResourceCb.projection = projection;
-
-	context->UpdateSubresource(particleBuffer, 0, NULL, &constantResourceCb, 0, 0);
-
-	// Set shaders themselves
-	context->VSSetShader(particleVS, 0, 0);
-	context->GSSetShader(particleGS, 0, 0);
-	context->PSSetShader(particlePS, 0, 0);
-
-	context->PSSetSamplers(0, 1, &particleSamplerState);
-	context->VSSetShaderResources(0, 1, &particleSrv);
-
-	// Set RTV for particles
-	particleRtv = dxHandler->GetRtv();
-	particleDsv = dxHandler->GetDsv();
-
-	// Set a nulled input layout for particles since we perform vertex pulling instead of using vertex / index buffers.
-	context->IASetInputLayout(NULL);
-
-	// Set the type of primitive that should be rendered for particles.
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-
-	// Set specific RTV for the particles to test.
-	context->OMSetRenderTargets(1, &particleRtv, particleDsv);
-	context->Draw(maxParticles, 0);
-
-	context->VSSetShaderResources(0, 1, &nullSingleSrv);
-
-	return true;
-}
-
 bool Shader::IntializeDeferredShaders(ID3D11Device* device, DxHandler* dxHandler, HWND hwnd, LPCWSTR vsFileName, LPCWSTR psFileName, LPCWSTR csFileName, LPCSTR VSEntry, LPCSTR PSEntry, LPCSTR CSEntry)
 {
 	deferredPtr = new DeferredRender;
@@ -129,7 +69,6 @@ bool Shader::IntializeDeferredShaders(ID3D11Device* device, DxHandler* dxHandler
 	}
 
 	UINT csFlags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-
 
 	// Compile compute shader
 	hr = D3DCompileFromFile(csFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, CSEntry, "cs_5_0", csFlags, NULL, &computeShaderBlob, &errorBlob);
@@ -746,75 +685,82 @@ bool Shader::SetObjectCBuffers(ID3D11DeviceContext* context, Model* model, XMMAT
 	return true;
 }
 
-bool Shader::SetConstantParticleCBuffers(ID3D11DeviceContext* context, ParticleSystem* particleSystem, int maxParticles, XMMATRIX projection, float quadLength)
+bool Shader::CreateParticleCBuffers(ID3D11Device* device, int maxParticles)
 {
-	particleBuffer = particleSystem->GetParticleBuffer();
+	// Create constant buffer for constant variables
+	D3D11_BUFFER_DESC buffDesc;
+	ZeroMemory(&buffDesc, sizeof(buffDesc));
+	buffDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	buffDesc.ByteWidth = sizeof(CBConstantParticles) + 4;
+	buffDesc.Usage = D3D11_USAGE_DEFAULT;
 
-	// COMPUTE SHADER BUFFER
-	constantParticleCb.maxParticles = maxParticles;
+	CBConstantParticles cbData;
+	cbData.maxParticles = maxParticles;
 
-	context->UpdateSubresource(particleBuffer, 0, NULL, &constantParticleCb, 0, 0);
-	context->CSSetConstantBuffers(2, 1, &constantVariablesBuffer);
+	D3D11_SUBRESOURCE_DATA data;
+	ZeroMemory(&data, sizeof(data));
+	data.pSysMem = &cbData;
 
-	// GEOMETRY SHADER BUFFER
-	constantResourceCb.quadLength = quadLength;
-	constantResourceCb.projection = projection;
+	hr = device->CreateBuffer(&buffDesc, &data, &constantVariablesBuffer);
+	if (FAILED(hr)) 
+	{
+		MessageBox(NULL, L"Could not create constant buffer for constant variables for the compute shader!", L"Error", 0);
+		return false;
+	}
 
-	context->UpdateSubresource(particleBuffer, 0, NULL, &constantResourceCb, 0, 0);
-	context->GSSetConstantBuffers(1, 1, &constantResourceBuffer);
+	// Create constant buffer for dynamic variables
+
+	ZeroMemory(&buffDesc, sizeof(buffDesc));
+	buffDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	buffDesc.ByteWidth = sizeof(CBDynamicParticles);
+	buffDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	buffDesc.Usage = D3D11_USAGE_DYNAMIC;
+
+	hr = device->CreateBuffer(&buffDesc, 0, &dynamicVariablesBuffer);
+
+	if (FAILED(hr)) 
+	{
+		MessageBox(NULL, L"Could not create constant buffer for dynamic variables for the compute shader!", L"Error", 0);
+		return false;
+	}
 
 	return true;
 }
 
-void Shader::UpdateParticleCBuffers(ID3D11DeviceContext* context, ParticleSystem* particleSystem, XMMATRIX view, XMFLOAT3 cameraPosition, float deltaTime)
+void Shader::UpdateComputeParticleCBuffers(ID3D11DeviceContext* context, float deltaTime)
 {
-	context->PSSetShaderResources(0, 1, &nullSingleSrv);
+	CBDynamicParticles cbData;
+	ZeroMemory(&cbData, sizeof(cbData));
+	cbData.deltaTime = deltaTime;
 
-	// COMPUTE SHADER BUFFER
-	dynamicParticleCb.deltaTime = deltaTime;
+	D3D11_MAPPED_SUBRESOURCE data;
+	ZeroMemory(&data, sizeof(data));
 
-	D3D11_MAPPED_SUBRESOURCE mapResource;
-	ZeroMemory(&mapResource, sizeof(mapResource));
+	context->Map(dynamicVariablesBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &data);
 
-	context->Map(dynamicVariablesBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapResource);
+	CBDynamicParticles* ptr = static_cast<CBDynamicParticles*>(data.pData);
 
-	CBDynamicParticles* ptr = static_cast<CBDynamicParticles*>(mapResource.pData);
-
-	memcpy(ptr, &dynamicParticleCb, sizeof(CBDynamicParticles));
+	memcpy(ptr, &cbData, sizeof(CBDynamicParticles));
 
 	context->Unmap(dynamicVariablesBuffer, 0);
-
-	// GEOMETRY SHADER BUFFER
-	viewMatrixCb.view = view;
-	viewMatrixCb.cameraPosition = cameraPosition;
-	viewMatrixCb.time = deltaTime;
-
-	ZeroMemory(&mapResource, sizeof(mapResource));
-
-	context->Map(viewBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapResource);
-
-	CBView* ptrVMB = static_cast<CBView*>(mapResource.pData);
-	memcpy(ptrVMB, &viewMatrixCb, sizeof(CBView));
-
-	context->Unmap(viewBuffer, 0);
 }
 
-void Shader::UpdateParticleCompute(ID3D11DeviceContext* context, ParticleSystem* particleSystem)
+void Shader::UpdateParticleShader(ID3D11DeviceContext* context, ParticleSystem* particleSystem)
 {
-	context->CSSetUnorderedAccessViews(0, 1, &nullUav, NULL);
-
-	particleSrv = particleSystem->GetSrv();
 	particleUav = particleSystem->GetUav();
-	particleBuffer = particleSystem->GetParticleBuffer();
+	particleSrv = particleSystem->GetSrv();
 
 	context->CSSetShader(particleCS, NULL, 0);
-	context->CSSetConstantBuffers(2, 1, &constantVariablesBuffer);
-	context->CSSetConstantBuffers(3, 1, &dynamicVariablesBuffer);
-	context->CSSetUnorderedAccessViews(1, 1, &particleUav, NULL);
-	context->Dispatch(std::ceil(particleSystem->GetMaxParticles() / 32), 1, 1);
+	context->CSSetConstantBuffers(0, 1, &constantVariablesBuffer);
+	context->CSSetConstantBuffers(1, 1, &dynamicVariablesBuffer);
+	context->CSSetUnorderedAccessViews(0, 1, &particleUav, NULL);
+	context->Dispatch(particleSystem->GetMaxParticles(), 1, 1);
 
-	context->CSSetUnorderedAccessViews(1, 1, &nullUav, NULL);
+	context->CSSetUnorderedAccessViews(0, 1, &nullUav, NULL);
+
+	context->VSSetShaderResources(0, 1, &particleSrv);
 }
+
 
 void Shader::RenderShader(ID3D11DeviceContext* context, int indexCount, ID3D11SamplerState* sampler)
 {

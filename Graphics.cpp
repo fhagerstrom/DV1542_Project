@@ -10,7 +10,7 @@ Graphics::Graphics(Input* input)
 
 	dxHandler = 0;
 	camera = 0;
-	textureShader = 0;
+	// textureShader = 0;
 	deferredShader = 0;
 	light = 0;
 }
@@ -50,6 +50,10 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	// Set the initial position of the camera and call input function for movement.
 	camera->SetPosition(0.0f, 10.0f, -50.0f);
 	camera->GetInputs(input);
+	
+	// Get the projection matrix for initializing particles.
+	XMMATRIX projection;
+	dxHandler->GetProjectionMatrix(projection);
 
 	// Create light object.
 	light = new Light;
@@ -144,11 +148,11 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	allModels.push_back(n64Logo);
 
 	// Create the texture shader object.
-	textureShader = new Shader;
+	/*textureShader = new Shader;
 	if (!textureShader)
 	{
 		return false;
-	}
+	}*/
 
 	// Create deferred shader object.
 	deferredShader = new Shader;
@@ -157,12 +161,18 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	// Create particle shader object.
-	particleShader = new Shader;
-	if (!particleShader)
+	particleShaders = new ParticleShaders;
+	if (!particleShaders)
 	{
 		return false;
 	}
+
+	// Create particle shader object.
+	/*particleShader = new Shader;
+	if (!particleShader)
+	{
+		return false;
+	}*/
 
 	// Initialize texture shader
 	/*result = textureShader->InitializeShaders(dxHandler->GetDevice(), hwnd, L"DefaultVS.hlsl", L"DefaultPS.hlsl", "main", "main");
@@ -188,16 +198,14 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	// Initialize particle shader
-	result = particleShader->InitializeParticleShaders(dxHandler->GetDevice(), hwnd, L"ParticleVS.hlsl", L"ParticlePS.hlsl", L"ParticleCS.hlsl", L"ParticleGS.hlsl", "main", "main", "main", "main");
-	if (!result)
-	{
-		MessageBox(hwnd, L"Couldn't initialize particle shader object.", L"GRAPHICS ERROR", MB_OK);
-		return false;
-	}
+	quadLength = 50.0f;
+	maxParticles = 50;
+	particleRadius = 100;
 
 	// Create particle system object.
-	particleSystem = new ParticleSystem;
+
+	// TODO: Fix so particle properties get values. particleBuffer is NULL since they do not have it.
+	particleSystem = new ParticleSystem(quadLength, maxParticles, particleRadius);
 	if (!particleSystem)
 	{
 		return false;
@@ -211,10 +219,18 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Initialize particle system.
-	result = particleSystem->Initialize(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/rainDrop.png", particles, particleSystem->GetMaxParticles(), particleSystem->GetRadius());
+	result = particleSystem->Initialize(dxHandler->GetDevice(), dxHandler->GetDeviceContext(), L"assets/textures/rainDrop.png", particles, particleSystem->GetMaxParticles());
 	if (!result)
 	{
 		MessageBox(hwnd, L"Couldn't initialize particle system!", L"PARTICLE ERROR", MB_OK);
+		return false;
+	}
+
+	// Initialize particle shader
+	result = particleShaders->InitializeParticleShaders(dxHandler->GetDevice(), particles, particleSystem->GetMaxParticles(), quadLength, projection);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Couldn't initialize particle shader object.", L"GRAPHICS ERROR", MB_OK);
 		return false;
 	}
 
@@ -326,8 +342,10 @@ void Graphics::Update(float dt)
 	XMMATRIX n64Translation = XMMatrixTranslation(0.0f, 5.0f, 0.0f);
 	n64Logo->SetWorldMatrix(rotN64Rotation * n64Translation);
 
-	// PARTICLES
-	particleShader->UpdateParticleCBuffers(dxHandler->GetDeviceContext(), particleSystem, view, camera->GetPosition(), dt);
+	// PARTICLE UPDATING
+	// **Insert update functions here**
+	particleShaders->UpdateComputeCBuffers(dxHandler->GetDeviceContext(), dt);
+	particleShaders->UpdateGeometryShader(dxHandler->GetDeviceContext(), view, camera->GetPosition());
 }
 
 bool Graphics::Render(float dt)
@@ -372,14 +390,12 @@ bool Graphics::Render(float dt)
 	deferredShader->BindLightPass(dxHandler->GetDeviceContext());
 
 	// PARTICLES
-	// particleSystem->Render(dxHandler->GetDeviceContext()); // I DONT DO ANYTHING IN THIS FUNCTION FOR THE TIME BEING
-	
-	particleShader->UpdateParticleCompute(dxHandler->GetDeviceContext(), particleSystem);
-
-	result = particleShader->RenderParticles(dxHandler->GetDeviceContext(), dxHandler, particleSystem, particleSystem->GetMaxParticles(), projection, particleSystem->GetQuadLength());
-	if (!result)
-		return false;
-
+	float blendFactor[4] = { 1.25f, 1.25f, 1.25f, 0.0f };
+	float clearColor[4] = { 0.1f, 0.0f, 0.3f, 1.0f };
+	dxHandler->GetDeviceContext()->OMSetBlendState(dxHandler->GetBlendState(), blendFactor, 0xFFFFFFFF);
+	dxHandler->GetDeviceContext()->ClearRenderTargetView(dxHandler->GetRtv(), clearColor);
+	dxHandler->GetDeviceContext()->ClearDepthStencilView(dxHandler->GetDsv(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	particleSystem->Render(dxHandler->GetDeviceContext());
 
 	//___________________________________________________________________________________________________
 

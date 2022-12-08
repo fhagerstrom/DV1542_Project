@@ -6,7 +6,7 @@
 #include "Shaders.h"
 #include "Light.h"
 #include "Timer.h"
-#include "ParticleSystem.h"
+#include "ParticleShaders.h"
 
 // IMGUI INCLUDES
 #include "assets/imgui/imgui.h"
@@ -50,12 +50,15 @@ private:
 	Model* triforce;
 	Model* n64Logo;
 
+	ParticleShaders* particleShaders;
 	ParticleSystem* particleSystem;
 	Particle* particles;
+	int quadLength, maxParticles, particleRadius;
+
 
 	Shader* textureShader;
 	Shader* deferredShader;
-	Shader* particleShader;
+	// Shader* particleShader;
 
 	ObjReader reader;
 

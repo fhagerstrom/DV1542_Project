@@ -1,33 +1,22 @@
 #pragma once
 
 #include <random>
+
 #include "Camera.h"
 #include "Texture.h"
-
-using namespace DirectX;
-
-struct Particle
-{
-	Particle() {};
-
-	XMFLOAT3 currentPosition = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	XMFLOAT3 oldPosition = XMFLOAT3(0.0f, 0.0f, 0.0f);
-
-	XMFLOAT3 SetPosition(XMFLOAT3& position) { currentPosition = position; }
-	XMFLOAT3 GetPosition() { return currentPosition; }
-};
+#include "ParticleShaders.h"
 
 class ParticleSystem
 {
 public:
-	ParticleSystem();
+	ParticleSystem(float quadLength, int maxParticles, int radius);
 	~ParticleSystem();
 
-	bool Initialize(ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR textureFile, Particle* particles, int maxParticles, int radius);
+	bool Initialize(ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR textureFile, Particle* particles, int maxParticles);
 	void Render(ID3D11DeviceContext* context);
 	void Shutdown();
 
-	ID3D11ShaderResourceView* GetSrv() { return this->particleSrv; }
+	ID3D11ShaderResourceView* GetSrv() { return this->colorSRV; }
 	ID3D11UnorderedAccessView* GetUav() { return this->particleUav; }
 	ID3D11RenderTargetView* GetParticleRtv() { return this->particleRtv; }
 	ID3D11Buffer* GetParticleBuffer() { return this->particleBuffer; }
@@ -42,11 +31,13 @@ private:
 
 	Camera* camera;
 	Texture* texture;
+	ParticleShaders* particleShaders;
 
 	ID3D11Buffer* particleBuffer;
 	ID3D11RenderTargetView* particleRtv;
-	ID3D11ShaderResourceView* particleSrv;
+	ID3D11ShaderResourceView* colorSRV;
 	ID3D11UnorderedAccessView* particleUav;
+	ID3D11BlendState* blendState;
 
 	bool InitializeBuffers(ID3D11Device* device, ID3D11DeviceContext* context, Particle* particles, int maxParticles);
 
