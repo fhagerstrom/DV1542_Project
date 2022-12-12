@@ -1,6 +1,6 @@
 #include "ParticleSystem.h"
 
-ParticleSystem::ParticleSystem(float quadLength, int maxParticles, int radius)
+ParticleSystem::ParticleSystem()
 {
 	maxParticles = 50;
 	radius = 100;

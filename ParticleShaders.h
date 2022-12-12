@@ -39,7 +39,6 @@ struct CBConstantResource
 class ParticleShaders
 {
 private:
-
 	int maxParticles;
 	int quadLength;
 
@@ -66,7 +65,7 @@ private:
 	ID3D11UnorderedAccessView* particleUAV;
 	ID3D11SamplerState* particleSampler;
 
-	bool CreateInputBuffer(ID3D11Device* device, Particle* particles, int maxParticles);
+	bool CreateInputBuffers(ID3D11Device* device, Particle* particles, int maxParticles);
 	bool CreateComputeCBuffers(ID3D11Device* device, int maxParticles);
 
 	void Shutdown();

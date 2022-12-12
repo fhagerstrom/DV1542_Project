@@ -9,7 +9,7 @@
 class ParticleSystem
 {
 public:
-	ParticleSystem(float quadLength, int maxParticles, int radius);
+	ParticleSystem();
 	~ParticleSystem();
 
 	bool Initialize(ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR textureFile, Particle* particles, int maxParticles);

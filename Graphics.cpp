@@ -69,17 +69,9 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
 	light->SetLightPosition(0.0f, 0.0f, 0.0f);
-	light->SetAttenuation(1.0f, 0.02f, 0.0f);
+	light->SetAttenuation(0.0f, 0.02f, 0.0f);
 	light->SetLightRange(500.0f);
 	lightVector.push_back(light);
-
-	light1->SetAmbientColor(0.3f, 0.3f, 0.3f, 1.0f);
-	light1->SetDiffuseColor(1.0f, 0.0f, 0.0f, 1.0f);
-	light1->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
-	light1->SetLightPosition(0.0f, 10.0f, 15.0f);
-	light1->SetAttenuation(1.0f, 0.02f, 0.0f);
-	light1->SetLightRange(500.0f);
-	// lightVector.push_back(light1);
 
 	cityTerrain = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), cityTerrain, L"assets/models/plane.obj", true, false);
@@ -95,7 +87,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	cornellBox->GetMaterials()[0].ambientMtl = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	cornellBox->GetMaterials()[0].hasTexture = false;
 	cornellBox->GetMaterials()[0].hasReflection = false;
-	allModels.push_back(cornellBox);
+	// allModels.push_back(cornellBox);
 
 	torusRing = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), torusRing, L"assets/models/torusDonut.obj", true, false);
@@ -140,19 +132,12 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	n64Logo = new Model;
 	reader.LoadObj(dxHandler->GetDevice(), n64Logo, L"assets/models/n64Logo.obj", true, false);
 	// WORLD MATRIX IS SET IN UPDATE DUE TO ROTATION
-	n64Logo->GetMaterials()[0].ambientMtl = XMFLOAT4(0.5f, 0.75f, 0.5f, 1.0f);
+	n64Logo->GetMaterials()[0].ambientMtl = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
 	n64Logo->GetMaterials()[0].diffuseMtl = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
 	n64Logo->GetMaterials()[0].specularMtl = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
 	n64Logo->GetMaterials()[0].hasTexture = false;
 	n64Logo->GetMaterials()[0].hasReflection = false;
 	allModels.push_back(n64Logo);
-
-	// Create the texture shader object.
-	/*textureShader = new Shader;
-	if (!textureShader)
-	{
-		return false;
-	}*/
 
 	// Create deferred shader object.
 	deferredShader = new Shader;
@@ -171,14 +156,6 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	/*particleShader = new Shader;
 	if (!particleShader)
 	{
-		return false;
-	}*/
-
-	// Initialize texture shader
-	/*result = textureShader->InitializeShaders(dxHandler->GetDevice(), hwnd, L"DefaultVS.hlsl", L"DefaultPS.hlsl", "main", "main");
-	if (!result)
-	{
-		MessageBox(hwnd, L"Couldn't initialize the shader object.", L"GRAPHICS ERROR", MB_OK);
 		return false;
 	}*/
 
@@ -203,9 +180,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	particleRadius = 100;
 
 	// Create particle system object.
-
-	// TODO: Fix so particle properties get values. particleBuffer is NULL since they do not have it.
-	particleSystem = new ParticleSystem(quadLength, maxParticles, particleRadius);
+	particleSystem = new ParticleSystem();
 	if (!particleSystem)
 	{
 		return false;
@@ -227,12 +202,12 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Initialize particle shader
-	result = particleShaders->InitializeParticleShaders(dxHandler->GetDevice(), particles, particleSystem->GetMaxParticles(), quadLength, projection);
+	/*result = particleShaders->InitializeParticleShaders(dxHandler->GetDevice(), particles, particleSystem->GetMaxParticles(), quadLength, projection);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Couldn't initialize particle shader object.", L"GRAPHICS ERROR", MB_OK);
 		return false;
-	}
+	}*/
 
 	// ImGui setup.
 	IMGUI_CHECKVERSION();
@@ -248,14 +223,6 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 void Graphics::Shutdown()
 {
-	// Release the texture shader object.
-	if (textureShader)
-	{
-		textureShader->Shutdown();
-		delete textureShader;
-		textureShader = 0;
-	}
-
 	if (deferredShader)
 	{
 		deferredShader->Shutdown();
@@ -284,8 +251,6 @@ void Graphics::Shutdown()
 		delete dxHandler;
 		dxHandler = 0;
 	}
-
-	return;
 }
 
 bool Graphics::Frame(float dt)
@@ -344,8 +309,8 @@ void Graphics::Update(float dt)
 
 	// PARTICLE UPDATING
 	// **Insert update functions here**
-	particleShaders->UpdateComputeCBuffers(dxHandler->GetDeviceContext(), dt);
-	particleShaders->UpdateGeometryShader(dxHandler->GetDeviceContext(), view, camera->GetPosition());
+	/*particleShaders->UpdateComputeCBuffers(dxHandler->GetDeviceContext(), dt);
+	particleShaders->UpdateGeometryShader(dxHandler->GetDeviceContext(), view, camera->GetPosition());*/
 }
 
 bool Graphics::Render(float dt)
@@ -369,9 +334,6 @@ bool Graphics::Render(float dt)
 	// suzanne->Render(dxHandler->GetDeviceContext());
 	// sphere->Render(dxHandler->GetDeviceContext());
 
-	// REGULAR "TEXTURE" SHADER / FORWARD RENDERING
- 	// result = textureShader->Render(dxHandler->GetDeviceContext(), cityTerrain, view, projection, camera, light, dxHandler->GetSampler());
-
 	// DEFERRED RENDERING
 	// Bind first (geometry) pass for the deferred shading
 	// Sets render targets and clears them
@@ -390,12 +352,12 @@ bool Graphics::Render(float dt)
 	deferredShader->BindLightPass(dxHandler->GetDeviceContext());
 
 	// PARTICLES
-	float blendFactor[4] = { 1.25f, 1.25f, 1.25f, 0.0f };
+	/*float blendFactor[4] = { 1.25f, 1.25f, 1.25f, 0.0f };
 	float clearColor[4] = { 0.1f, 0.0f, 0.3f, 1.0f };
 	dxHandler->GetDeviceContext()->OMSetBlendState(dxHandler->GetBlendState(), blendFactor, 0xFFFFFFFF);
 	dxHandler->GetDeviceContext()->ClearRenderTargetView(dxHandler->GetRtv(), clearColor);
 	dxHandler->GetDeviceContext()->ClearDepthStencilView(dxHandler->GetDsv(), D3D11_CLEAR_DEPTH, 1.0f, 0);
-	particleSystem->Render(dxHandler->GetDeviceContext());
+	particleSystem->Render(dxHandler->GetDeviceContext());*/
 
 	//___________________________________________________________________________________________________
 

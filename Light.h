@@ -33,3 +33,13 @@ public:
 	float GetLightRange() { return this->lightRange; };
 	XMFLOAT3 GetAttenuation() { return this->attenuation; }
 };
+
+struct DirectionalLight
+{
+
+};
+
+struct PointLight
+{
+
+};

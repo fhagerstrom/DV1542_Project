@@ -613,9 +613,10 @@ void Shader::BindLightPass(ID3D11DeviceContext* context)
 	context->CSSetShader(deferredCS, NULL, 0);
 
 	context->CSSetShaderResources(0, BUFFER_COUNT, deferredPtr->shaderResourceViewArray);
+	// ADD SHADOWMAP SRV HERE
 	context->CSSetUnorderedAccessViews(0, 1, &deferredPtr->deferredUav, NULL);
 
-	context->Dispatch(60, 135, 1);
+	context->Dispatch(160, 90, 1); // 1280 / 8, 720 / 8
 
 	// NULL resources and buffers
 	context->CSSetShaderResources(0, BUFFER_COUNT, nullSrvArray);
@@ -636,7 +637,8 @@ bool Shader::SetObjectCBuffers(ID3D11DeviceContext* context, Model* model, XMMAT
 	context->VSSetConstantBuffers(0, 1, &perObjectBuffer);
 
 	// Set shader texture resource in the pixel shader	
-	if (model->GetMaterials()[0].hasTexture) {
+	if (model->GetMaterials()[0].hasTexture) 
+	{
 		textureSRV = model->GetTexture();
 		context->PSSetShaderResources(0, 1, &textureSRV);
 	}
@@ -646,17 +648,6 @@ bool Shader::SetObjectCBuffers(ID3D11DeviceContext* context, Model* model, XMMAT
 
 	context->UpdateSubresource(cameraBuffer, 0, nullptr, &cameraCb, 0, 0);
 	context->VSSetConstantBuffers(1, 1, &cameraBuffer);
-	
-	/* Set Default light buffer	- Pixel shader */
-	/*lightCb.ambientLight = light->GetAmbientColor();
-	lightCb.diffuseLight = light->GetDiffuseColor();
-	lightCb.specularLight = light->GetSpecularColor();
-	lightCb.lightPosition = light->GetLightPosition();
-	lightCb.lightRange = light->GetLightRange();
-	lightCb.attenuation = light->GetAttenuation();
-
-	context->UpdateSubresource(lightBuffer, 0, nullptr, &lightCb, 0, 0);
-	context->PSSetConstantBuffers(0, 1, &lightBuffer);*/
 
 	/* Material buffer - Pixel shader */
 	materialCb.ambientMtl = model->GetMaterials()[0].ambientMtl;

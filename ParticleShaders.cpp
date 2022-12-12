@@ -111,7 +111,7 @@ bool ParticleShaders::InitializeParticleShaders(ID3D11Device* device, Particle* 
 	}
 
 	CreateParticleSamplerState(device);
-	CreateInputBuffer(device, particles, maxParticles);
+	CreateInputBuffers(device, particles, maxParticles);
 	CreateParticleCBuffers(device, quadLength, projection);
 	CreateComputeCBuffers(device, maxParticles);
 
@@ -139,7 +139,7 @@ bool ParticleShaders::CreateParticleSamplerState(ID3D11Device* device)
 	return true;
 }
 
-bool ParticleShaders::CreateInputBuffer(ID3D11Device* device, Particle* particles, int maxParticles)
+bool ParticleShaders::CreateInputBuffers(ID3D11Device* device, Particle* particles, int maxParticles)
 {
 	D3D11_BUFFER_DESC buffDesc;
 	ZeroMemory(&buffDesc, sizeof(buffDesc));

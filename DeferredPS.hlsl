@@ -46,6 +46,7 @@ PixelOutput main(PixelInput input)
         output.ambient = texAmbient.Sample(deferredSampler, input.tex) * ambientMtl;
         output.diffuse = texDiffuse.Sample(deferredSampler, input.tex) * diffuseMtl;
         output.specular = texSpecular.Sample(deferredSampler, input.tex) * specularMtl;
+        output.specular.w = specularMtl.w;
     }
     else
     {
@@ -53,8 +54,6 @@ PixelOutput main(PixelInput input)
         output.diffuse = diffuseMtl;
         output.specular = specularMtl;
     }
-    
-    output.specular.w = specularMtl.w;
     
 	return output;
 }

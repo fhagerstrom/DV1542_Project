@@ -133,14 +133,6 @@ bool DeferredRender::Initialize(ID3D11Device* device, DxHandler* dxHandler, int 
 	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
 	uavDesc.Texture2D.MipSlice = 0;
 
-	// Get the pointer to the back buffer.
-	/*hr = dxHandler->GetSwapChain()->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
-	if (FAILED(hr))
-	{
-		MessageBox(NULL, L"Couldn't get back buffer for deferred!", L"DEFERRED ERROR", MB_OK);
-		return false;
-	}*/
-
 	HRESULT hr = dxHandler->GetDevice()->CreateUnorderedAccessView(dxHandler->GetBackBuffer(), &uavDesc, &deferredUav);
 	if (FAILED(hr))
 	{
@@ -208,5 +200,4 @@ void DeferredRender::ClearRenderTargets(ID3D11DeviceContext* context, float r, f
 
 	// Clear the depth buffer.
 	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
-
 }

@@ -2,8 +2,6 @@ cbuffer CBPerObject : register(b0)
 {
     matrix wvp;
     matrix world;
-	//matrix viewMatrix;
-	//matrix projectionMatrix;
 };
 
 cbuffer cameraBuffer : register(b1)
